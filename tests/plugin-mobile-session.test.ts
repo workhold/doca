@@ -15,7 +15,7 @@ it("binds mobile tickets to one plugin, denies replay and host APIs, and revokes
     id: "example.mail",
     version: "1.0.0",
     displayName: "Mail",
-    sdkRange: "^0.1.7",
+    sdkRange: "^0.2.0",
   };
   await writeFile(
     join(pkg, "package.json"),

@@ -4,5 +4,5 @@
   "version": "1.0.0",
   "displayName": "Countdown and news elements",
   "description": "Document and spreadsheet element SDK example",
-  "sdkRange": "^0.1.7"
+  "sdkRange": "^0.2.0"
 }

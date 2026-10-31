@@ -17,7 +17,7 @@ async function fixture(options: { range?: string; server?: string; storage?: unk
   const root = await mkdtemp(join(tmpdir(), "doca-install-")); folders.push(root);
   const pkg = join(root, "example.demo");
   await mkdir(join(pkg, "web"), { recursive: true });
-  const manifest = { schemaVersion: 1, id: "example.demo", version: "1.0.0", displayName: "Demo", sdkRange: options.range ?? "^0.1.7" };
+  const manifest = { schemaVersion: 1, id: "example.demo", version: "1.0.0", displayName: "Demo", sdkRange: options.range ?? "^0.2.0" };
   await writeFile(join(pkg, "package.json"), JSON.stringify({ name: "@example/demo", version: "1.0.0", type: "module", doca: { dataVersion: "1", storage: Object.hasOwn(options, "storage") ? options.storage : "host", manifest: "./manifest.json", server: options.server ?? "./server.js", web: { directory: "./web", entry: "./index.js" } } }));
   await writeFile(join(pkg, "manifest.json"), JSON.stringify(manifest));
   await writeFile(join(pkg, "web/index.js"), "export default ({React}) => ({manifest: {pluginId: 'example.demo', version: '1.0.0', targets: ['web']}});");

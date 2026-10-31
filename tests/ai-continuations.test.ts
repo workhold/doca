@@ -14,8 +14,8 @@ import {
 import {
   aiServiceToken,
   aiContinuationsServiceToken,
-  type AIContinuationsServiceV1,
-  type AIServiceV1,
+  type AIContinuationsServiceV2,
+  type AIServiceV2,
   type AIContinuationSnapshot,
   type PluginAIToolContext,
 } from "@smartdoca/plugin-sdk/ai";
@@ -317,10 +317,10 @@ it("exposes wait only to a live authenticated tool and binds registrations to th
     db,
     host,
   );
-  const ai = services.get(aiServiceToken.id) as AIServiceV1,
+  const ai = services.get(aiServiceToken.id) as AIServiceV2,
     continuations = services.get(
       aiContinuationsServiceToken.id,
-    ) as AIContinuationsServiceV1;
+    ) as AIContinuationsServiceV2;
   let captured!: PluginAIToolContext,
     waits = 0;
   await runPluginContractHarness(
@@ -331,7 +331,7 @@ it("exposes wait only to a live authenticated tool and binds registrations to th
           id: "example.worker",
           version: "1.0.0",
           displayName: "Worker",
-          sdkRange: "^0.1.10",
+          sdkRange: "^0.2.0",
         },
         injections: { required: [aiServiceToken, aiContinuationsServiceToken] },
         async mount(context) {

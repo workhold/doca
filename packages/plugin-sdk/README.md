@@ -2,19 +2,23 @@
 
 Doca's public plugin SDK. Plugins declare service requirements and own business models and authorization. All persistence uses public host-managed services; installed packages must declare `doca.storage: "host"` and never select local/remote backends or storage paths. Managed SQL/private objects are exported in 0.1.7, managed credentials in source 0.1.8; temporary workspaces are not exported; see the [storage contract](../../docs/plugin-horizontal-scaling.md). They must not import host source paths or use private runtime bridges.
 
-Current package: **0.1.11**. The [publication record](../../docs/plugin-monitoring.md#sdk-publication--2026-10-13) records npm verification; source interfaces do not establish production or native-device acceptance. Older version headings below describe when capabilities were introduced.
+Current source package: **0.2.0** (not yet published). The [publication record](../../docs/plugin-monitoring.md#sdk-publication--2026-10-13) records npm verification; source interfaces do not establish production or native-device acceptance. Older version headings below describe when capabilities were introduced.
+
+## Tool executions (0.2.0)
+
+`aiServiceToken` now names `ai.v2`; `aiContinuationsServiceToken` names `ai.continuations.v2`. `PluginAIToolContext.jobId` always identifies the task. `sessionId` is optional and exists only for a real conversation; MCP executions never invent it. Keep task correlation and idempotence independent of chat IDs. Declare `sdkRange: "^0.2.0"` and rebuild plugin bundles. Old SDK ranges/services are rejected without adapters. Host, Web and plugins must update together; no automatic downgrade is provided.
 
 ## Monitoring and telemetry (0.1.11)
 
-`@smartdoca/plugin-sdk/monitoring` exports `monitoringServiceToken` (`monitoring.v1`) and `telemetryServiceToken` (`telemetry.v1`). Declare required injections and `sdkRange: "^0.1.11"`. Read site counts, realtime online users, HTTP QPS/errors/duration histograms, bounded structured logs, existing audit, queue diagnostics, AI usage and health. Plugins can write installation-bound logs and counter/gauge/histogram metrics. `host.platform.monitoring` exposes the fixed read methods to active administrators of a live monitoring plugin.
+`@smartdoca/plugin-sdk/monitoring` exports `monitoringServiceToken` (`monitoring.v1`) and `telemetryServiceToken` (`telemetry.v1`). Declare required injections and `sdkRange: "^0.2.0"`. Read site counts, realtime online users, HTTP QPS/errors/duration histograms, bounded structured logs, existing audit, queue diagnostics, AI usage and health. Plugins can write installation-bound logs and counter/gauge/histogram metrics. `host.platform.monitoring` exposes the fixed read methods to active administrators of a live monitoring plugin.
 
 Redis aggregates versioned ephemeral instance snapshots; missing/stale data and cursor eviction are explicit. Long-term records use the plugin's host-managed storage. Existing SDK methods, database formats and event flow stay unchanged. See [exact methods, access, retention and rollback](../../docs/plugin-monitoring.md) ([中文](../../docs/plugin-monitoring.zh-CN.md)). npm publication and production deployment are not implied.
 
 ## Background task continuation (0.1.10)
 
-`@smartdoca/plugin-sdk/ai` exports `aiContinuationsServiceToken` (`ai.continuations.v1`) for installed server plugins. Register an installation-owned source that reads durable, currently authorized task snapshots; call `wait(pluginId, toolContext, {sourceId, operationId})` from a registered AI tool and `wake(pluginId, {sourceId, operationId})` after committing a worker result. The host retains the original assistant task and resumes it after background completion or a human decision. Repeated notifications are deduplicated; cancellation, current identity, source ownership and permissions are checked again before resuming.
+`@smartdoca/plugin-sdk/ai` exports `aiContinuationsServiceToken` (`ai.continuations.v2`) for installed server plugins. Register an installation-owned source that reads durable, currently authorized task snapshots; call `wait(pluginId, toolContext, {sourceId, operationId})` from a registered AI tool and `wake(pluginId, {sourceId, operationId})` after committing a worker result. The host retains the original assistant task and resumes it after background completion or a human decision. Repeated notifications are deduplicated; cancellation, current identity, source ownership and permissions are checked again before resuming.
 
-Snapshots require `version: 1`, `state`, `revision`, `summary` and optional JSON `result`. States are `running`, `waiting_input`, `completed`, `failed`, `cancelled`. Declare this service as required and use `sdkRange: "^0.1.10"` on Doca 0.1.14 or later. There is no adapter or automatic conversion of historical tasks. See the [contract, integration example and rollback limits](../../docs/plugin-ai-continuations.md).
+Snapshots require `version: 1`, `state`, `revision`, `summary` and optional JSON `result`. States are `running`, `waiting_input`, `completed`, `failed`, `cancelled`. Declare this service as required and use `sdkRange: "^0.2.0"` with a host exporting the v2 services. There is no adapter or automatic conversion of historical tasks. See the [contract, integration example and rollback limits](../../docs/plugin-ai-continuations.md).
 
 ## Public capabilities added in 0.1.6 (source)
 

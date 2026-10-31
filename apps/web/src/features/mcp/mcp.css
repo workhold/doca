@@ -117,6 +117,16 @@
 .mcp-dialog {
   width: min(860px, calc(100vw - 32px));
 }
+.modal.mcp-executions-dialog {
+  width: min(760px, calc(100vw - 32px));
+  height: auto;
+  max-height: min(80vh, 720px);
+}
+.mcp-execution-detail h3,
+.mcp-execution-detail code,
+.mcp-execution-detail a {
+  overflow-wrap: anywhere;
+}
 .mcp-form {
   display: grid;
   gap: 14px;

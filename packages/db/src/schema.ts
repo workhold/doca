@@ -102,9 +102,9 @@ export interface Schema extends KnowledgeBookTables, BrowserClipperSchema, Group
   };
   ai_jobs: {
     id: string;
-    session_id: string;
+    session_id: string | null;
     user_id: string;
-    model_id: string;
+    model_id: string | null;
     status:
       | "queued"
       | "running"
@@ -123,6 +123,9 @@ export interface Schema extends KnowledgeBookTables, BrowserClipperSchema, Group
     cancelled: number;
     created_at: string;
     updated_at: string;
+  };
+  ai_task_resources: {
+    job_id: string; kind: string; resource_id: string; title: string; href: string; touched_at: string;
   };
   ai_operations: {
     id: string;
@@ -167,7 +170,7 @@ export interface Schema extends KnowledgeBookTables, BrowserClipperSchema, Group
     created_at: string; updated_at: string;
   };
   mcp_contexts: {
-    id: string; service_id: string; user_id: string; session_id: string; job_id: string;
+    id: string; service_id: string; user_id: string; session_id: string | null; job_id: string;
     instance_id: string; expires_at: string; closed_at: string | null; created_at: string;
   };
   mcp_tool_calls: {

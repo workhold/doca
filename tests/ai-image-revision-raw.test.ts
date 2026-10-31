@@ -604,7 +604,7 @@ it("rejects cross-session reading before authorizing any source bytes", async ()
     .execute();
   const another = await job(otherSession),
     reader = vi.fn(readReferences);
-  await expect(read(another, reader)).rejects.toThrow("不属于当前会话");
+  await expect(read(another, reader)).rejects.toThrow("不属于当前执行范围");
   expect(reader).not.toHaveBeenCalled();
 });
 
@@ -1057,7 +1057,7 @@ it("rejects a v2 cross-session read before reading full sources or reconstructin
       input.generationOperationId,
       { ...f.readOptions, readReferences: sourceReader },
     ),
-  ).rejects.toThrow("不属于当前会话");
+  ).rejects.toThrow("不属于当前执行范围");
   expect(sourceReader).not.toHaveBeenCalled();
   expect(f.reader).not.toHaveBeenCalled();
 });

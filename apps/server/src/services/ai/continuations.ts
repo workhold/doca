@@ -220,6 +220,7 @@ export async function wakeAIContinuations(
   if (!pluginServices(db).continuationsReady) return { woken: 0 };
   let woken = 0;
   const reconcile = async (job: Awaited<ReturnType<typeof page>>[number]) => {
+    if (!job.session_id) return;
     let saved: any,
       invalid = false;
     try {

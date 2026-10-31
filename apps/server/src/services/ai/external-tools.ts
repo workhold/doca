@@ -1,5 +1,4 @@
 import type { Actor } from "@core/modules/identity/passwords.js";
-import type { Schema } from "@db/index.js";
 
 export type AssistantSkill = {
   id: string;
@@ -10,7 +9,6 @@ export type AssistantSkill = {
 };
 export type ExternalToolOptions = {
   actor: Actor;
-  session: Schema["ai_sessions"];
   catalogOnly?: boolean;
   authorize: (toolId: string) => Promise<void>;
   allowsTool: (toolId: string) => boolean;

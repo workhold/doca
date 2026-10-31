@@ -45,7 +45,7 @@ function bundle(
     id,
     version,
     displayName: "Demo",
-    sdkRange: "^0.1.7",
+    sdkRange: "^0.2.0",
     dependencies,
   };
   return zipSync(

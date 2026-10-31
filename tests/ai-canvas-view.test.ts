@@ -538,7 +538,7 @@ it("exports the current canvas to one authorized downloadable PNG without image 
   const runtime = storageRuntime();
   const runner = createAIRunner(db, { storage: runtime, fetch: async () => { throw new Error("Export must not call a model"); } });
   try {
-    const tools = await runner.externalTools(job, new AbortController().signal, { actor: ctx.actor, session, allowsTool: id => id === "canvas_export", allowsSkill: () => true, authorize: async () => {} });
+    const tools = await runner.externalTools(job, new AbortController().signal, { actor: ctx.actor, allowsTool: id => id === "canvas_export", allowsSkill: () => true, authorize: async () => {} });
     expect(tools.tools.find(tool => tool.id === "canvas_export")?.inputSchema).toMatchObject({ type: "object" });
     const before = await read(), requestId = randomUUID();
     const args = { resourceId, name: "current-canvas.png" };

@@ -28,7 +28,7 @@ Codex 客户端另有工具审批策略。页面还提供**可选**无人值守�
 
 ## 发现和执行能力
 
-1. 调用 `doca_tools`，在 `purpose` 中传完整任务。可选 `resources`、`files`、`currentResourceId`、`currentFolder` 使用现有文档/文件 UUID 提供明确上下文；文件引用复用助手的权限校验和正式输入快照。返回 `contextId` 与简短目录。
+1. 调用 `doca_tools`，在 `purpose` 中传完整任务。可选 `resources`、`files`、`currentResourceId`、`currentFolder` 使用现有文档/文件 UUID 提供明确上下文；文件引用复用助手的权限校验和正式输入快照。返回 `contextId`、独立执行任务 `taskId` 与简短目录，不创建聊天对话。
 2. 调用 `doca_describe_tools`，传该 `contextId` 和最多四个工具 ID，按需取得完整参数 schema。
 3. 用 `doca_skills` / `doca_load_skill` 或标准 `doca_skill` MCP prompt 读取对应完整手册。读取当前目录，关闭个人 SKILL 后即不可继续使用。
 4. 顺序调用 `doca_call`，传 `contextId`、新的 UUID `requestId`、`tool`、`input`。原生编辑沿用文档工具返回的当前 `seq`、`epochId`、真实 ID 和命令。MCP 与助手复用实现、原生编解码、事务、通知及实际调用 Doca 模型时的原始用量记录；不会伪造外部客户端模型的用量。
@@ -60,7 +60,15 @@ Codex 客户端另有工具审批策略。页面还提供**可选**无人值守�
 
 执行上下文和看图证明属于当前实例。活动上下文须路由到同一实例；重启、到期或请求落到其他实例后，创建新上下文并检查已有成果，不承诺自动续跑或恢复看图证明。原生文档数据仍由既有持久存储保存。模型密钥、秘密值、浏览器会话和任意历史聊天不会作为 MCP 配置导出。
 
-所有者可通过正常助手历史操作删除已关闭的执行会话，同一事务清理其 MCP 上下文和调用声明；已保存文档/文件及宿主安全审计事实仍保留。活动任务继续阻止会话删除。
+## 执行记录与升级
+
+MCP 与聊天共用任务租约、取消、资源权限、工具实现、操作回执、模型原始用量和安全审计。MCP 只创建 `ai_jobs` 执行任务，`session_id`、`model_id` 为 NULL；不创建 `ai_sessions`、聊天消息或记忆线程。工具实际调用模型时，仍在 `ai_calls` 记录真实模型和用量。
+
+个人设置 → MCP → 执行记录列出以本人身份执行的任务，包括公司服务代本人执行的任务。可查看工具调用状态、当前仍有权访问的关联资源、停止执行和清理已关闭的执行记录。清理保留已保存文档、生成文件、操作回执、模型原始用量和安全审计事实。生成图片保留 AI 输出目录的限制，通过明确的 `aiTaskId` 关联任务，不创建会话文件夹。独立任务只读取自己的回执，不把所有 NULL 对话关联的任务归成一组。
+
+所有者于 2026-11-01 同意直接解耦。最新 DDL 将 `ai_jobs.session_id`、`ai_jobs.model_id` 和保留的 `mcp_contexts.session_id` 改为可空，通过既有原生列协调器执行；新 `ai_task_resources` 表在 `schemaEvolution` 中声明并以空表加入，不回填、不改变兼容代际。历史 MCP 对话、上下文、文件、权限和审计原样保留，从聊天入口排除，不转换、不续跑。已安装结构仍受 footprint 保护。
+
+插件 SDK 源码 0.2.0 使用 `ai.v2` / `ai.continuations.v2`：`jobId` 始终存在，只有真实聊天执行才提供 `sessionId`。插件须按 `sdkRange: "^0.2.0"` 重新构建。宿主、Web 和插件一起更新；旧服务契约及 SDK 范围直接拒绝，不提供接口适配或自动降级。升级前备份数据库和文件；若需回退应用，应先保全升级后的任务和文件，再单独审查恢复方案。参见[验证记录](verification/mcp-execution-decoupling-2026-11-01.md)。
 
 ## 存储与旧 MCP 退役
 

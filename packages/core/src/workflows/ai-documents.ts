@@ -1,7 +1,8 @@
+import { checkJob, digest, type ExecutionContext } from "../modules/ai/execution.js";
+export { checkJob, digest } from "../modules/ai/execution.js";
 import { searchExcerpt } from "../modules/discovery/search-excerpts.js";
-import { browserAssistantBoundary } from "../modules/browser-clipper/access.js";
 import { recordVersion } from "../modules/history/repository.js";
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import * as Y from "yjs";
 import { createEditor, Editor, Node, Text, Transforms } from "slate";
 import {
@@ -62,8 +63,6 @@ import {
 } from "../modules/documents/codecs/surfaces.js";
 import { PPT_SCHEMA } from "../modules/documents/codecs/presentation.js";
 
-export const digest = (input: unknown) =>
-  createHash("sha256").update(JSON.stringify(input)).digest("hex");
 // Rich-text append stores plain paragraphs; markdown link syntax becomes native
 // link inlines so a saved result always contains a real, reviewable hyperlink.
 const appendRichChildren = (text: string) => {
@@ -141,10 +140,7 @@ export type AIReference = {
   epochId?: string;
   seq?: number;
 };
-export type ToolContext = {
-  actor: Actor;
-  jobId?: string;
-  lease?: string;
+export type ToolContext = ExecutionContext & {
   allowedResources?: string[];
   exactResources?: boolean;
   writable?: boolean;
@@ -170,26 +166,6 @@ export async function checkScope(
     fail(403, "文档不在本次授权范围内");
   await checkJob(db, ctx);
   return access;
-}
-export async function checkJob(db: DB, ctx: ToolContext) {
-  if (ctx.jobId) {
-    const job = await db
-      .selectFrom("ai_jobs")
-      .selectAll()
-      .where("id", "=", ctx.jobId)
-      .where("user_id", "=", ctx.actor.id)
-      .executeTakeFirst();
-    if (
-      !job ||
-      job.cancelled ||
-      job.status !== "running" ||
-      job.lease !== ctx.lease ||
-      !job.lease_until ||
-      job.lease_until < new Date().toISOString()
-    )
-      fail(409, "任务执行权已失效");
-    await browserAssistantBoundary(db, job.session_id, job.id);
-  }
 }
 function tableRefError(op: { type?: string }, message: string) {
   return `表格引用无效（${message}）。${op.type ?? "该命令"} 用了当前表里不存在的 id。整格改写用 setCellContent，cellId 取 document_read outline 的 cells[].id；只改几个字才用 text，blockId 取同一格的 paragraphId，deleteCount 取该格 textLength（一个汉字算 1，不要按字节或显示宽度估算）。不要把 cellId 和 paragraphId 对调，不要在 id 后拼接序号。本批次未保存。`;

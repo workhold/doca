@@ -1,3 +1,4 @@
+import { executionJobIds } from "@core/modules/ai/execution.js";
 import { z } from "zod";
 import type { DB } from "@db/index.js";
 import type { ToolContext } from "@core/workflows/ai-documents.js";
@@ -45,7 +46,7 @@ export async function listImageBatchCandidates(
     .select(["o.id", "o.result", "o.created_at"])
     .where("o.user_id", "=", ctx.actor.id)
     .where("j.user_id", "=", ctx.actor.id)
-    .where("j.session_id", "=", job.session_id)
+    .where("j.id", "in", await executionJobIds(db, ctx.actor.id, ctx.jobId!))
     .where("o.result", "like", `%${input.referenceImageId}%`)
     .orderBy("o.created_at", input.order === "oldest" ? "asc" : "desc")
     .execute();

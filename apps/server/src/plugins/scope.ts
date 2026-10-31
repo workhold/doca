@@ -1,7 +1,7 @@
 import type { PluginStorageServices } from "../services/plugin-storage.js";
 import { fileOperationScope } from "./file-operation-scope.js";
 import { monitoringBufferFor } from "../services/monitoring.js";
-import { satisfiesPluginVersion } from "@smartdoca/plugin-sdk";
+import { satisfiesPluginVersion, PLUGIN_SDK_VERSION } from "@smartdoca/plugin-sdk";
 import type {
   DocaPlugin,
   PluginLifecycleContext,
@@ -67,12 +67,12 @@ export function scopeInstalledPlugin(
         if (
           !declared ||
           !range ||
-          !satisfiesPluginVersion("0.1.11", range) ||
+          !satisfiesPluginVersion(PLUGIN_SDK_VERSION, range) ||
           satisfiesPluginVersion("0.1.10", range)
         ) {
           if (optional) return undefined;
           throw new Error(
-            "Monitoring and telemetry require a required injection and an SDK range starting at 0.1.11",
+            "Monitoring and telemetry require a required injection and the current SDK range",
           );
         }
         if (!value) return undefined;
@@ -154,8 +154,8 @@ export function scopeInstalledPlugin(
           "http.v1",
           "permissions.v1",
           "policies.v1",
-          "ai.v1",
-          "ai.continuations.v1",
+          "ai.v2",
+          "ai.continuations.v2",
           "search.v1",
           "knowledge.sources.v1",
         ].includes(token.id)
@@ -185,7 +185,7 @@ export function scopeInstalledPlugin(
               return context.effect(() => method.apply(target, args));
             }
             if (token.id === "notifications.v1") owned(args[0], true);
-            if (token.id === "ai.continuations.v1") {
+            if (token.id === "ai.continuations.v2") {
               if (property === "registerSource") {
                 owned(args[0].pluginId, true);
                 owned(args[0].id);

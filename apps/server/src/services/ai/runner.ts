@@ -1,3 +1,4 @@
+import { executionJobIds, recordExecutionResource, requireConversationJob } from "@core/modules/ai/execution.js";
 import { currentAssistantSkills } from "./skill-catalog.js";
 import type { ExternalToolOptions, AssistantToolRuntime } from "./external-tools.js";
 import { canvasTableSummary } from "@core/modules/ai/canvas-workflows.js";
@@ -17,7 +18,6 @@ import {
 } from "@core/modules/creation-resources/service.js";
 import { resourceRequest } from "@core/modules/creation-resources/document-template.js";
 import type { TemplateSelection } from "@smartdoca/plugin-contracts";
-import { recordSessionResource } from "@core/modules/ai/session-resources.js";
 import { folderInSearch } from "@core/modules/discovery/catalog.js";
 import { authorizeFileFolder, authorizeFileItem } from "@core/modules/access/file-access.js";
 import { authorizeKnowledgeFile, knowledgeFolderKind, knowledgeFileLocation, knowledgeFolderLocation, projectKnowledgeSessionFiles, readKnowledgeSessionFolder, requireKnowledgeFolder } from "@core/modules/knowledge/file-folders.js";
@@ -289,7 +289,7 @@ export interface AIContributionExecutionContext {
   readonly db: DB;
   readonly actor: Actor;
   readonly jobId: string;
-  readonly sessionId: string;
+  readonly sessionId?: string;
   readonly waitForContinuation?: (input: AIContinuationInput) => Promise<AIContinuationReceipt>;
 
 }
@@ -450,18 +450,19 @@ export function createAIRunner(
       });
     return m;
   }
-  async function recordSourceForJob(sessionId: string, userId: string, id: string, jobId: string) {
+  async function recordSourceForJob(sessionId: string | null, userId: string, id: string, jobId: string) {
     const resource = await db
       .selectFrom("resources")
       .select(["id", "kind", "title"])
       .where("id", "=", id)
       .executeTakeFirst();
     if (resource)
-      await recordSessionResource(db, userId, sessionId, {
+      await recordExecutionResource(db, userId, jobId, {
         ...resource,
         href: `#/r/${id}`,
       });
 
+    if (!sessionId) return;
     await transact(db, async (tx) => {
       await lockAIUser(tx, userId);
       const browser = await browserAssistantBoundary(tx, sessionId, jobId);
@@ -482,26 +483,30 @@ export function createAIRunner(
     });
   }
   async function execute(job: Schema["ai_jobs"], signal: AbortSignal, external?: ExternalToolOptions): Promise<AssistantToolRuntime | void> {
-    const storedSession = external?.session ?? await db
+    if (!external) requireConversationJob(job);
+    const storedSession = external ? undefined : await db
       .selectFrom("ai_sessions")
       .selectAll()
-      .where("id", "=", job.session_id)
+      .where("id", "=", job.session_id!)
       .executeTakeFirstOrThrow();
     const goneIds: string[] = [];
-    const browserBoundary = external ? null : await browserAssistantBoundary(db, storedSession.id, job.id);
+    const browserBoundary = storedSession ? await browserAssistantBoundary(db, storedSession.id, job.id) : null;
     const browserJobIds = browserBoundary
       ? resourceScope.parse(JSON.parse(browserBoundary.binding.job_ids)).ids
       : undefined;
-    const session = browserBoundary ? {
+    const session = browserBoundary && storedSession ? {
       ...storedSession,
       resource_ids: JSON.stringify(browserBoundary.ids),
       mentioned_resource_ids: JSON.stringify(parseIdList(storedSession.mentioned_resource_ids).filter(id => browserBoundary.ids.includes(id))),
       approved_resource_ids: JSON.stringify(parseIdList(storedSession.approved_resource_ids).filter(id => browserBoundary.ids.includes(id))),
     } : storedSession;
-    const recordSource = (sessionId: string, userId: string, id: string) => recordSourceForJob(sessionId, userId, id, job.id);
-    const actor = external?.actor ?? await sessionSources(db, job.user_id, session, goneIds),
+    const emit = async (event: Omit<Parameters<typeof sessionEvents.append>[0], "sessionId">) => {
+      if (job.session_id) await sessionEvents.append({ ...event, sessionId: job.session_id });
+    };
+    const recordSource = (id: string) => recordSourceForJob(job.session_id, job.user_id, id, job.id);
+    const actor = external?.actor ?? await sessionSources(db, job.user_id, session!, goneIds),
       input = JSON.parse(job.input) as AIInput;
-    if (!external) {
+    if (!external && session) {
       // Keep the submitted turn visible even if file validation, intent routing,
       // model setup or attachment recognition fails before beforeCompact runs.
       // A resumed attempt must retain its existing context and original message.
@@ -532,14 +537,12 @@ export function createAIRunner(
     }
     if (input.files?.length) await verifyAIInputFileSnapshot(db, actor, input.files, input.fileInputSnapshot);
     if (!external) {
-    await sessionEvents.append({
-      sessionId: session.id,
+    await emit({
       id: `${job.id}:turn:start`,
       type: "turn/start",
       data: { jobId: job.id, modelId: job.model_id },
     });
-    await sessionEvents.append({
-      sessionId: session.id,
+    await emit({
       id: `${job.id}:user:message`,
       type: "user/message",
       data: {
@@ -554,7 +557,7 @@ export function createAIRunner(
       db,
       actor,
       jobId: job.id,
-      sessionId: session.id,
+      ...(session ? { sessionId: session.id } : {}),
       waitForContinuation: input => {
         if (!requestContinuation) throw new Error("AI continuation context is not ready");
         return requestContinuation(input);
@@ -562,7 +565,7 @@ export function createAIRunner(
     };
     const intentRoute = !external && !browserBoundary && options.contributions
       ? await options.contributions.routeIntent(
-          { text: input.text, sessionId: session.id, turnId: job.id },
+          { text: input.text, sessionId: session!.id, turnId: job.id },
           contributionContext,
         )
       : { candidates: [] as const };
@@ -576,8 +579,7 @@ export function createAIRunner(
       selectedIntent.intentId,
     );
     if (!external) {
-    await sessionEvents.append({
-      sessionId: session.id,
+    await emit({
       id: `${job.id}:intent:selected`,
       type: "intent/selected",
       data: {
@@ -602,8 +604,7 @@ export function createAIRunner(
         throw new Error(
           `AI intent "${selectedIntent.intentId}" requires missing workflow "${workflowId}"`,
         );
-      await sessionEvents.append({
-        sessionId: session.id,
+      await emit({
         id: `${job.id}:workflow:${workflowId}:start`,
         type: "workflow/start",
         data: { jobId: job.id, workflowId, input: workflowState },
@@ -613,8 +614,7 @@ export function createAIRunner(
           host: contributionContext,
           signal,
         });
-        await sessionEvents.append({
-          sessionId: session.id,
+        await emit({
           id: `${job.id}:workflow:${workflowId}:end`,
           type: "workflow/end",
           data: {
@@ -625,8 +625,7 @@ export function createAIRunner(
           },
         });
       } catch (error) {
-        await sessionEvents.append({
-          sessionId: session.id,
+        await emit({
           id: `${job.id}:workflow:${workflowId}:end`,
           type: "workflow/end",
           data: {
@@ -649,7 +648,7 @@ export function createAIRunner(
         baseUrl: "https://mcp-client.invalid", apiKey: null, enabled: true,
         maxInput: 1000000, maxOutput: 32000, tools: true,
       }), vision: true },
-    } : await requireModel(db, actor.id, job.model_id);
+    } : await requireModel(db, actor.id, job.model_id!);
     const mediaModel = config.mediaModel
       ? config.models.find((item) => item.id === config.mediaModel)
       : undefined;
@@ -670,7 +669,7 @@ export function createAIRunner(
     const continuationCheckpoint = () => hasContinuation ? structuredClone(continuations) : undefined;
     let awaitingDependency = false, continuationCheckpointReady = false;
     requestContinuation = async input => {
-      await checkJob(db, { actor, jobId: job.id, lease: job.lease!, writable: false });
+      await checkJob(db, { actor, jobId: job.id, lease: job.lease! });
       const receipt = await registerContinuationWait(db, actor, continuations, input, signal);
       hasContinuation = true;
       if (receipt.state === "waiting" && receipt.snapshot.state === "running") { awaitingDependency = true; continuationCheckpointReady = false; }
@@ -791,8 +790,8 @@ export function createAIRunner(
     };
     const liveResourceIds = await visibleIds([
       input.currentResourceId,
-      ...parseIdList(session.mentioned_resource_ids),
-      ...parseIdList(session.approved_resource_ids),
+      ...parseIdList(session?.mentioned_resource_ids),
+      ...parseIdList(session?.approved_resource_ids),
       ...input.references.map((r) => r.resourceId),
     ]);
     const currentKnowledgeBook = input.currentResourceId && liveResourceIds.includes(input.currentResourceId)
@@ -849,7 +848,7 @@ export function createAIRunner(
       ctx.allowedResources = [...browserBoundary.ids];
       ctx.exactResources = false;
     }
-    const sources: string[] = JSON.parse(session.resource_ids);
+    const sources: string[] = [...parseIdList(session?.resource_ids), ...input.references.map(reference => reference.resourceId)];
     const bookCandidates=[...new Set([...sources,...liveResourceIds])];
     const hasBookContext=bookCandidates.length>0 && !!await db.selectFrom("knowledge_books").select("id").where("id","in",bookCandidates).executeTakeFirst();
     const previousJobIds: string[] = [];
@@ -860,7 +859,7 @@ export function createAIRunner(
         .select(["id", "input", "result"])
         .where("id", "=", retryId)
         .where("user_id", "=", actor.id)
-        .where("session_id", "=", session.id)
+        .where("id", "in", await executionJobIds(db, actor.id, job.id))
         .executeTakeFirst();
       if (!previous || previousJobIds.includes(previous.id))
         fail(409, "重试任务记录不可用");
@@ -904,7 +903,7 @@ export function createAIRunner(
       await verifyImageBatchAttemptScope(db,ctx,batch);
       const status = imageBatchStatus(batch);
       const deliveries = await imageBatchFileDeliveries(
-        db, actor.id, session.id, status.deliveries,
+        db, actor.id, job.session_id, status.deliveries, job.id,
       );
       if (status.complete) {
         for (const delivery of deliveries) {
@@ -942,7 +941,7 @@ export function createAIRunner(
         } : {}),
       };
     }
-    const batchRequirementContext = { userId: actor.id, actor, sessionId: session.id, currentJobId: job.id };
+    const batchRequirementContext = { userId: actor.id, actor, sessionId: job.session_id, currentJobId: job.id };
     if (imageBatch) {
       await verifyImageBatchRequirements(db, batchRequirementContext, imageBatch.requirements);
       await verifyImageBatchAttemptScope(db, ctx, imageBatch);
@@ -965,7 +964,7 @@ export function createAIRunner(
     });
     const read = async (id: string, anchor?: any) => {
       const result = await readAIDocument(db, ctx, id, anchor);
-      await recordSource(session.id, actor.id, id);
+      await recordSource(id);
       return {
         ...result,
         capabilities: documentCapabilities(result.resource.format),
@@ -1260,7 +1259,7 @@ export function createAIRunner(
         .select("ai_operations.result")
         .where("ai_operations.user_id", "=", actor.id)
         .where("ai_jobs.user_id", "=", actor.id)
-        .where("ai_jobs.session_id", "=", session.id)
+        .where("ai_jobs.id", "in", await executionJobIds(db, actor.id, job.id))
         .where("ai_operations.result", "like", `%"assetId":"${assetId}"%`)
         .execute();
       return rows.map(row => JSON.parse(row.result)).find(value =>
@@ -1312,6 +1311,13 @@ export function createAIRunner(
       ready: boolean;
     }) => {
       if(imageBatch)await verifyImageBatchAttemptScope(db,ctx,imageBatch);
+      const imageFile = await db.selectFrom("file_items").select(["id", "name"])
+        .where("owner_id", "=", actor.id).where("storage_object_id", "=", image.assetId)
+        .where("parent_type", "=", "system").where("parent_id", "=", "ai")
+        .where("deleted_at", "is", null).executeTakeFirst();
+      if (!imageBatch && imageFile) await recordExecutionResource(db, actor.id, job.id, {
+        id: imageFile.id, kind: "file", title: imageFile.name, href: `#/files?system=ai&focus=${imageFile.id}`,
+      });
       activatedBatchCandidates.add(image.assetId);
       const id = `image-${image.assetId}`;
       const event =
@@ -1339,7 +1345,7 @@ export function createAIRunner(
       shared?: boolean;
     }) => {
       if (!folder.href) return;
-      await recordSessionResource(db,actor.id,session.id,{id:folder.id,kind:"folder",title:folder.name,href:folder.href});
+      await recordExecutionResource(db,actor.id,job.id,{id:folder.id,kind:"folder",title:folder.name,href:folder.href});
       const id = `folder-${folder.id}`;
       const event =
         progress.events!.find((e) => e.id === id) ??
@@ -1367,7 +1373,7 @@ export function createAIRunner(
       local?: boolean;
     }) => {
       if (!file.local)
-        await recordSessionResource(db, actor.id, session.id, {
+        await recordExecutionResource(db, actor.id, job.id, {
           id: file.id,
           kind: "file",
           title: file.name,
@@ -2472,7 +2478,7 @@ export function createAIRunner(
       progress.imageGenerationFailure = undefined;
       if (args.resourceId) {
         written.add(args.resourceId);
-        await recordSource(session.id, actor.id, args.resourceId);
+        await recordSource(args.resourceId);
       }
       if(imageBatch)await verifyImageBatchAttemptScope(db,ctx,imageBatch);
       generatedImages.add(result.assetId);
@@ -2493,7 +2499,7 @@ export function createAIRunner(
       await publishImage(result);
       return result;
     };
-    const paidImageDescription = `同一来源页最多提交${imagePageAttemptLimit()}次付费请求；切换模型、工具、续跑与重试不重置累计次数。回执的真实paidAttempt序号达到当前上限后，不再提交新的付费生成，否则原cap会拒绝并停止任务；先image_candidate_view核对raw，本体合格时仅使用分割、预览、蒙版及本地重合成修复，本体缺失须如实报告未完成，不能重组造动作。有底图的整页编辑省略 size/aspectRatio，宿主依据实际第一张底图的宽高比例和原分辨率选择接口支持尺寸；不要根据书页外观猜测通用纸张比例，不能把非标准比例的真实底图强制当成3:4等预设比例。除非用户明确要求改变画布比例，不主动填写 size/aspectRatio，提示词中的尺寸也必须来自真实底图事实。文生图省略尺寸则使用已配置的模型尺寸。局部编辑先用 image_edit_preview 实际核对完整全页和局部两帧，后续调用包括label、区域顺序、点顺序及坐标必须完全一致，改动后重新预览并在下一模型轮次执行。不能移除参考图改成文生图来绕过失败。不需要插入文档时省略 resourceId，不创建文档。state:saved 表示成图和文件节点已保存到当前会话文件夹，url就是现有图片的预览/下载接口，无需web_download、file_action复制或再次image_export。image_export只导出原稿，会丢失本次修改，不能用来保存已经生成的成图。需要Doca文件页面链接时，file_browse使用folderId="ai-session:${session.id}"，以回执filename找到实际fileId与href；assetId不是fileId，不能混用。图片保存后仍须实际看图验收，不能因链接可下载就宣称质量通过。`;
+    const paidImageDescription = `同一来源页最多提交${imagePageAttemptLimit()}次付费请求；切换模型、工具、续跑与重试不重置累计次数。回执的真实paidAttempt序号达到当前上限后，不再提交新的付费生成，否则原cap会拒绝并停止任务；先image_candidate_view核对raw，本体合格时仅使用分割、预览、蒙版及本地重合成修复，本体缺失须如实报告未完成，不能重组造动作。有底图的整页编辑省略 size/aspectRatio，宿主依据实际第一张底图的宽高比例和原分辨率选择接口支持尺寸；不要根据书页外观猜测通用纸张比例，不能把非标准比例的真实底图强制当成3:4等预设比例。除非用户明确要求改变画布比例，不主动填写 size/aspectRatio，提示词中的尺寸也必须来自真实底图事实。文生图省略尺寸则使用已配置的模型尺寸。局部编辑先用 image_edit_preview 实际核对完整全页和局部两帧，后续调用包括label、区域顺序、点顺序及坐标必须完全一致，改动后重新预览并在下一模型轮次执行。不能移除参考图改成文生图来绕过失败。不需要插入文档时省略 resourceId，不创建文档。state:saved 表示成图和文件节点已保存到当前会话文件夹，url就是现有图片的预览/下载接口，无需web_download、file_action复制或再次image_export。image_export只导出原稿，会丢失本次修改，不能用来保存已经生成的成图。需要Doca文件页面链接时，file_browse使用folderId="${session ? `ai-session:${session.id}` : "ai"}"，以回执filename找到实际fileId与href；assetId不是fileId，不能混用。图片保存后仍须实际看图验收，不能因链接可下载就宣称质量通过。`;
     const imageMaskSegmentOutputSchema = z.object({
       kind: z.literal("image_mask_segment"), state: z.enum(["ready", "diagnostic-only"]), usable: z.boolean(),
       proposalReceiptId: z.string().uuid(), digest: z.string().regex(/^[a-f0-9]{64}$/),
@@ -3184,7 +3190,7 @@ export function createAIRunner(
           );
           written.add(args.resourceId);
           insertedImages.add(args.resourceId);
-          await recordSource(session.id, actor.id, args.resourceId);
+          await recordSource(args.resourceId);
           return result;
         },
       }),
@@ -3202,7 +3208,7 @@ export function createAIRunner(
                 const saved = imageBatch?.delivered[referenceImageId];
                 const inspection = imageBatch?.reviews[referenceImageId];
                 const rejected = !!saved && inspection?.assetId === saved && inspection.passed === false;
-                if (saved && !rejected) return showGeneratedImage(db, ctx, session.id, saved);
+                if (saved && !rejected) return showGeneratedImage(db, ctx, saved);
                 const result = await generateImageAsset(db, ctx,
                   { prompt: "导出原始页面", referenceImageIds: [referenceImageId], filename },
                   operationId(rootJobId, { imageExport: { referenceImageId, filename } }),
@@ -3410,7 +3416,7 @@ export function createAIRunner(
         ),
         inputSchema: z.object({ assetId: z.string().uuid().optional() }),
         execute: async ({ assetId }) => {
-          const result = await showGeneratedImage(db, ctx, session.id, assetId);
+          const result = await showGeneratedImage(db, ctx, assetId);
           await publishImage(result);
           return result;
         },
@@ -3989,7 +3995,7 @@ export function createAIRunner(
           }
           if (!imageBatch && ["status", "resume"].includes(action)) {
             if (action === "resume" && !resumedJobId) fail(400, "resume 必须显式指定历史批次 jobId");
-            let previousQuery = db.selectFrom("ai_jobs").select(["id", "result"]).where("session_id", "=", session.id).where("user_id", "=", actor.id).where("id", "!=", job.id).where("result", "like", '%"imageBatch"%');
+            let previousQuery = db.selectFrom("ai_jobs").select(["id", "result"]).where("id", "in", await executionJobIds(db, actor.id, job.id)).where("user_id", "=", actor.id).where("id", "!=", job.id).where("result", "like", '%"imageBatch"%');
             if (action === "resume") previousQuery = previousQuery.where("id", "=", resumedJobId!);
             const previous = await previousQuery.orderBy("created_at", "desc").limit(20).execute();
             const batches = imageBatchHistory(previous);
@@ -4175,12 +4181,10 @@ export function createAIRunner(
                     message:
                       "本轮是在改已有内容的格式或样式，不要联网。请直接用已读取的文档和本会话已有来源。",
                   };
-                const current = await db
-                  .selectFrom("ai_sessions")
-                  .selectAll()
-                  .where("id", "=", session.id)
-                  .executeTakeFirstOrThrow();
-                await sessionSources(db, actor.id, current);
+                if (session) {
+                  const current = await db.selectFrom("ai_sessions").selectAll().where("id", "=", session.id).executeTakeFirstOrThrow();
+                  await sessionSources(db, actor.id, current);
+                }
                 await requireCapability(db, actor.id, "ai.create");
                 const result = await searchWeb(
                   (await aiConfig(db)).webSearch,
@@ -4216,11 +4220,11 @@ export function createAIRunner(
         inputSchema: bookAssistantInputSchema,
         execute: async rawArgs => {
           const args = bookAssistantActionSchema.parse(rawArgs);
-          if ("bookId" in args && args.bookId) { await checkScope(db, { ...ctx, writable: false }, args.bookId); await recordSource(session.id,actor.id,args.bookId); }
+          if ("bookId" in args && args.bookId) { await checkScope(db, { ...ctx, writable: false }, args.bookId); await recordSource(args.bookId); }
           if (args.action === "create" && ctx.exactResources) fail(403, "Create a knowledge book from the personal assistant workspace");
           switch (args.action) {
             case "list": { const items = await listKnowledgeBooks(db, actor, args.offset); return { items: ctx.exactResources ? items.filter(item => ctx.allowedResources?.includes(item.id)) : items }; }
-            case "create": {const created=await createKnowledgeBook(db,actor,args.title);await recordSource(session.id,actor.id,created.id);return created;}
+            case "create": {const created=await createKnowledgeBook(db,actor,args.title);await recordSource(created.id);return created;}
             case "read": return readBookForAssistant(db, actor, args.bookId);
             case "search_sources": return searchBookWebSources(db,actor,args.bookId,{query:args.query,sites:args.sites,language:args.language});
             case "check_web_sources": return checkBookWebSources(db,actor,args.bookId,{urls:args.urls},knowledgeBookRuntime(db,actor.id,"source-validation","",options.storage));
@@ -4284,7 +4288,7 @@ export function createAIRunner(
 
           const page = await searchKnowledge(db, ctx, input, options.search);
           for (const hit of page.items)
-            await recordSource(session.id, actor.id, hit.id);
+            await recordSource(hit.id);
           return { intent, ...page };
 
         },
@@ -4352,7 +4356,7 @@ export function createAIRunner(
         execute: async ({ fileId, offset, limit, imageOffset, imageLimit }) => {
           await requireCapability(db, actor.id, "ai.rag");
           const file = await aiFileAccess(fileId, 1);
-          await recordSessionResource(db, actor.id, session.id, {
+          await recordExecutionResource(db, actor.id, job.id, {
             id: file.id,
             kind: "file",
             title: file.name,
@@ -5592,7 +5596,7 @@ export function createAIRunner(
             operationId(rootJobId, args),
           );
           written.add(result.id);
-          await recordSource(session.id, actor.id, result.id);
+          await recordSource(result.id);
           if (ctx.allowedResources) ctx.allowedResources.push(result.id);
           return {
             ...result,
@@ -5692,7 +5696,7 @@ export function createAIRunner(
           });
           written.add(args.resourceId);
           await options.notify?.(args.resourceId).catch(() => {});
-          await recordSource(session.id, actor.id, args.resourceId);
+          await recordSource(args.resourceId);
           return result;
         },
       }),
@@ -5703,8 +5707,7 @@ export function createAIRunner(
       contributionContext,
       {
         onResult: async (result) => {
-          await sessionEvents.append({
-            sessionId: session.id,
+          await emit({
             id: result.id,
             type: "tool/result",
             data: {
@@ -5736,14 +5739,13 @@ export function createAIRunner(
               : z.record(z.string(), z.unknown()),
             execute: async (toolInput) => {
               const call = createToolCall({
-                sessionId: session.id,
+                ...(session ? { sessionId: session.id } : {}),
                 turnId: job.id,
                 toolId: tool.id,
                 ordinal: contributedToolOrdinal++,
                 input: toolInput,
               });
-              await sessionEvents.append({
-                sessionId: session.id,
+              await emit({
                 id: call.id,
                 type: "tool/call",
                 data: {
@@ -5754,7 +5756,7 @@ export function createAIRunner(
                 },
               });
               const result = await contributedToolPipeline!.execute({
-                sessionId: session.id,
+                ...(session ? { sessionId: session.id } : {}),
                 turnId: job.id,
                 call,
                 signal,
@@ -5805,14 +5807,14 @@ export function createAIRunner(
           if (result.resourceId) {
             if (ctx.allowedResources && !ctx.allowedResources.includes(result.resourceId)) ctx.allowedResources.push(result.resourceId);
             written.add(result.resourceId);
-            await recordSource(session.id, actor.id, result.resourceId);
+            await recordSource(result.resourceId);
           }
           return result;
         } });
       tools.browser_library_search = createTool({ id: "browser_library_search", description: "在当前浏览器会话授权的资料范围内按关键词查找文档，返回标题和ID；需要正文时继续 document_read。",
         inputSchema: z.object({ query: z.string().min(1).max(160), offset: z.number().int().min(0).default(0) }), execute: async ({ query, offset }) => {
           await checkJob(db, ctx);
-          const boundary = await browserAssistantBoundary(db, session.id);
+          const boundary = await browserAssistantBoundary(db, session!.id);
           if (!boundary?.ids.length) return { items: [], nextOffset: null };
           const rows = await db.selectFrom("resources as r").leftJoin("document_states as s", "s.resource_id", "r.id")
             .select(["r.id", "r.title", "r.format"]).where("r.kind", "=", "document").where("r.deleted_at", "is", null)
@@ -5830,7 +5832,7 @@ export function createAIRunner(
         tool.execute = async (args: any, ...rest: any[]) => {
           await checkJob(db, ctx);
           if (toolId === "document_create") {
-            const boundary = await browserAssistantBoundary(db, session.id);
+            const boundary = await browserAssistantBoundary(db, session!.id);
             if (!boundary) fail(403, "clipper_scope_denied");
             const profile = await db.selectFrom("browser_clipper_profiles").selectAll().where("id", "=", boundary.binding.profile_id).executeTakeFirstOrThrow();
             const { id: _id, revision: _rev, ...target } = publicProfile(profile);
@@ -5938,6 +5940,8 @@ export function createAIRunner(
         },
       } satisfies AssistantToolRuntime;
     }
+    if (!session) fail(409, "Conversation execution is unavailable");
+    requireConversationJob(job);
     const prefs = await aiUser(db, actor.id), m = await ensureThread(session);
     const personal =
       !browserBoundary && config.memoryEnabled && prefs.memory_enabled
@@ -7498,10 +7502,13 @@ export function createAIRunner(
         .selectFrom("ai_jobs")
         .selectAll()
         .where("status", "=", "queued")
+        .where("session_id", "is not", null)
+        .where("model_id", "is not", null)
         .orderBy("created_at")
         .limit(concurrency * 2)
         .execute();
       for (const row of queued) {
+        requireConversationJob(row);
         if (active.size >= concurrency) break;
         const lease = randomUUID();
         const job = await transact(db, async (tx) => {
@@ -7530,6 +7537,7 @@ export function createAIRunner(
           return r;
         });
         if (!job) continue;
+        requireConversationJob(job);
         const controller = new AbortController();
         const heartbeat = setInterval(() => {
           void (async () => {

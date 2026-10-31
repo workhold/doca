@@ -9,7 +9,7 @@ import type { Actor } from "@core/modules/identity/passwords.js";
 import { lockAIUser } from "@core/modules/ai/config.js";
 import { userUploadLimits } from "@core/modules/ai/upload-policy.js";
 import { requireCapability } from "@core/modules/access/operation-policy.js";
-import { checkJob, digest } from "@core/workflows/ai-documents.js";
+import { checkJob, digest, recordExecutionResource } from "@core/modules/ai/execution.js";
 import { stableId, type FilesServiceV1 } from "@smartdoca/files-capability";
 import type { AIRunner, AIInput } from "./runner.js";
 import type { AssistantToolRuntime } from "./external-tools.js";
@@ -83,56 +83,24 @@ export const mcpTransferTools = Object.entries(transferSchemas).map(
   }),
 );
 
-function rows(actor: Actor, text: string, contextInput: Partial<AIInput> = {}) {
-  const now = new Date().toISOString(),
-    sessionId = randomUUID(),
-    jobId = randomUUID(),
-    lease = randomUUID();
-  const session: Schema["ai_sessions"] = {
-    id: sessionId,
-    user_id: actor.id,
-    title: text.slice(0, 160),
-    model_id: null,
-    resource_ids: "[]",
-    mentioned_resource_ids: "[]",
-    approved_resource_ids: "[]",
-    archived: 0,
-    revision: 1,
-    created_at: now,
-    updated_at: now,
-  };
+function executionJob(actor: Actor, text: string, contextInput: Partial<AIInput> = {}) {
+  const now = new Date().toISOString();
   const input: AIInput = {
-    text,
-    references: [],
-    scope: "all",
-    skillIds: [],
-    webSearch: true,
-    ...contextInput,
+    text, references: [], scope: "all", skillIds: [], webSearch: true, ...contextInput,
   };
   const job: Schema["ai_jobs"] = {
-    id: jobId,
-    session_id: sessionId,
-    user_id: actor.id,
-    model_id: "mcp-client",
-    status: "running",
-    input: JSON.stringify(input),
-    digest: digest(input),
-    result: "{}",
-    error: "",
-    lease,
+    id: randomUUID(), session_id: null, user_id: actor.id, model_id: null,
+    status: "running", input: JSON.stringify(input), digest: digest(input),
+    result: "{}", error: "", lease: randomUUID(),
     lease_until: new Date(Date.now() + 120000).toISOString(),
-    attempts: 1,
-    cancelled: 0,
-    created_at: now,
-    updated_at: now,
+    attempts: 1, cancelled: 0, created_at: now, updated_at: now,
   };
-  return { session, job };
+  return job;
 }
 type Context = {
   id: string;
   service: McpService;
   actor: Actor;
-  session: Schema["ai_sessions"];
   job: Schema["ai_jobs"];
   runtime: AssistantToolRuntime;
   controller: AbortController;
@@ -153,13 +121,12 @@ export function createMcpRuntime(
   let pendingOpens = 0;
   const pendingByService = new Map<string, number>();
   async function catalog(actor: Actor, service?: McpService) {
-    const { session, job } = rows(actor, "MCP catalog");
+    const job = executionJob(actor, "MCP catalog");
     const runtime = await runner.externalTools(
       job,
       new AbortController().signal,
       {
         actor,
-        session,
         catalogOnly: true,
         allowsTool: (id) => !service || allowsMcpTool(service, id),
         allowsSkill: (id) => !service || allowsMcpSkill(service, id),
@@ -260,12 +227,11 @@ export function createMcpRuntime(
         ? { currentFolder: contextInput.currentFolder }
         : {}),
     };
-    const { session, job } = rows(actor, purpose, input);
+    const job = executionJob(actor, purpose, input);
     const id = randomUUID(),
       controller = new AbortController();
     await transact(db, async (tx) => {
       await lockAIUser(tx, actor.id);
-      await tx.insertInto("ai_sessions").values(session).execute();
       await tx.insertInto("ai_jobs").values(job).execute();
       await tx
         .insertInto("mcp_contexts")
@@ -273,12 +239,12 @@ export function createMcpRuntime(
           id,
           service_id: service.id,
           user_id: actor.id,
-          session_id: session.id,
+          session_id: null,
           job_id: job.id,
           instance_id: instanceId,
           expires_at: new Date(Date.now() + ttl).toISOString(),
           closed_at: null,
-          created_at: session.created_at,
+          created_at: job.created_at,
         })
         .execute();
     });
@@ -286,7 +252,6 @@ export function createMcpRuntime(
       id,
       service,
       actor,
-      session,
       job,
       controller,
       expires: Date.now() + ttl,
@@ -319,7 +284,6 @@ export function createMcpRuntime(
     try {
       context.runtime = await runner.externalTools(job, controller.signal, {
         actor,
-        session,
         allowsTool: (tool) => allowsMcpTool(context.service, tool),
         allowsSkill: (skill) => allowsMcpSkill(context.service, skill),
         authorize: async (tool) => {
@@ -344,7 +308,7 @@ export function createMcpRuntime(
       });
       return {
         contextId: id,
-        sessionId: session.id,
+        taskId: job.id,
         expiresAt: new Date(context.expires).toISOString(),
         tools: [
           ...context.runtime.tools,
@@ -488,6 +452,9 @@ export function createMcpRuntime(
     });
     await files.uploads.abort(request, { uploadId });
     context.uploads.delete(uploadId);
+    await recordExecutionResource(db, actor.id, context.job.id, {
+      id: file.id, kind: "file", title: file.name, href: `#/files?focus=${file.id}`,
+    });
     return file;
   }
   async function call(
@@ -566,6 +533,10 @@ export function createMcpRuntime(
             aborted() {},
           }
         : await context.runtime.call(tool, input, requestId);
+      try {
+        context.controller.signal.throwIfAborted();
+        await checkJob(db, { actor: context.actor, jobId: context.job.id, lease: context.job.lease! });
+      } catch (error) { result.aborted(); throw error; }
       await db
         .updateTable("mcp_tool_calls")
         .set({ status: "completed", updated_at: new Date().toISOString() })
@@ -589,17 +560,19 @@ export function createMcpRuntime(
       if (claimed) {
         await db
           .updateTable("mcp_tool_calls")
-          .set({ status: "failed", updated_at: new Date().toISOString() })
+          .set({ status: context.controller.signal.aborted ? "interrupted" : "failed", updated_at: new Date().toISOString() })
           .where("context_id", "=", contextId)
           .where("request_id", "=", requestId)
+          .where("status", "=", "running")
           .execute();
-        await securityAudit(db, service.owner_id, actor.id, "mcp.tool.failed", {
+        await securityAudit(db, service.owner_id, actor.id, context.controller.signal.aborted ? "mcp.tool.interrupted" : "mcp.tool.failed", {
           serviceId: service.id,
           contextId,
           requestId,
           tool,
         });
       }
+      if (context.controller.signal.aborted) fail(409, "MCP execution was interrupted");
       throw error;
     } finally {
       context.busy = false;
@@ -649,8 +622,15 @@ export function createMcpRuntime(
         return tool;
       });
     },
-    closeContext: (service: McpService, actor: Actor, id: string) =>
-      close(get(service, actor, id)),
+    closeContext: (service: McpService, actor: Actor, id: string) => {
+      const context = get(service, actor, id);
+      return close(context, context.busy ? "interrupted" : "completed");
+    },
+    interruptTask: async (userId: string, jobId: string) => {
+      for (const context of contexts.values())
+        if (context.actor.id === userId && context.job.id === jobId)
+          await close(context, "interrupted");
+    },
     invalidate: async (serviceId: string) => {
       for (const context of contexts.values())
         if (context.service.id === serviceId)

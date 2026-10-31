@@ -399,7 +399,7 @@ it("rejects cross-account/session sources and future records without reading the
     ).rejects.toThrow(/不属于当前账号、会话/);
   await expect(
     createRequirements(db, oldCtx, future, [{ assetId }], []),
-  ).rejects.toThrow(/本轮之后/);
+  ).rejects.toThrow(/原始请求不存在或不属于当前账号、会话/);
   expect(
     (await imageBatchRequests(db, ctx, [{ assetId }])).requests.map(
       (item) => item.jobId,

@@ -10,7 +10,7 @@ import {
 import type { EffectRegistry, RegistryEntry } from "./registry.js";
 
 export interface ToolExecutionContext<Context = unknown> {
-  readonly sessionId: string;
+  readonly sessionId?: string;
   readonly turnId: string;
   readonly stepId?: string;
   readonly callId: string;
@@ -34,7 +34,7 @@ export interface ToolDefinition<Context = unknown> extends RegistryEntry {
 }
 
 export interface ToolExecutionRequest<Context = unknown> {
-  readonly sessionId: string;
+  readonly sessionId?: string;
   readonly turnId: string;
   readonly stepId?: string;
   readonly call: ToolCall;
@@ -127,7 +127,7 @@ export function mergeGuardDecision(
 }
 
 export function createToolCall(input: {
-  readonly sessionId: string;
+  readonly sessionId?: string;
   readonly turnId: string;
   readonly stepId?: string;
   readonly toolId: string;
@@ -141,7 +141,7 @@ export function createToolCall(input: {
   return Object.freeze({
     id: stableId(
       "tool-call",
-      input.sessionId,
+      input.sessionId ?? null,
       input.turnId,
       input.stepId ?? null,
       input.toolId,
@@ -220,7 +220,7 @@ function composeExecution<Context>(
   let next = async (): Promise<JsonValue> =>
     freezeJson(
       await execution.tool.execute(execution.call.input, {
-        sessionId: execution.sessionId,
+        ...(execution.sessionId === undefined ? {} : { sessionId: execution.sessionId }),
         turnId: execution.turnId,
         ...(execution.stepId === undefined
           ? {}

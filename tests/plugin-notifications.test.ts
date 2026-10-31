@@ -16,7 +16,7 @@ it("delivers scoped idempotent notifications, checks current authorization and g
   let app: Awaited<ReturnType<typeof createApp>> | undefined;
   try {
     await mkdir(pkg, { recursive: true });
-    const manifest = { schemaVersion: 1, id: "example.notifications", version: "1.0.0", displayName: "Notifications", sdkRange: "^0.1.7" };
+    const manifest = { schemaVersion: 1, id: "example.notifications", version: "1.0.0", displayName: "Notifications", sdkRange: "^0.2.0" };
     await writeFile(join(pkg, "package.json"), JSON.stringify({name:"example-notifications",version:"1.0.0",type:"module",doca:{dataVersion:"1",storage:"host",manifest:"./manifest.json",server:"./server.js"}}));
     await writeFile(join(pkg, "manifest.json"), JSON.stringify(manifest));
     await writeFile(join(pkg, "server.js"), `export default () => ({manifest:${JSON.stringify(manifest)}, async uninstall() {}, async mount(ctx) {

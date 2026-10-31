@@ -19,6 +19,8 @@ The documentation uses Docsify 5.0.0. Markdown source stays in `docs/`; `docs/si
 
 Every public page has an English `name.md` and Chinese `name.zh-CN.md` with the same scope. Research and acceptance records retain their original language, dates and verification scope and are linked separately. Label retired implementations and superseded proposals at the top of their source files. An implementation inventory distinguishes exported APIs, proposals, and unverified external-service/device behavior.
 
+New changes follow the [tiered SDD workflow](sdd.md). The [module index](sdd-module-index.md) connects source, authoritative contracts and reusable checks. Specs describe individual changes; current technical contracts keep their existing source paths and are updated in the same PR when behavior changes.
+
 ## Check and preview
 
 ```sh

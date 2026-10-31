@@ -476,7 +476,7 @@ it("reauthorizes source/raw and rejects changed facts, revoked ACL, wrong sessio
       input(),
       options(),
     ),
-  ).rejects.toThrow("不属于当前会话");
+  ).rejects.toThrow("不属于当前执行范围");
   await db
     .updateTable("assets")
     .set({ deleted_at: new Date().toISOString() })

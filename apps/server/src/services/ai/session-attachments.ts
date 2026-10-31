@@ -1,33 +1,17 @@
+import { executionJobIds } from "@core/modules/ai/execution.js";
 import { createHash } from "node:crypto";
 import type { DB } from "@db/index.js";
 import type { ToolContext } from "@core/workflows/ai-documents.js";
 import { authorizeFileItem } from "@core/modules/access/file-access.js";
 import { fail } from "@core/shared/errors.js";
 import type { StoredExtractPart } from "./file-extract.js";
-import { browserAssistantBoundary, resourceScope } from "@core/modules/browser-clipper/access.js";
 
 export async function sessionAttachmentIds(db: DB, ctx: ToolContext) {
   if (!ctx.jobId) fail(404, "attachment_session_required");
-  const job = await db
-    .selectFrom("ai_jobs as j")
-    .innerJoin("ai_sessions as s", "s.id", "j.session_id")
-    .select(["j.session_id", "j.created_at"])
-    .where("j.id", "=", ctx.jobId)
-    .where("j.user_id", "=", ctx.actor.id)
-    .where("s.user_id", "=", ctx.actor.id)
-    .executeTakeFirst();
-  if (!job) fail(404, "attachment_session_missing");
-  const browser = await browserAssistantBoundary(db, job.session_id, ctx.jobId);
-  const allowed = browser ? resourceScope.parse(JSON.parse(browser.binding.job_ids)).ids : null;
-  const jobs = await db
-    .selectFrom("ai_jobs")
-    .select("input")
-    .where("session_id", "=", job.session_id)
-    .where("user_id", "=", ctx.actor.id)
-    .where("created_at", "<=", job.created_at)
-    .$if(allowed !== null, query => query.where("id", "in", allowed!))
-    .orderBy("created_at", "asc")
-    .execute();
+  const jobIds = await executionJobIds(db, ctx.actor.id, ctx.jobId);
+  const jobs = await db.selectFrom("ai_jobs").select("input")
+    .where("id", "in", jobIds).where("user_id", "=", ctx.actor.id)
+    .orderBy("created_at", "asc").execute();
   const ids = new Set<string>();
   for (const item of jobs)
     for (const id of JSON.parse(item.input).attachments ?? []) ids.add(id);

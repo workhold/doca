@@ -1,3 +1,4 @@
+import { executionJobIds } from "@core/modules/ai/execution.js";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import type { DB } from "@db/index.js";
@@ -70,7 +71,7 @@ export async function inspectImageBatchSelection(
     .select(["o.id", "o.digest", "o.result"])
     .where("o.user_id", "=", ctx.actor.id)
     .where("j.user_id", "=", ctx.actor.id)
-    .where("j.session_id", "=", current.session_id)
+    .where("j.id", "in", await executionJobIds(db, ctx.actor.id, ctx.jobId!))
     .where("o.result", "like", `%"assetId":"${candidate.assetId}"%`)
     .execute();
   const matches = rows.flatMap((row) => {
@@ -109,7 +110,7 @@ export async function inspectImageBatchSelection(
           .where("o.id", "=", generationOperationId)
           .where("o.user_id", "=", ctx.actor.id)
           .where("j.user_id", "=", ctx.actor.id)
-          .where("j.session_id", "=", current.session_id)
+          .where("j.id", "in", await executionJobIds(db, ctx.actor.id, ctx.jobId!))
           .executeTakeFirst()
       : selected.row;
   if (!original || original.id !== generationOperationId)

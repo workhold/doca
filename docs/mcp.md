@@ -28,7 +28,7 @@ Codex has its own tool approval policy. The UI also supplies an **optional** una
 
 ## Discover and execute
 
-1. Call `doca_tools` with the complete task in `purpose`. Optional `resources`, `files`, `currentResourceId` and `currentFolder` supply explicit context using existing document/file UUIDs. File references receive the same authorized input snapshot used by the assistant. The result contains a `contextId` and a concise catalog.
+1. Call `doca_tools` with the complete task in `purpose`. Optional `resources`, `files`, `currentResourceId` and `currentFolder` supply explicit context using existing document/file UUIDs. File references receive the same authorized input snapshot used by the assistant. The result contains `contextId`, the independent `taskId`, and a concise catalog. No conversation is created.
 2. Call `doca_describe_tools` with that `contextId` and up to four tool IDs to obtain their complete input schemas. Only retrieve schemas needed for the next operation.
 3. Read the matching manual through `doca_skills`/`doca_load_skill`, or the standard `doca_skill` MCP prompt. These read the current catalog; a disabled private SKILL stops being available.
 4. Call `doca_call` sequentially with `contextId`, a new UUID `requestId`, `tool` and `input`. Native edits use the current `seq`, `epochId`, IDs and commands returned by the normal document tools. This is the same assistant implementation, with the same native codecs, transactions, notifications and original AI usage ledger when a Doca provider is actually called. External-client model usage is not invented in Doca's ledger.
@@ -60,7 +60,15 @@ Execution contexts have a 15-minute idle lifetime, at most 16 active/pending con
 
 Context execution and visual-view proofs are instance-local. Route an active context to the same instance. After restart, expiration or routing to a different instance, open a new context and inspect existing artifacts; no automatic continuation or visual-proof recovery is claimed. Native document data remains in the normal durable store. Provider credentials, secret values, browser sessions and arbitrary prior chat histories are not exported as MCP configuration.
 
-An owner can delete a closed execution session through the normal assistant history action. Its MCP context and call claims are removed in the same transaction; saved documents/files and host security audit facts remain. Active jobs still block session deletion.
+## Execution history and upgrade
+
+MCP and chat share task leases, cancellation, resource authorization, tool implementations, operation receipts, provider usage facts and security audit. MCP creates an `ai_jobs` execution with NULL `session_id` and `model_id`; it does not create an `ai_sessions` row, chat messages or memory thread. Real provider calls still record their actual model and usage in `ai_calls`.
+
+Personal settings → MCP → Execution history lists the effective user's tasks, including company-service tasks executed as that user. It supports authorized resource links, call status, stopping and removal of closed execution history. Removing history preserves saved documents, generated files, operation receipts, original provider usage and security audit facts. Generated images retain the AI output directory's restrictions and carry an explicit `aiTaskId` binding, without a conversation folder. A task only reads its own receipts; NULL conversation associations never group unrelated executions.
+
+The owner approved direct separation on 2026-11-01. Current DDL makes `ai_jobs.session_id`, `ai_jobs.model_id` and the retained `mcp_contexts.session_id` nullable through the existing native column reconciler. The new `ai_task_resources` ledger starts empty and is declared in `schemaEvolution`; there is no backfill or compatibility-generation change. Historical MCP conversations, contexts, files, grants and audit rows remain byte-for-byte unchanged, are excluded from chat entry points, and are neither converted nor resumed. Previously installed fields/tables remain protected by the installed footprint.
+
+Plugin SDK source 0.2.0 exposes `ai.v2` / `ai.continuations.v2`: `jobId` is required and `sessionId` exists only for conversation-backed execution. Rebuild plugin packages for `sdkRange: "^0.2.0"`. Host, Web and plugins must update together. Old service contracts and SDK ranges are rejected; there is no old-interface adapter or automatic downgrade. Keep database/file backups before upgrade and preserve subsequent task/file writes for a separately reviewed recovery before reverting application binaries. See [verification](verification/mcp-execution-decoupling-2026-11-01.md).
 
 ## Storage and retired MCP
 

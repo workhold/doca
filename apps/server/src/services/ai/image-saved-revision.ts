@@ -1,3 +1,4 @@
+import { executionJobIds, ownedExecution } from "@core/modules/ai/execution.js";
 import { createHash } from "node:crypto";
 import sharp from "sharp";
 import { z } from "zod";
@@ -50,16 +51,7 @@ const pointerSchema = z
 async function jobContext(db: DB, ctx: ToolContext) {
   await checkJob(db, ctx);
   if (!ctx.jobId) fail(409, "成品续改必须绑定当前批次任务");
-  const job = await db
-    .selectFrom("ai_jobs as j")
-    .innerJoin("ai_sessions as s", "s.id", "j.session_id")
-    .select(["j.id", "j.session_id", "j.result"])
-    .where("j.id", "=", ctx.jobId)
-    .where("j.user_id", "=", ctx.actor.id)
-    .where("s.user_id", "=", ctx.actor.id)
-    .executeTakeFirst();
-  if (!job) fail(403, "成品续改任务不属于当前账号或会话");
-  return job;
+  return ownedExecution(db, ctx.actor.id, ctx.jobId);
 }
 
 /** Shared strict reader for an existing saved artifact; this never rewrites its receipt. */
@@ -91,7 +83,7 @@ export async function verifySavedBatchArtifact(
     ])
     .where("o.user_id", "=", ctx.actor.id)
     .where("j.user_id", "=", ctx.actor.id)
-    .where("j.session_id", "=", job.session_id)
+    .where("j.id", "in", await executionJobIds(db, ctx.actor.id, ctx.jobId!))
     .where("o.result", "like", `%"assetId":"${assetId}"%`)
     .execute();
   const matches = rows.filter((row) => {
@@ -217,7 +209,7 @@ export async function verifySavedBatchArtifact(
               .where("o.id", "=", receipt.generationOperationId)
               .where("o.user_id", "=", ctx.actor.id)
               .where("j.user_id", "=", ctx.actor.id)
-              .where("j.session_id", "=", job.session_id)
+              .where("j.id", "in", await executionJobIds(db, ctx.actor.id, ctx.jobId!))
               .executeTakeFirst()
           : row;
       const paidReceipt = paid ? JSON.parse(paid.result) : undefined;

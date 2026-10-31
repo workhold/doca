@@ -502,7 +502,7 @@ it("reauthorizes candidate media and rejects wrong owners/sessions, revoked sour
     .execute();
   await expect(
     viewImageCandidate(db, await newJob(otherSession), operationId, options),
-  ).rejects.toThrow("不属于当前会话");
+  ).rejects.toThrow("不属于当前执行范围");
   await viewImageCandidate(db, ctx, operationId, options);
   const before = await factsSnapshot();
   await db

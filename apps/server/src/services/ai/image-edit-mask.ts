@@ -1,3 +1,4 @@
+import { executionJobIds, ownedExecution } from "@core/modules/ai/execution.js";
 import { createHash } from "node:crypto";
 import sharp from "sharp";
 import { z } from "zod";
@@ -78,7 +79,7 @@ const receiptBaseSchema = z
     scope: z
       .object({
         preparedJobId: z.string().uuid(),
-        sessionId: z.string().uuid(),
+        sessionId: z.string().uuid().nullable(),
       })
       .strict(),
     input: imageEditMaskInputSchema,
@@ -598,16 +599,7 @@ function receiptDigest(base: z.infer<typeof receiptBaseSchema>) {
 async function sessionContext(db: DB, ctx: ToolContext) {
   if (!ctx.jobId) fail(409, "正式蒙版必须绑定当前任务");
   await checkJob(db, ctx);
-  const job = await db
-    .selectFrom("ai_jobs as j")
-    .innerJoin("ai_sessions as s", "s.id", "j.session_id")
-    .select(["j.id", "j.session_id"])
-    .where("j.id", "=", ctx.jobId)
-    .where("j.user_id", "=", ctx.actor.id)
-    .where("s.user_id", "=", ctx.actor.id)
-    .executeTakeFirst();
-  if (!job) fail(404, "蒙版任务不属于当前账号或会话");
-  return job;
+  return ownedExecution(db, ctx.actor.id, ctx.jobId);
 }
 function assertBinding(receipt: ImageEditMaskReceipt, raw: Raw) {
   const source = raw.candidate.references[0]!;
@@ -776,7 +768,7 @@ async function readImageEditMaskInternal(
     .select("id")
     .where("id", "=", receipt.scope.preparedJobId)
     .where("user_id", "=", ctx.actor.id)
-    .where("session_id", "=", receipt.scope.sessionId)
+    .where("id", "in", await executionJobIds(db, ctx.actor.id, ctx.jobId!))
     .executeTakeFirst();
   if (!origin) fail(404, "蒙版原任务不属于当前会话");
   const raw = await loadRaw(db, ctx, receipt.input, options);

@@ -367,7 +367,7 @@ it("loads an installed provider through the public service and serves authentica
       id: "example.activity",
       version: "1.0.0",
       displayName: "Activity",
-      sdkRange: "^0.1.7",
+      sdkRange: "^0.2.0",
     };
     await writeFile(
       join(pkg, "package.json"),

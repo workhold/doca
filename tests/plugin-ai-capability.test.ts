@@ -1,6 +1,6 @@
 import { afterEach, expect, it } from "vitest";
 import { AIContributionHost, createToolCall } from "@doca/ai-host";
-import { aiServiceToken, type AIServiceV1 } from "@smartdoca/plugin-sdk/ai";
+import { aiServiceToken, type AIServiceV2 } from "@smartdoca/plugin-sdk/ai";
 import { createUser } from "@core/modules/identity/passwords.js";
 import { pluginServices } from "@core/shared/plugin-services.js";
 import { provideAI } from "@server/plugins/ai-capability.js";
@@ -13,19 +13,28 @@ it("executes public plugin tools with authenticated context, schema and lifecycl
   const db = await openTestDatabase({ driver: "sqlite", path: ":memory:" }); databases.push(db);
   const actor = await createUser(db, { login: "tool-owner", displayName: "Owner", password: "test-password-2026" }, { bootstrap: true });
   const host = new AIContributionHost<AIContributionExecutionContext>();
-  let service!: AIServiceV1;
-  provideAI({ provide(token: {id: string}, value: AIServiceV1) { if (token.id === aiServiceToken.id) service = value; } } as PluginLifecycleContext, db, host);
+  let service!: AIServiceV2;
+  provideAI({ provide(token: {id: string}, value: AIServiceV2) { if (token.id === aiServiceToken.id) service = value; } } as PluginLifecycleContext, db, host);
   let expectedAdmin = true;
+  let expectedSession: string | undefined = "session";
   const dispose = service.registerTool({ id: "example.tool.echo", description: "Echo", inputSchema: { type: "object", properties: { value: { type: "string" } }, required: ["value"] }, async execute(input, context) {
     expect(context.principal.id).toBe(actor.id);
     expect(context.principal.admin).toBe(expectedAdmin);
     expect(context.jobId).toBe("job");
+    expect(context.sessionId).toBe(expectedSession);
+    if (!expectedSession) expect(context).not.toHaveProperty("sessionId");
     expect(context).not.toHaveProperty("db");
     return { value: input.value!, user: context.principal.id };
   } });
   expect(host.tools.get("example.tool.echo")?.inputSchema).toHaveProperty("required", ["value"]);
   const execute = async () => host.createToolPipeline({ db, actor: { ...actor, admin: 1 }, jobId: "job", sessionId: "session" }).execute({ sessionId: "session", turnId: "turn", call: createToolCall({ sessionId: "session", turnId: "turn", toolId: "example.tool.echo", ordinal: 0, input: {value: "hello"} }), signal: new AbortController().signal });
   expect((await execute()).outcome).toMatchObject({ status: "success", value: { value: "hello", user: actor.id } });
+  expectedSession = undefined;
+  const standalone = await host.createToolPipeline({ db, actor: { ...actor, admin: 1 }, jobId: "job" }).execute({
+    turnId: "task", call: createToolCall({ turnId: "task", toolId: "example.tool.echo", ordinal: 0, input: { value: "tool-only" } }), signal: new AbortController().signal,
+  });
+  expect(standalone.outcome.status).toBe("success");
+  expectedSession = "session";
   expectedAdmin = false;
   await db.updateTable("users").set({ admin: 0 }).where("id", "=", actor.id).execute();
   expect((await execute()).outcome.status).toBe("success");

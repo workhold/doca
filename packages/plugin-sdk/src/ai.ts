@@ -2,7 +2,8 @@ import { defineService } from "./index.js";
 import type { JsonObject, JsonValue } from "@smartdoca/plugin-contracts";
 import type { PluginRequestContext } from "./platform.js";
 export interface PluginAIToolContext extends PluginRequestContext {
-  readonly sessionId: string;
+  /** Present only for a conversation-backed execution; jobId is always the task identity. */
+  readonly sessionId?: string;
   readonly turnId: string;
   readonly jobId: string;
   readonly callId: string;
@@ -21,11 +22,11 @@ export interface PluginAISkill {
   readonly content: string;
   readonly formats: readonly string[];
 }
-export interface AIServiceV1 {
+export interface AIServiceV2 {
   registerTool(tool: PluginAITool): () => void;
   registerSkill(skill: PluginAISkill): () => void;
 }
-export const aiServiceToken = defineService<AIServiceV1>("ai.v1");
+export const aiServiceToken = defineService<AIServiceV2>("ai.v2");
 
 export type AIContinuationSnapshot = {
   readonly version: 1;
@@ -54,7 +55,7 @@ export type AIContinuationReceipt = AIContinuationInput & {
   readonly snapshot: AIContinuationSnapshot;
 };
 /** Server-only, installation-scoped continuation registration and notification. */
-export interface AIContinuationsServiceV1 {
+export interface AIContinuationsServiceV2 {
   registerSource(source: AIContinuationSource): () => void;
   /** Only the authenticated context supplied to a currently executing AI tool is accepted. */
   wait(
@@ -69,4 +70,4 @@ export interface AIContinuationsServiceV1 {
   ): Promise<{ readonly woken: number }>;
 }
 export const aiContinuationsServiceToken =
-  defineService<AIContinuationsServiceV1>("ai.continuations.v1");
+  defineService<AIContinuationsServiceV2>("ai.continuations.v2");

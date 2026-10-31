@@ -145,6 +145,14 @@ it("shares native assistant tools and edits all five formats without a Doca lang
     purpose: "MCP report demo",
   });
   expect(opened.error).toBeUndefined();
+  expect(opened.sessionId).toBeUndefined();
+  expect(opened.taskId).toBeTruthy();
+  expect(await db.selectFrom("ai_sessions").selectAll().execute()).toEqual([]);
+  expect(await db.selectFrom("ai_session_events").selectAll().execute()).toEqual([]);
+  const task = await db.selectFrom("ai_jobs").selectAll().where("id", "=", opened.taskId).executeTakeFirstOrThrow();
+  expect(task.session_id).toBeNull();
+  expect(task.model_id).toBeNull();
+
   expect(opened.tools.map((tool: any) => tool.id)).toEqual(
     expect.arrayContaining([
       "document_create",
@@ -439,6 +447,8 @@ it("uploads and downloads real binary file chunks without cookies and verifies b
     { uploadId: uploaded.uploadId, folderId: null, name: "report.txt" },
   );
   expect(file.error, JSON.stringify(file)).toBeUndefined();
+  const taskHistory = (await request("GET", `/me/mcp-executions/${context.taskId}`)).json();
+  expect(taskHistory.resources).toEqual(expect.arrayContaining([expect.objectContaining({ kind: "file", resource_id: file.id })]));
   const chunks: Buffer[] = [];
   let offset: number | null = 0,
     version: number | undefined;
@@ -717,7 +727,7 @@ it("rechecks live ACLs, SKILL enablement, service grants and target account stat
   ).toBe(403);
 });
 
-it("lets an owner delete a closed MCP session without deleting saved documents or security audit facts", async () => {
+it("manages standalone MCP executions without creating conversations or deleting saved documents and audit facts", async () => {
   const key = await service(),
     context = await rpc(key.token, "doca_tools", {
       purpose: "Retain the report when deleting its closed execution session",
@@ -728,11 +738,16 @@ it("lets an owner delete a closed MCP session without deleting saved documents o
     markdown: "RETAIN_SAVED_REPORT",
   });
   expect(created.id).toBeTruthy();
+  expect((await request("GET", "/ai/sessions")).json()).toEqual([]);
+  const history = await request("GET", `/me/mcp-executions/${context.taskId}`);
+  expect(history.statusCode, history.body).toBe(200);
+  expect(history.json().calls).toHaveLength(1);
+  expect(history.json().resources).toEqual(expect.arrayContaining([expect.objectContaining({ resource_id: created.id })]));
   expect(
-    (await request("DELETE", `/ai/sessions/${context.sessionId}`)).statusCode,
+    (await request("DELETE", `/me/mcp-executions/${context.taskId}`)).statusCode,
   ).toBe(409);
   await rpc(key.token, "doca_context_close", { contextId: context.contextId });
-  const deleted = await request("DELETE", `/ai/sessions/${context.sessionId}`);
+  const deleted = await request("DELETE", `/me/mcp-executions/${context.taskId}`);
   expect(deleted.statusCode, deleted.body).toBe(200);
   expect(
     await db
@@ -752,7 +767,7 @@ it("lets an owner delete a closed MCP session without deleting saved documents o
     await db
       .selectFrom("ai_sessions")
       .selectAll()
-      .where("id", "=", context.sessionId)
+      .where("id", "=", context.taskId)
       .execute(),
   ).toEqual([]);
   const saved = await readAIDocument(db, { actor: owner }, created.id);
@@ -881,7 +896,63 @@ it("executes an image request from its formal MCP task and exposes schemas witho
     ).error,
   ).toBeDefined();
   expect(calls).toBe(1);
+  const file = await db.selectFrom("file_items").selectAll()
+    .where("storage_object_id", "=", image.assetId).executeTakeFirstOrThrow();
+  expect(JSON.parse(file.metadata)).toMatchObject({ aiTaskId: context.taskId });
+  expect(JSON.parse(file.metadata)).not.toHaveProperty("aiSessionFolder");
+  const separate = await rpc(key.token, "doca_tools", { purpose: "Independent tool execution" });
+  const denied = await call(key.token, separate.contextId, "image_view", { referenceImageIds: [image.assetId] });
+  expect(denied.error).toBeDefined();
+  expect(calls).toBe(1);
   expect(await db.selectFrom("ai_calls").select("id").execute()).toHaveLength(
     1,
   );
+  const canceledContext = await rpc(key.token, "doca_tools", { purpose: "Cancel an in-flight standalone image task" });
+  const provider = imageFetch;
+  let started!: () => void, release!: () => void;
+  const began = new Promise<void>(resolve => { started = resolve; });
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  imageFetch = async (...args) => { started(); await gate; return provider(...args); };
+  const canceledRequestId = randomUUID();
+  const pending = call(key.token, canceledContext.contextId, "image_generate", { prompt: "Generate a cancellable fixture", size: "1024x1024" }, undefined, canceledRequestId);
+  await began;
+  expect((await request("POST", `/me/mcp-executions/${canceledContext.taskId}/cancel`, {})).statusCode).toBe(200);
+  release();
+  expect((await pending).error.status).toBe(409);
+  const canceledCall = await db.selectFrom("mcp_tool_calls").select("status").where("request_id", "=", canceledRequestId).executeTakeFirstOrThrow();
+  expect(canceledCall.status).toBe("interrupted");
+  const usage = await db.selectFrom("ai_calls").selectAll().where("job_id", "=", canceledContext.taskId).executeTakeFirstOrThrow();
+  expect(usage.state).toBe("confirmed");
+  expect(await db.selectFrom("file_items").select("id").execute()).toHaveLength(1);
+});
+
+it("isolates execution ownership, cancels its lease and preserves existing ordinary conversations", async () => {
+  const chat = (await request("POST", "/ai/sessions", { title: "Ordinary conversation" })).json();
+  const key = await service(), context = await rpc(key.token, "doca_tools", { purpose: "Cancelable task" });
+  expect((await request("GET", "/ai/sessions")).json().map((row: any) => row.id)).toEqual([chat.id]);
+  const otherLogin = await request("POST", "/auth/login", { login: "other", password }, "");
+  const otherCookie = String(otherLogin.headers["set-cookie"]).split(";")[0]!;
+  for (const method of ["GET", "DELETE"] as const)
+    expect((await request(method, `/me/mcp-executions/${context.taskId}`, undefined, otherCookie)).statusCode).toBe(404);
+  expect((await request("POST", `/me/mcp-executions/${context.taskId}/cancel`, {}, otherCookie)).statusCode).toBe(404);
+  expect((await request("POST", `/me/mcp-executions/${context.taskId}/cancel`, {})).statusCode).toBe(200);
+  const task = await db.selectFrom("ai_jobs").selectAll().where("id", "=", context.taskId).executeTakeFirstOrThrow();
+  expect(task).toMatchObject({ status: "interrupted", cancelled: 1, lease: null, session_id: null, model_id: null });
+  expect((await call(key.token, context.contextId, "document_exists", { resourceId: randomUUID() })).error).toBeDefined();
+  expect((await request("DELETE", `/me/mcp-executions/${context.taskId}`)).statusCode).toBe(200);
+  expect((await request("GET", `/ai/sessions/${chat.id}`)).statusCode).toBe(200);
+});
+
+it("excludes retained historical MCP conversations without converting or deleting their records", async () => {
+  const key = await service(), context = await rpc(key.token, "doca_tools", { purpose: "Separate new task" });
+  await rpc(key.token, "doca_context_close", { contextId: context.contextId });
+  const chat = (await request("POST", "/ai/sessions", { title: "Historical MCP execution" })).json();
+  await db.updateTable("mcp_contexts").set({ session_id: chat.id }).where("id", "=", context.contextId).execute();
+  await db.updateTable("ai_jobs").set({ session_id: chat.id, model_id: "mcp-client" }).where("id", "=", context.taskId).execute();
+  const before = await db.selectFrom("ai_sessions").selectAll().execute();
+  expect((await request("GET", "/ai/sessions")).json()).toEqual([]);
+  expect((await request("GET", `/ai/sessions/${chat.id}`)).statusCode).toBe(404);
+  expect((await request("POST", `/ai/sessions/${chat.id}/messages`, {})).statusCode).toBe(404);
+  expect((await request("GET", "/me/mcp-executions")).json()).toEqual([]);
+  expect(await db.selectFrom("ai_sessions").selectAll().execute()).toEqual(before);
 });

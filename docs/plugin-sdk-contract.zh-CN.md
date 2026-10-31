@@ -1,5 +1,7 @@
 # Doca 插件 SDK 与核心边界
 
+当前源码使用 SDK **0.2.0**，AI 服务为 `ai.v2` / `ai.continuations.v2`。工具上下文始终提供 `jobId`，只有真实聊天执行才提供 `sessionId`。插件须重新构建并声明 `sdkRange: "^0.2.0"`；旧 SDK 范围和旧 AI 服务契约直接拒绝，不提供适配。本次源码变更不代表 npm 发布或部署。参见 [MCP 执行隔离](mcp.zh-CN.md#执行记录与升级)。
+
 0.1.26 使用与核心库分开的[插件共享业务数据库](plugin-database-isolation.zh-CN.md)，自动创建插件命名空间，取代 0.1.25 的每插件独立库。升级须先在旧宿主正常卸载，再重装，不迁移插件数据。
 
 [English](plugin-sdk-contract.md)
@@ -300,7 +302,7 @@ Web 与受限移动 WebView 复用插件 Web 产物。`@smartdoca/plugin-sdk/web
 素材集查询已在 SDK 源码 0.1.9 实现：materials.v2 / version:2 提供者，素材和集合独立结果组、分页、标签和检索；集合元数据不内嵌成员。按用户确认不适配 materials.v1，不迁移既有文件/文档。集合管理与业务存储由插件实现，所有持久化仍使用公共宿主托管能力。详见[资源协议](creation-resources.md)。
 
 
-SDK 源码 0.1.10 已导出通用 `ai.continuations.v1`，插件通过公开入口登记等待并在提交后台结果后唤醒助手；只处理显式新等待，不迁移历史任务。参见[接入协议](plugin-ai-continuations.zh-CN.md)。源码实现不代表 npm 发布或生产部署。
+SDK 源码 0.2.0 已导出通用 `ai.continuations.v2`，插件通过公开入口登记等待并在提交后台结果后唤醒助手；只处理显式新等待，不迁移历史任务。参见[接入协议](plugin-ai-continuations.zh-CN.md)。源码实现不代表 npm 发布或生产部署。
 
 ## SDK 发布 — 2026-10-13
 
