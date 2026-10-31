@@ -5,3 +5,4 @@ Follow [the tiered SDD workflow](../docs/sdd.md) / [分级流程](../docs/sdd.zh
 Use the next unique three-digit directory prefix. Full work has spec, plan, tasks and validation; standard work may use one spec. Light work uses the PR record. Every acceptance criterion has a stable `AC-001` identifier linked from tasks and verification. Status is scoped to its original change and run, not current application acceptance.
 
 - [001 — 分级 SDD 接入](001-sdd-adoption/spec.md)
+- [002 — Doca 0.2.30 合并发布](002-release-0-2-30/spec.md)
