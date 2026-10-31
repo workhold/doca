@@ -1,7 +1,7 @@
 # Doca 0.2.30 合并发布
 
 **Level**: full
-**Status**: accepted
+**Status**: verified
 **Created**: 2026-11-01
 **Decision**: 用户明确要求“所有变更，包含其他对话的。发dockerhub、github”。MCP 解耦的具体持久化、历史保留及插件接口方案已在原对话取得明确同意。
 
