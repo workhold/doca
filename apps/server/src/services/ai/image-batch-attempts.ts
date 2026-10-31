@@ -1,3 +1,4 @@
+import { executionJobIds, ownedExecution } from "@core/modules/ai/execution.js";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import type { DB, Schema } from "@db/index.js";
@@ -36,7 +37,7 @@ const recordV1Schema = z
   .object({
     kind: z.literal("image_batch_attempt_scope"),
     version: z.literal(1),
-    sessionId: z.string().uuid(),
+    sessionId: z.string().uuid().nullable(),
     taskRootJobId: z.string().uuid(),
     manifestDigest: z.string().regex(/^[a-f0-9]{64}$/),
     pages: z.array(pageSchema).min(1),
@@ -142,17 +143,7 @@ function scopeOperationId(sessionId: string, rootJobId: string) {
 async function context(db: DB, ctx: ToolContext) {
   if (!ctx.jobId) fail(409, "批次尝试必须绑定当前任务");
   await checkJob(db, ctx);
-  const job = await db
-    .selectFrom("ai_jobs as j")
-    .innerJoin("ai_sessions as s", "s.id", "j.session_id")
-    .innerJoin("users as u", "u.id", "j.user_id")
-    .select(["j.id", "j.session_id", "j.result", "j.input"])
-    .where("j.id", "=", ctx.jobId)
-    .where("j.user_id", "=", ctx.actor.id)
-    .where("s.user_id", "=", ctx.actor.id)
-    .where("u.status", "=", "active")
-    .executeTakeFirst();
-  if (!job) fail(403, "批次任务不属于当前账号、会话或账号已停用");
+  const job = await ownedExecution(db, ctx.actor.id, ctx.jobId);
   return {
     job,
     requirementContext: {
@@ -230,7 +221,7 @@ async function expectedRecord(db: DB, ctx: ToolContext, batch: ScopeInput) {
 function pointer(record: ScopeRecord): ImageBatchAttemptScope {
   return imageBatchAttemptScopeSchema.parse({
     version: record.version,
-    operationId: scopeOperationId(record.sessionId, record.taskRootJobId),
+    operationId: scopeOperationId(record.sessionId ?? record.taskRootJobId, record.taskRootJobId),
     taskRootJobId: record.taskRootJobId,
     manifestDigest: record.manifestDigest,
   });
@@ -964,7 +955,11 @@ export async function upgradeLocalImageBatchAttemptScope(
       .selectFrom("ai_jobs")
       .select(["id", "result", "lease", "lease_until"])
       .where("user_id", "=", ctx.actor.id)
-      .where("session_id", "=", state.record.sessionId)
+      // Concurrency guards include later tasks too; source provenance is time-bounded.
+      // A standalone execution must never group all NULL-session tasks together.
+      .where(eb => job.session_id === null
+        ? eb("id", "=", job.id)
+        : eb("session_id", "=", job.session_id))
       .where("id", "!=", job.id)
       .where("status", "=", "running")
       .where("cancelled", "=", 0)
@@ -1113,7 +1108,7 @@ export async function imageRelatedJobIds(
       .select(["id", "input"])
       .where("id", "=", input.retryOf)
       .where("user_id", "=", ctx.actor.id)
-      .where("session_id", "=", job.session_id)
+      .where("id", "in", await executionJobIds(db, ctx.actor.id, ctx.jobId!))
       .executeTakeFirst();
     if (!previous) fail(403, "图片重试来源不属于当前账号或会话");
     ids.add(previous.id);
@@ -1125,7 +1120,7 @@ export async function imageRelatedJobIds(
       .select("id")
       .where("id", "=", id)
       .where("user_id", "=", ctx.actor.id)
-      .where("session_id", "=", job.session_id)
+      .where("id", "in", await executionJobIds(db, ctx.actor.id, ctx.jobId!))
       .executeTakeFirst();
     if (!related) fail(403, "关联图片请求不属于当前账号或会话");
     ids.add(id);

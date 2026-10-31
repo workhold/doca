@@ -1,3 +1,4 @@
+import { requireConversationJob } from "@core/modules/ai/execution.js";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import type { FastifyInstance, FastifyRequest } from "fastify";
@@ -512,6 +513,7 @@ export function registerBrowserAssistant(
         .where("user_id", "=", access.actor.id)
         .executeTakeFirst();
       if (!job) fail(404, "clipper_session_missing");
+      requireConversationJob(job);
       await session(req, job.session_id);
       if (operation === "cancel") {
         await transact(db, async (tx) => {

@@ -1,3 +1,4 @@
+import { executionJobIds } from "@core/modules/ai/execution.js";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import sharp from "sharp";
@@ -481,16 +482,17 @@ export async function insertGeneratedImage(
 export async function showGeneratedImage(
   db: DB,
   ctx: ToolContext,
-  sessionId: string,
   assetId?: string,
 ) {
+  if (!ctx.jobId) fail(404, "Image execution is unavailable");
+  const jobIds = await executionJobIds(db, ctx.actor.id, ctx.jobId);
   const rows = await db
     .selectFrom("ai_operations as o")
     .innerJoin("ai_jobs as j", "j.id", "o.job_id")
     .select("o.result")
     .where("o.user_id", "=", ctx.actor.id)
     .where("j.user_id", "=", ctx.actor.id)
-    .where("j.session_id", "=", sessionId)
+    .where("j.id", "in", jobIds)
     .orderBy("o.created_at", "desc")
     .execute();
   const image = rows

@@ -27,7 +27,7 @@ async function fixture(optional = false) {
     schemaVersion: 1,
     id: "example.credentials",
     version: "1.0.0",
-    sdkRange: "^0.1.8",
+    sdkRange: "^0.2.0",
     displayName: "Credential acceptance",
   };
   await writeFile(

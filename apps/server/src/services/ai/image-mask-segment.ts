@@ -1,3 +1,4 @@
+import { executionJobIds, ownedExecution } from "@core/modules/ai/execution.js";
 import { createHash, randomUUID } from "node:crypto";
 import { spawn } from "node:child_process";
 import {
@@ -345,7 +346,7 @@ const receiptBase = z
     scope: z
       .object({
         preparedJobId: z.string().uuid(),
-        sessionId: z.string().uuid(),
+        sessionId: z.string().uuid().nullable(),
       })
       .strict(),
     input: imageMaskSegmentInputSchema,
@@ -557,16 +558,7 @@ async function context(db: DB, ctx: ToolContext, write: boolean) {
   await checkJob(db, ctx);
   await requireCapability(db, ctx.actor.id, "ai.create");
   if (write) await requireCapability(db, ctx.actor.id, "assets.upload");
-  const job = await db
-    .selectFrom("ai_jobs as j")
-    .innerJoin("ai_sessions as s", "s.id", "j.session_id")
-    .select(["j.id", "j.session_id"])
-    .where("j.id", "=", ctx.jobId)
-    .where("j.user_id", "=", ctx.actor.id)
-    .where("s.user_id", "=", ctx.actor.id)
-    .executeTakeFirst();
-  if (!job) fail(404, "分割来源不属于当前账号或会话");
-  return job;
+  return ownedExecution(db, ctx.actor.id, ctx.jobId);
 }
 async function loadSource(
   db: DB,
@@ -1440,7 +1432,7 @@ async function readImageMaskSegmentInternal(
     .select("id")
     .where("id", "=", receipt.scope.preparedJobId)
     .where("user_id", "=", ctx.actor.id)
-    .where("session_id", "=", current.session_id)
+    .where("id", "in", await executionJobIds(db, ctx.actor.id, ctx.jobId!))
     .executeTakeFirst();
   if (!original) fail(404, "分割提案原任务已不可用");
   const source = await loadSource(db, ctx, receipt.input, runtime);

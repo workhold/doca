@@ -27,6 +27,14 @@ type Catalog = {
   tools: { id: string; description: string }[];
   skills: { id: string; name: string; description: string }[];
 };
+type Execution = {
+  id: string; purpose: string; service_name: string; status: string;
+  created_at: string; updated_at: string; closed_at: string | null;
+};
+type ExecutionDetail = Execution & {
+  calls: { request_id: string; tool_id: string; status: string }[];
+  resources: { kind: string; resource_id: string; title: string; href: string }[];
+};
 type Form = {
   id?: string;
   revision?: number;
@@ -45,6 +53,9 @@ export function McpSettings({ admin = false }: { admin?: boolean }) {
     [endpoint, setEndpoint] = useState("");
   const [settings, setSettings] = useState({ enabled: false, revision: 0 });
   const [catalog, setCatalog] = useState<Catalog>({ tools: [], skills: [] });
+  const [history, setHistory] = useState(false),
+    [executions, setExecutions] = useState<Execution[] | null>(null),
+    [detail, setDetail] = useState<ExecutionDetail | null>(null);
   const [form, setForm] = useState<Form | null>(null),
     [busy, setBusy] = useState(false),
     [loaded, setLoaded] = useState(false);
@@ -73,6 +84,38 @@ export function McpSettings({ admin = false }: { admin?: boolean }) {
   useEffect(() => {
     void load().catch((error) => setError(error.message));
   }, [base]);
+  useEffect(() => {
+    if (!history) return;
+    let disposed = false;
+    const refresh = async () => {
+      try {
+        const data = await api<Execution[]>("/me/mcp-executions");
+        if (!disposed) setExecutions(data);
+      } catch (error) { if (!disposed) setError((error as Error).message); }
+    };
+    void refresh();
+    const timer = setInterval(() => void refresh(), 5000);
+    return () => { disposed = true; clearInterval(timer); };
+  }, [history]);
+  const executionStatus = (status: string) => {
+    switch (status) {
+      case "running": return t("mcp.execution.running");
+      case "completed": return t("mcp.execution.completed");
+      case "failed": return t("mcp.execution.failed");
+      case "interrupted": return t("mcp.execution.interrupted");
+      case "cancelled": return t("mcp.execution.cancelled");
+      case "queued": return t("mcp.execution.queued");
+      case "awaiting_approval": return t("mcp.execution.awaiting_approval");
+      default: return status;
+    }
+  };
+  async function executionAction(id: string, operation: "cancel" | "delete") {
+    await act(async () => {
+      await api(`/me/mcp-executions/${id}${operation === "cancel" ? "/cancel" : ""}`, operation === "cancel" ? "POST" : "DELETE");
+      setDetail(null);
+      setExecutions(await api<Execution[]>("/me/mcp-executions"));
+    });
+  }
   async function act(fn: () => Promise<void>) {
     if (busy) return;
     setBusy(true);
@@ -197,6 +240,10 @@ export function McpSettings({ admin = false }: { admin?: boolean }) {
           </h2>
           <p>{t(admin ? "mcp.adminDescription" : "mcp.description")}</p>
         </div>
+        <div className="mcp-actions">
+        {!admin && <button type="button" onClick={() => { setError(""); setHistory(true); }}>
+          {t("mcp.executions")}
+        </button>}
         <button
           type="button"
           className="primary"
@@ -206,6 +253,7 @@ export function McpSettings({ admin = false }: { admin?: boolean }) {
           <Plus size={16} />
           {t("mcp.add")}
         </button>
+        </div>
       </div>
       <Feedback message={!form && !action ? error : ""} tone="error" />
       <Feedback message={!credential ? notice : ""} tone="success" />
@@ -331,6 +379,29 @@ export function McpSettings({ admin = false }: { admin?: boolean }) {
         </div>
       )}
       {!!pending.length && <p className="mcp-footnote">{t("mcp.grantHelp")}</p>}
+      {history && <Dialog title={t("mcp.executions")} close={() => { setHistory(false); setDetail(null); }} className="mcp-dialog mcp-executions-dialog">
+        <p>{t("mcp.executionHelp")}</p>
+        <Feedback message={error} tone="error" />
+        {detail ? <div className="mcp-execution-detail">
+          <button type="button" onClick={() => setDetail(null)}>{t("mcp.executionBack")}</button>
+          <h3>{detail.purpose}</h3>
+          <p>{detail.service_name} · {executionStatus(detail.status)}</p>
+          <h4>{t("mcp.executionCalls")}</h4>
+          <ul>{detail.calls.map(call => <li key={call.request_id}><code>{call.tool_id}</code> · {executionStatus(call.status)}</li>)}</ul>
+          <h4>{t("mcp.executionResources")}</h4>
+          <ul>{detail.resources.map(resource => <li key={`${resource.kind}:${resource.resource_id}`}><a href={resource.href}>{resource.title}</a></li>)}</ul>
+        </div> : executions === null ? <p>{t("mcp.loading")}</p> : !executions.length ? <p>{t("mcp.executionEmpty")}</p> :
+          <div className="mcp-list">{executions.map(execution => <article className="mcp-service" key={execution.id}>
+            <h3>{execution.purpose}</h3>
+            <p>{execution.service_name} · {executionStatus(execution.status)} · {new Date(execution.created_at).toLocaleString(locale === "zh" ? "zh-CN" : "en")}</p>
+            <div className="mcp-actions">
+              <button type="button" disabled={busy} onClick={() => void act(async () => setDetail(await api<ExecutionDetail>(`/me/mcp-executions/${execution.id}`)))}>{t("mcp.executionView")}</button>
+              {!execution.closed_at || ["queued", "running", "awaiting_approval"].includes(execution.status)
+                ? <button type="button" disabled={busy} onClick={() => void executionAction(execution.id, "cancel")}>{t("mcp.executionStop")}</button>
+                : <button type="button" disabled={busy} onClick={() => void executionAction(execution.id, "delete")}>{t("mcp.executionRemove")}</button>}
+            </div>
+          </article>)}</div>}
+      </Dialog>}
       {form && (
         <Dialog
           title={t(form.id ? "mcp.edit" : "mcp.add")}

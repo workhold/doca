@@ -212,7 +212,7 @@ describe("AIContributionHost", () => {
           id: "documents.owner",
           execute: (_input, context) => ({
             tenantId: context.host.tenantId,
-            sessionId: context.sessionId,
+            sessionId: context.sessionId ?? null,
           }),
         },
       ],

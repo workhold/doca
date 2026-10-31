@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ownedExecution } from "@core/modules/ai/execution.js";
 import { readSnapshot, type DB } from "@db/index.js";
 import { fail } from "@core/shared/errors.js";
 import { batchSourceSchema } from "./image-batch-requirements.js";
@@ -45,26 +46,31 @@ export type ImageBatchFileDelivery = ImageBatchFileDeliveryEntry & {
 export async function imageBatchFileDeliveries(
   db: DB,
   actorId: string,
-  sessionId: string,
+  sessionId: string | null,
   entries: readonly ImageBatchFileDeliveryEntry[],
+  taskId?: string,
 ): Promise<ImageBatchFileDelivery[]> {
   if (!db.isTransaction)
     return readSnapshot(db, (tx) =>
-      imageBatchFileDeliveries(tx, actorId, sessionId, entries),
+      imageBatchFileDeliveries(tx, actorId, sessionId, entries, taskId),
     );
   const parsed = z.array(deliveryEntrySchema).safeParse(entries);
   if (
     !z.string().uuid().safeParse(actorId).success ||
-    !z.string().uuid().safeParse(sessionId).success ||
+    !(sessionId ? z.string().uuid().safeParse(sessionId).success : z.string().uuid().safeParse(taskId).success) ||
     !parsed.success
   )
     fail(400, "批次交付文件的来源或页码无效。");
-  const folder = await requireAISessionFolder(
+  const folder = sessionId ? await requireAISessionFolder(
     db,
     actorId,
     aiSessionFolderId(sessionId),
-  );
-  const location = aiSessionFolderLocation(folder);
+  ) : null;
+  if (!sessionId && (await ownedExecution(db, actorId, taskId!)).session_id !== null)
+    fail(409, "批次交付的执行任务不能关联其他对话。");
+  const location = folder ? aiSessionFolderLocation(folder) : {
+    path: "我的文件夹 / AI 助手", href: "/files?system=ai",
+  };
   const assetIds = [...new Set(parsed.data.map((entry) => entry.assetId))];
   const filesByAsset = new Map<string, Awaited<ReturnType<typeof findFiles>>>();
   // Bound SQL parameter counts without truncating the delivery list.
@@ -103,11 +109,13 @@ export async function imageBatchFileDeliveries(
     } catch {
       fail(409, "批次图片的文件来源绑定无效。原记录已保留。");
     }
-    const binding = deliveryMetadataSchema.safeParse(metadata);
+    const binding = sessionId
+      ? deliveryMetadataSchema.safeParse(metadata)
+      : z.object({ assetId: z.string().uuid(), aiTaskId: z.literal(taskId!) }).passthrough().safeParse(metadata);
     if (
       !binding.success ||
       binding.data.assetId !== entry.assetId ||
-      binding.data.aiSessionFolder.sessionId !== sessionId ||
+      (sessionId && (!("aiSessionFolder" in binding.data) || (binding.data.aiSessionFolder as z.infer<typeof sessionBindingSchema>).sessionId !== sessionId)) ||
       !file.name ||
       !file.mime
     )
@@ -119,7 +127,7 @@ export async function imageBatchFileDeliveries(
       name: file.name,
       mime: file.mime,
       path: location.path,
-      href: `#${fileExplorerHref(location.href, file.id)}&session=${encodeURIComponent(sessionId)}`,
+      href: `#${fileExplorerHref(location.href, file.id)}${sessionId ? `&session=${encodeURIComponent(sessionId)}` : ""}`,
       contentUrl,
       downloadUrl: `${contentUrl}?download=1`,
     };

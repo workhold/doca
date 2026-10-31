@@ -1,3 +1,4 @@
+import { executionJobIds } from "@core/modules/ai/execution.js";
 import { z } from "zod";
 import type { DB } from "@db/index.js";
 import { AppError, fail } from "@core/shared/errors.js";
@@ -191,7 +192,7 @@ type ClarificationInput = z.infer<typeof batchClarificationInputSchema>;
 export type BatchRequirementContext = {
   userId: string;
   actor: Actor;
-  sessionId: string;
+  sessionId: string | null;
   currentJobId: string;
 };
 const formalInputSchema = z
@@ -227,12 +228,10 @@ async function ownJob(db: DB, ctx: BatchRequirementContext, id: string) {
     fail(403, "批次来源账号与当前执行身份不一致");
   const job = await db
     .selectFrom("ai_jobs as j")
-    .innerJoin("ai_sessions as s", "s.id", "j.session_id")
     .select(["j.id", "j.input", "j.result", "j.created_at"])
     .where("j.id", "=", id)
-    .where("j.session_id", "=", ctx.sessionId)
+    .where("j.id", "in", await executionJobIds(db, ctx.userId, ctx.currentJobId))
     .where("j.user_id", "=", ctx.userId)
-    .where("s.user_id", "=", ctx.userId)
     .executeTakeFirst();
   if (!job) fail(404, "原始请求不存在或不属于当前账号、会话");
   return job;
@@ -437,7 +436,7 @@ export async function imageBatchRequests(
     .selectFrom("ai_jobs")
     .select(["id", "input"])
     .where("user_id", "=", ctx.userId)
-    .where("session_id", "=", ctx.sessionId)
+    .where("id", "in", await executionJobIds(db, ctx.userId, ctx.currentJobId))
     .where("created_at", "<=", current.created_at)
     .orderBy("created_at", "desc")
     .orderBy("id", "asc")

@@ -12,7 +12,7 @@ export function browserSessionTitle(text: string, page?: { title: string; url: s
 /** Display only the original, digest-proven browser input; never rewrite memory. */
 export function browserUserMessageText(
   text: string,
-  job: { id: string; model_id: string; digest: string },
+  job: { id: string; model_id: string | null; digest: string },
   profile: { name: string; strategy: string; ai_instruction: string },
 ) {
   const suffix = `\n\n当前收录方案：${profile.name}；策略：${profile.strategy}。用户配置的整理偏好：${profile.ai_instruction}`;

@@ -42,6 +42,15 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Build the web app
         run: pnpm build
+      - name: Pack the public plugin SDK
+        run: |
+          pnpm build:plugin-sdk
+          mkdir -p artifacts/releases
+          sdk_version="$(node -p 'require("./packages/plugin-sdk/package.json").version')"
+          sdk="smartdoca-plugin-sdk-$sdk_version.tgz"
+          pnpm --dir packages/plugin-sdk pack --out "../../artifacts/releases/$sdk"
+          (cd artifacts/releases && sha256sum "$sdk" > "$sdk.sha256")
+          echo "sdk=artifacts/releases/$sdk" >> "$GITHUB_ENV"
       - name: Pack web assets
         run: |
           mkdir -p artifacts/releases
@@ -68,12 +77,13 @@ jobs:
             echo "Fresh installations can use the attached doca-compose-${GITHUB_REF_NAME}.yaml: edit the origin and generated master key, then run docker compose up -d. Administrator initialization is built into the image. A SHA-256 checksum is attached. Existing installations must preserve their project, volumes and key."
             echo
             echo "Image-only deployment files and initialization instructions are attached as doca-deploy-${GITHUB_REF_NAME}.tar.gz with a SHA-256 checksum."
+            echo "The built plugin SDK and its SHA-256 checksum are also attached for rebuilding plugins against this release's public contract; this does not publish an npm package."
             echo "Transfer this bundle to servers without GitHub access; no source checkout is needed."
             echo "The container image is separate. Pull the matching smartdoca/doca image or transfer it with docker save/load."
             echo
 
           } > "$notes"
-          gh release create "$GITHUB_REF_NAME" "$archive" "$deployment_archive" "$deployment_archive.sha256" "$deployment_yaml" "$deployment_yaml.sha256" \
+          gh release create "$GITHUB_REF_NAME" "$archive" "$deployment_archive" "$deployment_archive.sha256" "$deployment_yaml" "$deployment_yaml.sha256" "$sdk" "$sdk.sha256" \
             --title "$GITHUB_REF_NAME" \
             --verify-tag \
             --notes-file "$notes"

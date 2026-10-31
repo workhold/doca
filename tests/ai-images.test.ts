@@ -1947,7 +1947,7 @@ it("rechecks revoked account access after provider returns and never persists th
 it("does not invent image results or expose another conversation's images", async () => {
   await expect(
     showGeneratedImage(db, { actor: user }, randomUUID()),
-  ).rejects.toThrow("没有这张图片");
+  ).rejects.toThrow("Image execution is unavailable");
 });
 
 it("keeps flattened spreadsheet placement on image_insert", () => {

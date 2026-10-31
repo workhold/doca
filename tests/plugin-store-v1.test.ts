@@ -224,7 +224,7 @@ it("preserves official identity and per-version release notes from the store", a
     pluginId: plugin.id,
     version: "1.0.0",
     changelog: "New inbox\nImproved search",
-    sdkRange: "^0.1.7",
+    sdkRange: "^0.2.0",
     dataVersion: "1",
     targets: ["web"],
     dependencies: [],

@@ -22,6 +22,8 @@ Implementation notes, proposals and historical acceptance records have distinct 
 
 ## Design and upgrade records
 
+- [Tiered SDD adoption (2026-11-01)](../specs/001-sdd-adoption/spec.md)
+
 - [Saved-image revision contract (approved 2026-10-07)](ai-image-revision-proposal.md)
 - [Local saved-image revision design (approved 2026-10-07)](ai-image-local-revision-proposal.md)
 - [历史快照分层存储与抽稀（中文）](history-storage-proposal.zh-CN.md)

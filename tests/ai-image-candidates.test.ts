@@ -1083,7 +1083,7 @@ it("rejects another owner/session, deleted sources and same-size source-byte rep
     .execute();
   await expect(
     readRawImageCandidate(db, await job(otherSession), id, runtime()),
-  ).rejects.toThrow("不属于当前会话");
+  ).rejects.toThrow("不属于当前执行范围");
   await db
     .updateTable("assets")
     .set({ deleted_at: new Date().toISOString() })

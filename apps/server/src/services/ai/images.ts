@@ -1,3 +1,4 @@
+import { executionJobIds } from "@core/modules/ai/execution.js";
 import { objectKey } from "../storage-policy.js";
 import { registerStoredObject } from "../stored-objects.js";
 import { createHash, randomUUID } from "node:crypto";
@@ -15,10 +16,9 @@ import {
 import { imageProfileForModel, imageModelIdForOperation, imageSizeForRatio, validImageSize, type ImageOperation } from "@core/modules/ai/image-model-catalog.js";
 import { invokeImageProvider, imageProviderPixels, validateImageProviderInput, ImageProviderHttpError, type ImageProviderOutput } from "./image-provider-adapters.js";
 import { visualSourceAccess } from "./session-attachments.js";
-import { browserAssistantBoundary, resourceScope } from "@core/modules/browser-clipper/access.js";
 import { editRegionsSchema, preserveOutsideRegions, restoreViewport } from "./image-edit-regions.js";
 import { prepareImageEdit, imageEditPatch, cropImageReferences, referenceCropsSchema } from "./image-edit-adapter.js";
-import { aiJobSessionFolder } from "./session-file-folders.js";
+import { aiJobFileBinding } from "./session-file-folders.js";
 import {
   saveRawImageCandidate, readRawImageCandidateRecord, rawImageReferences,
   saveRevisionRawImageCandidate,
@@ -91,36 +91,22 @@ export async function availableImageReferences(db: DB, ctx: ToolContext, request
   if (!ctx.jobId) return [];
   const wanted=requestedIds?new Set(requestedIds):undefined;
   if(wanted?.size===0) return [];
-  const job = await db
-    .selectFrom("ai_jobs as j")
-    .innerJoin("ai_sessions as s", "s.id", "j.session_id")
-    .select(["j.session_id", "j.created_at"])
-    .where("j.id", "=", ctx.jobId)
-    .where("j.user_id", "=", ctx.actor.id)
-    .where("s.user_id", "=", ctx.actor.id)
-    .executeTakeFirst();
-  if (!job) fail(404, "参考图片的会话不存在或无权访问");
-  const browser = await browserAssistantBoundary(db, job.session_id, ctx.jobId);
-  const allowed = browser ? resourceScope.parse(JSON.parse(browser.binding.job_ids)).ids : null;
+  const jobIds = await executionJobIds(db, ctx.actor.id, ctx.jobId);
   const [jobs, operations] = await Promise.all([
     db
       .selectFrom("ai_jobs")
       .select("input")
-      .where("session_id", "=", job.session_id)
+      .where("id", "in", jobIds)
       .where("user_id", "=", ctx.actor.id)
-      .where("created_at", "<=", job.created_at)
-      .$if(allowed !== null, query => query.where("id", "in", allowed!))
-      .orderBy("created_at", "desc")
+            .orderBy("created_at", "desc")
       .execute(),
     db
       .selectFrom("ai_operations as o")
       .innerJoin("ai_jobs as j", "j.id", "o.job_id")
       .select("o.result")
-      .where("j.session_id", "=", job.session_id)
+      .where("j.id", "in", jobIds)
       .where("j.user_id", "=", ctx.actor.id)
       .where("o.user_id", "=", ctx.actor.id)
-      .where("j.created_at", "<=", job.created_at)
-      .$if(allowed !== null, query => query.where("j.id", "in", allowed!))
       .where((eb) =>
         eb.or([
           eb("o.result", "like", '%"image_generation"%'),
@@ -729,7 +715,7 @@ export async function generateImageAsset(
           size: asset.size,
           metadata: JSON.stringify({
             assetId: asset.id,
-            aiSessionFolder: await aiJobSessionFolder(tx, ctx.actor.id, ctx.jobId),
+            ...await aiJobFileBinding(tx, ctx.actor.id, ctx.jobId),
           }),
           ai_description_override: null,
           locked: 0,

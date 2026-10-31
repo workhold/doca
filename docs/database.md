@@ -69,6 +69,7 @@ The inventory below reflects the current Schema interface. Field names are liste
 | `ai_notes` | `user_id`, `content`, `updated_at` |
 | `ai_secrets` | `user_id`, `key`, `value`, `updated_at` |
 | `ai_jobs` | `id`, `session_id`, `user_id`, `model_id`, `status`, `input`, `digest`, `result`, `error`, `lease`, `lease_until`, `attempts`, `cancelled`, `created_at`, `updated_at` |
+| `ai_task_resources` | `job_id`, `kind`, `resource_id`, `title`, `href`, `touched_at` |
 | `ai_operations` | `id`, `user_id`, `job_id`, `digest`, `result`, `created_at` |
 | `ai_calls` | `id`, `user_id`, `job_id`, `model_id`, `model_snapshot`, `periods`, `state`, `input_tokens`, `output_tokens`, `cached_tokens`, `usage`, `created_at`, `updated_at` |
 | `ai_skills` | `id`, `user_id`, `name`, `description`, `content`, `formats`, `enabled`, `revision`, `updated_at` |

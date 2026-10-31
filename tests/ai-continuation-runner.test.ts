@@ -16,8 +16,8 @@ import { AIContributionHost } from "@doca/ai-host";
 import {
   aiServiceToken,
   aiContinuationsServiceToken,
-  type AIServiceV1,
-  type AIContinuationsServiceV1,
+  type AIServiceV2,
+  type AIContinuationsServiceV2,
 } from "@smartdoca/plugin-sdk/ai";
 import type { PluginLifecycleContext } from "@smartdoca/plugin-sdk";
 import { completionResponse } from "./ai-mock.js";
@@ -184,7 +184,7 @@ it.each(["running", "waiting_input"] as const)(
       );
       const continuations = services.get(
         aiContinuationsServiceToken.id,
-      ) as AIContinuationsServiceV1;
+      ) as AIContinuationsServiceV2;
       const disposeSource = continuations.registerSource({
         id: "example.reports.jobs",
         pluginId: "example.reports",
@@ -206,7 +206,7 @@ it.each(["running", "waiting_input"] as const)(
         },
       });
       const disposeTool = (
-        services.get(aiServiceToken.id) as AIServiceV1
+        services.get(aiServiceToken.id) as AIServiceV2
       ).registerTool({
         id: "example.reports.start",
         description: "Start an isolated report",

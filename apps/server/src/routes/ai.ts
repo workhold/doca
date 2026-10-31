@@ -196,6 +196,8 @@ export async function registerAI(
       .where("user_id", "=", user.id)
       .executeTakeFirst();
     if (!row) fail(404, "会话不存在");
+    if (await db.selectFrom("mcp_contexts").select("id").where("session_id", "=", row.id).executeTakeFirst())
+      fail(404, "会话不存在");
     if (checkSources) await sessionSources(db, user.id, row, []);
     return row;
   };
@@ -815,7 +817,8 @@ export async function registerAI(
         .selectFrom("ai_sessions")
         .selectAll()
         .where("user_id", "=", actor.id)
-        .where("archived", "=", req.query.archived === "true" ? 1 : 0);
+         .where("archived", "=", req.query.archived === "true" ? 1 : 0)
+        .where(eb => eb.not(eb.exists(eb.selectFrom("mcp_contexts").select("id").whereRef("session_id", "=", "ai_sessions.id"))));
       if (req.query.resourceId) {
         const target = parse(id, req.query.resourceId);
         query = query
@@ -917,7 +920,7 @@ export async function registerAI(
         : [];
       const latestJobBySession = new Map<string, (typeof latestJobs)[number]>();
       for (const job of latestJobs)
-        if (!latestJobBySession.has(job.session_id))
+        if (job.session_id && !latestJobBySession.has(job.session_id))
           latestJobBySession.set(job.session_id, job);
       for (const row of rows) {
         try {
@@ -1167,10 +1170,6 @@ export async function registerAI(
           fail(409, "请先停止该会话的运行任务");
         await m.memory.deleteThread(s.id);
         await deleteAISessionFiles(tx, actor.id, s.id);
-        await tx.deleteFrom("mcp_tool_calls")
-          .where("context_id", "in", tx.selectFrom("mcp_contexts").select("id").where("session_id", "=", s.id))
-          .execute();
-        await tx.deleteFrom("mcp_contexts").where("session_id", "=", s.id).execute();
         await tx.deleteFrom("ai_jobs").where("session_id", "=", s.id).execute();
         await tx.deleteFrom("ai_sessions").where("id", "=", s.id).execute();
       });

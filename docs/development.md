@@ -2,6 +2,10 @@
 
 [中文](development.zh-CN.md)
 
+## Plan a change
+
+Use the [tiered SDD workflow](sdd.md) for new work and the [module index](sdd-module-index.md) to find source, current contracts and checks. Full changes use Spec Kit records; standard work can use one spec; light changes use the PR record. Compatibility decisions still require the separate prior agreement in AGENTS.md. Run `pnpm sdd:check` alongside checks relevant to the change.
+
 ## Start locally
 
 Node.js 22.12 or newer, or Node.js 24 LTS, and pnpm 11.25.0. Versions are locked in `pnpm-lock.yaml`. The `better-sqlite3` native build is allowed in `pnpm-workspace.yaml`.

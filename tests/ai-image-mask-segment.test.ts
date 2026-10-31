@@ -1186,7 +1186,7 @@ it("rejects a changed operation job association while preserving the signed rece
       .select("session_id")
       .where("id", "=", ctx.jobId!)
       .executeTakeFirstOrThrow(),
-    otherJob = await createJob(original.session_id);
+    otherJob = await createJob(original.session_id!);
   await db
     .updateTable("ai_operations")
     .set({ job_id: otherJob.jobId! })

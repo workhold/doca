@@ -65,6 +65,21 @@ afterEach(async () => {
   await db.destroy();
 });
 
+it("resolves standalone task outputs without a conversation folder and rejects another task binding", async () => {
+  const taskId = randomUUID(), wrongTaskId = randomUUID(), delivery = entry();
+  for (const id of [taskId, wrongTaskId]) await db.insertInto("ai_jobs").values({
+    id, session_id: null, model_id: null, user_id: owner.id, status: "completed",
+    input: "{}", result: "{}", digest: "task-output", error: "", lease: null, lease_until: null,
+    attempts: 1, cancelled: 0, created_at: now, updated_at: now,
+  }).execute();
+  const fileId = await storedDelivery(delivery, { metadata: { assetId: delivery.assetId, aiTaskId: taskId } });
+  const [resolved] = await imageBatchFileDeliveries(db, owner.id, null, [delivery], taskId);
+  expect(resolved?.fileId).toBe(fileId);
+  expect(resolved?.href).not.toContain("session=");
+  await expect(imageBatchFileDeliveries(db, owner.id, null, [delivery], wrongTaskId)).rejects.toThrow("来源绑定无效");
+  await expect(imageBatchFileDeliveries(db, other.id, null, [delivery], taskId)).rejects.toThrow("Execution is unavailable");
+});
+
 function entry(
   overrides: Partial<ImageBatchFileDeliveryEntry> = {},
 ): ImageBatchFileDeliveryEntry {

@@ -1,5 +1,35 @@
 # Doca development conventions
 
+## Specification-driven development
+
+Use the project-wide [SDD workflow](docs/sdd.md) and [module index](docs/sdd-module-index.md)
+for new work. Read `.specify/memory/constitution.md` before using the installed
+Spec Kit skills in `.agents/skills/speckit-*`. Repository rules and the user's
+existing authorization take precedence over upstream templates and generic gates.
+
+- Classify changes before implementation: `full` for database/persisted formats,
+  authentication/authorization, collaboration, public SDK/API contracts and
+  architectural boundaries; `standard` for other features or observable behavior;
+  `light` for bounded fixes, copy, styles, tests or documentation with no such impact.
+  A small diff does not reduce the risk level. Record the reason in the PR.
+- Full changes use `specs/<number>-<name>/spec.md`, `plan.md`, `tasks.md` and
+  `validation.md`; standard changes may keep design, tasks and validation in one
+  `spec.md`. Light changes record problem, final behavior and verification in the PR.
+  Use acceptance IDs to connect requirements, tasks and verification. Update scope
+  before implementing an expanded change; update acceptance with the final behavior.
+- Existing contracts in `docs/` remain authoritative for current interfaces. Specs
+  record individual changes and link to contracts; update affected contracts in the
+  same PR. Distinguish proposed, exported, locally verified and deployed behavior.
+  Index existing modules without retrospectively asserting acceptance or rewriting
+  historical records. Keep verification claims scoped to their version and run.
+- Keep ordinary review checkpoints within the authorized task; do not repeatedly
+  ask for permission already given. The compatibility agreement below remains a
+  separate prerequisite: a spec, task checkbox or general feature request is not
+  approval of a compatibility decision.
+- Run `pnpm sdd:check` and the applicable checks. PRs use `.github/PULL_REQUEST_TEMPLATE.md`;
+  CI validates the declared level, linked spec and minimum records. Structural checks
+  do not approve semantics, compatibility plans or actual execution results.
+
 ## Generated verification artifacts
 
 Write generated screenshots, JSON reports, exports and execution logs under

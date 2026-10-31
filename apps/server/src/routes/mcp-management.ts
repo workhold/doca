@@ -13,6 +13,7 @@ import {
   type McpService,
 } from "../services/ai/mcp-access.js";
 import type { McpRuntime } from "../services/ai/mcp-runtime.js";
+import { registerMcpExecutions } from "./mcp-executions.js";
 
 export function parseMcp<T>(schema: z.ZodType<T>, input: unknown): T {
   const result = schema.safeParse(input);
@@ -45,6 +46,7 @@ export async function registerMcpManagement(
   runtime: McpRuntime,
   publicOrigin?: string,
 ) {
+  registerMcpExecutions(api, db, auth, runtime);
   const endpoint = (req: FastifyRequest) =>
     `${publicOrigin ?? `${req.protocol}://${req.headers.host}`}/api/v1/mcp`;
   api.get("/api/v1/me/mcp", async (req) => {

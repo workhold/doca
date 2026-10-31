@@ -1,3 +1,4 @@
+import { executionJobIds } from "@core/modules/ai/execution.js";
 import { createHash } from "node:crypto";
 import sharp from "sharp";
 import { z } from "zod";
@@ -124,7 +125,7 @@ const candidateFields = {
       sessionId: z.string().uuid().nullable(),
     })
     .strict()
-    .refine((value) => (value.jobId === null) === (value.sessionId === null)),
+    .refine((value) => value.sessionId === null || value.jobId !== null),
   request: z
     .object({
       modelId: z.string().min(1),
@@ -1131,17 +1132,9 @@ async function readCandidate<P>(
     fail(409, "原始候选来源操作不一致");
   if (candidate.scope.resourceId !== null)
     await checkScope(db, ctx, candidate.scope.resourceId);
-  if (candidate.scope.sessionId !== null) {
-    const job = ctx.jobId
-      ? await db
-          .selectFrom("ai_jobs")
-          .select("session_id")
-          .where("id", "=", ctx.jobId)
-          .where("user_id", "=", ctx.actor.id)
-          .executeTakeFirst()
-      : undefined;
-    if (job?.session_id !== candidate.scope.sessionId)
-      fail(404, "原始候选不属于当前会话");
+  if (candidate.scope.jobId !== null) {
+    if (!ctx.jobId || !(await executionJobIds(db, ctx.actor.id, ctx.jobId)).includes(candidate.scope.jobId))
+      fail(404, "原始候选不属于当前执行范围");
   }
   const verifyOriginal = async () => {
     if (candidate.kind !== "image_revision_raw") {

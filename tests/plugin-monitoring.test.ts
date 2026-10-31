@@ -470,7 +470,7 @@ describe("public monitoring services on isolated data", () => {
             id: "example.monitor",
             version: "1.0.0",
             displayName: "Monitor",
-            sdkRange: "^0.1.11",
+            sdkRange: "^0.2.0",
           },
           injections: {
             required: [monitoringServiceToken, telemetryServiceToken],
@@ -504,7 +504,7 @@ describe("public monitoring services on isolated data", () => {
             id: "example.old",
             version: "1.0.0",
             displayName: "Old",
-            sdkRange: "^0.1.10",
+            sdkRange: "*",
           },
           injections: { required: [monitoringServiceToken] },
           async uninstall() {},
@@ -530,7 +530,7 @@ it("serves a declared installed plugin through administrator-only Web transport 
     id: "example.monitor",
     version: "1.0.0",
     displayName: "Monitor",
-    sdkRange: "^0.1.11",
+    sdkRange: "^0.2.0",
   };
   await writeFile(join(root, "manifest.json"), JSON.stringify(manifest));
   await writeFile(

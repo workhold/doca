@@ -2,6 +2,10 @@
 
 [English](development.md)
 
+## 准备变更
+
+新工作采用[分级 SDD 流程](sdd.zh-CN.md)，通过[模块索引](sdd-module-index.zh-CN.md)定位源码、现行契约和检查。full 使用 Spec Kit 记录，standard 可用一份 spec，light 在 PR 中记录。兼容决定仍须按照 AGENTS.md 单独取得事先同意。除变更相关检查外，运行 `pnpm sdd:check`。
+
 ## 开发启动
 
 Node.js 22.12+或24 LTS、pnpm 11.25.0。版本锁定pnpm-lock.yaml；better-sqlite3原生构建已在pnpm-workspace.yaml允许。

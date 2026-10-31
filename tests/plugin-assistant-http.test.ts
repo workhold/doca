@@ -80,7 +80,7 @@ beforeEach(async () => {
     id: "example.assistant",
     version: "1.0.0",
     displayName: "Assistant fixture",
-    sdkRange: "^0.1.7",
+    sdkRange: "^0.2.0",
   };
   await writeFile(
     join(root, "package.json"),

@@ -112,7 +112,7 @@ it.each(["same-job-restart", "retry"] as const)("restores the %s paid guard in t
   const noProvider: typeof fetch = async () => { providerCalls++; throw Error("No provider is allowed"); };
   const runner = createAIRunner(db, { fetch: noProvider, imageFetch: noProvider, memory: { driver: "sqlite", url: ":memory:" } });
   try {
-    const tools = await runner.externalTools(current, new AbortController().signal, { actor: owner, session: s, allowsTool: id => ["image_generate", "session_attachments"].includes(id), allowsSkill: () => true, authorize: async () => {} });
+    const tools = await runner.externalTools(current, new AbortController().signal, { actor: owner, allowsTool: id => ["image_generate", "session_attachments"].includes(id), allowsSkill: () => true, authorize: async () => {} });
     expect((await tools.call("session_attachments", {}, randomUUID())).output).toBeDefined();
     const error = await tools.call("image_generate", { prompt: "A changed prompt", size: "1536x1024" }, randomUUID()).catch(error => error);
     expect(systemErrorReason(error)?.code, error instanceof Error ? error.message : JSON.stringify(error)).toBe("image_result_uncertain");

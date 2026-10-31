@@ -1,3 +1,4 @@
+import { ownedExecution } from "@core/modules/ai/execution.js";
 import type { DB, Schema } from "@db/index.js";
 import { fail } from "@core/shared/errors.js";
 import { enqueueProjection } from "@core/modules/automation/jobs.js";
@@ -209,6 +210,14 @@ export async function aiJobSessionFolder(
     .executeTakeFirst();
   if (!session) fail(404, "fileManager.sessionFolderMissing");
   return { sessionId: session.id, title: session.title };
+}
+
+/** An execution owns its outputs even when it has no conversation. */
+export async function aiJobFileBinding(db: DB, userId: string, jobId?: string) {
+  if (!jobId) return { aiSessionFolder: pendingAISessionFolder };
+  const job = await ownedExecution(db, userId, jobId);
+  if (!job.session_id) return { aiTaskId: job.id };
+  return { aiSessionFolder: await aiJobSessionFolder(db, userId, jobId) };
 }
 
 /** Remove only the new session-owned references; copied entries and physical objects remain. */

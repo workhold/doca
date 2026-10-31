@@ -31,7 +31,7 @@ import {
   preserveOutsideRegions,
 } from "./image-edit-regions.js";
 import { referenceCropsSchema } from "./image-edit-adapter.js";
-import { aiJobSessionFolder } from "./session-file-folders.js";
+import { aiJobFileBinding } from "./session-file-folders.js";
 import { readImageEditMask } from "./image-edit-mask.js";
 import { preserveOutsideBitmap } from "./image-edit-bitmap.js";
 
@@ -405,7 +405,7 @@ async function saveRecomposition(
           size: asset.size,
           metadata: JSON.stringify({
             assetId,
-            aiSessionFolder: await aiJobSessionFolder(
+            ...await aiJobFileBinding(
               tx,
               ctx.actor.id,
               ctx.jobId,

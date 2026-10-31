@@ -347,7 +347,7 @@ const result = {
   passed: true,
   transport: "official TypeScript SDK over real HTTP",
   canvasViewed: true,
-  execution: { contextId: context.contextId, sessionId: context.sessionId },
+  execution: { contextId: context.contextId, taskId: context.taskId },
   documents,
   file: {
     id: file.id,

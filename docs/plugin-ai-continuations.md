@@ -1,8 +1,10 @@
 # Background task continuation
 
-Implemented in SDK source **0.1.10**, server capability `ai.continuations.v1`, exported from `@smartdoca/plugin-sdk/ai`. npm publication and deployment are not implied. This is shared by all installed server plugins; knowledge books use the same host mechanism.
+Current SDK source **0.2.0**, server capability `ai.continuations.v2`, exported from `@smartdoca/plugin-sdk/ai`. npm publication and deployment are not implied. This is shared by all installed server plugins; knowledge books use the same host mechanism.
 
-Declare `aiContinuationsServiceToken` as a required injection and `sdkRange: "^0.1.10"`. A host without this capability rejects initialization. There is no adapter through `ai.v1` or automatic registration of historical business tasks.
+Declare `aiContinuationsServiceToken` as a required injection and `sdkRange: "^0.2.0"`. A host without this capability rejects initialization. There is no adapter through retired AI service versions or automatic registration of historical business tasks.
+
+MCP tool contexts have no `sessionId`; use `jobId` for task correlation. Their `wait` calls can return authorized snapshots, but do not start an internal chat/model continuation. The external client remains responsible for subsequent calls.
 
 Plugins own business jobs, current authorization, durable results, stable operation IDs and notification/outbox delivery. Store those through public host-managed storage. The host owns assistant identity, persisted wait tickets, cancellation, model continuation and technical limits. A wake does not authorize a business action or approve a human task.
 

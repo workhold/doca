@@ -43,7 +43,7 @@ export function provideAI(context: PluginLifecycleContext, db: DB, host: AIContr
           if (!current) throw new Error("Account is unavailable");
           const request: PluginAIToolContext = {
             requestId: execution.callId, callId: execution.callId,
-            sessionId: execution.sessionId, turnId: execution.turnId, jobId,
+            ...(execution.sessionId ? { sessionId: execution.sessionId } : {}), turnId: execution.turnId, jobId,
             signal: execution.signal,
             principal: { id: current.id, displayName: current.display_name, publicId: current.public_id ?? "", admin: !!current.admin },
           };

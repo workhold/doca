@@ -146,6 +146,16 @@
         "开发环境"
       ],
       [
+        "sdd",
+        "SDD workflow",
+        "SDD 开发流程"
+      ],
+      [
+        "sdd-module-index",
+        "SDD module index",
+        "SDD 模块索引"
+      ],
+      [
         "database-schema-evolution",
         "Database upgrade contract",
         "数据库升级规范"
@@ -301,6 +311,11 @@
     "en": "Releases",
     "zh": "发行记录",
     "pages": [
+      [
+        "releases/0.2.30",
+        "0.2.30",
+        "0.2.30"
+      ],
       [
         "releases/0.2.29",
         "0.2.29",

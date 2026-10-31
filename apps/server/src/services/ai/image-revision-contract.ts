@@ -31,7 +31,7 @@ export const imageRevisionBindingSchema = z
   .object({
     version: z.literal(1),
     actorId: z.string().uuid(),
-    sessionId: z.string().uuid(),
+    sessionId: z.string().uuid().nullable(),
     attemptScope: imageBatchAttemptScopeV2Schema,
     requirementsDigest: hash,
     original: revisionReferenceSchema,
@@ -171,7 +171,7 @@ export const imageRevisionViewOutputSchema = z
 const bindingV2Fields = {
   version: z.literal(2),
   actorId: z.string().uuid(),
-  sessionId: z.string().uuid(),
+  sessionId: z.string().uuid().nullable(),
   attemptScope: imageBatchAttemptScopeV3Schema,
   requirementsDigest: hash,
   original: revisionReferenceSchema,

@@ -1,6 +1,6 @@
 {
   "name": "doca",
-  "version": "0.2.29",
+  "version": "0.2.30",
   "license": "MIT",
   "private": true,
   "type": "module",
@@ -25,6 +25,8 @@
     "deploy:pack": "node scripts/pack-deployment.mjs",
     "docs:check": "node scripts/docs-site.mjs check",
     "test:docs": "node --test scripts/tests/documentation.test.mjs",
+    "sdd:check": "node scripts/sdd-check.mjs",
+    "test:sdd": "node --test scripts/tests/sdd.test.mjs",
     "docs:build": "node scripts/docs-site.mjs build",
     "docs:dev": "pnpm docs:build && vite .cache/docs-site --host 127.0.0.1 --port 39140",
     "knowledge-books:storage": "tsx apps/server/src/bootstrap/knowledge-book-storage.ts",

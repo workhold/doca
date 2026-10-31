@@ -39,6 +39,8 @@ The untracked raw attachments and seven temporary diagnostic or intermediate-run
 
 ## Feature and documentation acceptance
 
+- [分级 SDD 接入（2026-11-01）](sdd-adoption-2026-11-01.md)
+
 - [浏览器工具条打开 Doca 网站](browser-extension-open-site-2026-10-29.md)
 
 - [System Logo](site-logo-2026-10-28.md)

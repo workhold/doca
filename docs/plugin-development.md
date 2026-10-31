@@ -1,5 +1,7 @@
 # Plugin development
 
+Current source uses SDK **0.2.0**, with `ai.v2` / `ai.continuations.v2`. Tool contexts always carry `jobId`; `sessionId` is present only for real conversations. Rebuild plugins for `sdkRange: "^0.2.0"`; previous SDK ranges and AI service contracts are rejected without adapters. This source change is not an npm publication or deployment. See [MCP execution separation](mcp.md#execution-history-and-upgrade).
+
 External AI clients use [MCP services](mcp.md). Tools must explicitly declare MCP exposure and keep their normal authorization/admission checks; a SKILL is a manual, not an authorization grant.
 
 0.1.26 uses a [shared plugin business database](plugin-database-isolation.md), separate from core, with automatic namespaces. It replaces the per-plugin databases released in 0.1.25. Upgrade requires normal uninstall on the previous host and reinstall; plugin data is not migrated.
@@ -51,7 +53,7 @@ Install a complete prebuilt ZIP through Admin → Plugins, or drop a `<plugin-id
   "id": "example.attachments",
   "version": "1.0.0",
   "displayName": "Attachments",
-  "sdkRange": "^0.1.9",
+  "sdkRange": "^0.2.0",
   "dependencies": [{ "id": "doca.files", "range": "^0.1.0" }]
 }
 ```
@@ -121,9 +123,9 @@ A registration id starts with the plugin id and a dot. The route namespace equal
 
 A directory source returns relationships that are currently valid. The host applies the administrator's all, related, or none policy and filters to valid users. A source error does not widen visibility. Searchable does not mean readable. Sources use `schemaVersion: 1`, paged `related`, and a current-fact `verify`. The plugin maintains its own relationship index. Paging, timeouts, and candidate rechecks are in the [mail handoff](plugin-mail-handoff.md).
 
-For a background business job, SDK source 0.1.10 exposes `aiContinuationsServiceToken` for registerSource/wait/wake. Declare a required injection and `sdkRange: "^0.1.10"`; implement live business authorization and stable operation IDs, then notify after committing the result. The host resumes the original assistant task after completion or a new human decision. See [the complete contract and example](plugin-ai-continuations.md).
+For a background business job, SDK source 0.1.10 exposes `aiContinuationsServiceToken` for registerSource/wait/wake. Declare a required injection and `sdkRange: "^0.2.0"`; implement live business authorization and stable operation IDs, then notify after committing the result. The host resumes the original assistant task after completion or a new human decision. See [the complete contract and example](plugin-ai-continuations.md).
 
-Register an AI tool with `aiServiceToken.registerTool`: id, description, inputSchema, and execute. execute receives the authenticated user, sessionId, turnId, jobId, callId, and signal. It cannot bypass file permissions. `registerSkill` takes id, name, description, content, and formats. The manual enters the host skill library. A business tool checks its own resource permissions and stores a stable operation id in the plugin database so a retry does not repeat a side effect. callId correlates a call. Do not assume a new call reuses an old callId. Creating a file or folder passes a stable `idempotencyKey`. An upload also passes the `contentIdentity` returned by `uploads.complete`. Read a durable receipt with `files.receipts.get`. pending can be retried. Different parameters are 409. A deleted result cannot be rebuilt by replaying. The full protocol is section 7.1 of the [SDK contract](plugin-sdk-contract.md).
+Register an AI tool with `aiServiceToken.registerTool`: id, description, inputSchema, and execute. execute receives the authenticated user, turnId, jobId, callId, and signal, plus sessionId only for real conversations. It cannot bypass file permissions. `registerSkill` takes id, name, description, content, and formats. The manual enters the host skill library. A business tool checks its own resource permissions and stores a stable operation id in the plugin database so a retry does not repeat a side effect. callId correlates a call. Do not assume a new call reuses an old callId. Creating a file or folder passes a stable `idempotencyKey`. An upload also passes the `contentIdentity` returned by `uploads.complete`. Read a durable receipt with `files.receipts.get`. pending can be retried. Different parameters are 409. A deleted result cannot be rebuilt by replaying. The full protocol is section 7.1 of the [SDK contract](plugin-sdk-contract.md).
 
 Doca does not include membership, prices, points, or business quotas. Model input and output rates, and tokens per image, convert a vendor's raw usage into tokens. They are not a price. Usage distinguishes an unconfirmed call from actual metrics. `ai.usage.recorded` is written inside the settlement transaction. Top-level `metrics` are the rated usage. `provider.metrics` keeps the vendor's raw facts. A plugin pulls events with `events.read(cursor, limit)`, stores its cursor, and handles each event id once. A policy check can refuse a call. Cross-plugin reservation, failure compensation, and money consistency do not yet have a full transaction protocol. One check is not a billing implementation.
 
@@ -131,7 +133,7 @@ Plugins own business models, authorization, job logic and outbox semantics; all 
 
 ## Monitoring and telemetry
 
-SDK source 0.1.11 adds `monitoringServiceToken` and `telemetryServiceToken` from `@smartdoca/plugin-sdk/monitoring`, plus administrator-only `host.platform.monitoring`. Declare required injections and `sdkRange: "^0.1.11"`. Site counts, HTTP metrics, online users, logs, audit, jobs, AI usage and health use public host services; plugins store long-term history through managed storage. See [exact methods, limits and version/data decisions](plugin-monitoring.md). No host database migration or old-host adapter is added.
+SDK source 0.1.11 adds `monitoringServiceToken` and `telemetryServiceToken` from `@smartdoca/plugin-sdk/monitoring`, plus administrator-only `host.platform.monitoring`. Declare required injections and `sdkRange: "^0.2.0"`. Site counts, HTTP metrics, online users, logs, audit, jobs, AI usage and health use public host services; plugins store long-term history through managed storage. See [exact methods, limits and version/data decisions](plugin-monitoring.md). No host database migration or old-host adapter is added.
 
 ## Host-managed persistence
 
@@ -234,7 +236,7 @@ Global navigation has Web user, App user and Web administrator scopes. Declare p
 
 ## Public reading and UI extensions (SDK 0.1.4)
 
-[Implemented interfaces](plugin-extensions.md) describe user directory policy, native document snapshots, library traversal, `host.platform`, `host.ui` and optional commands/views/placements. Plugins using new methods declare `sdkRange: "^0.1.9"`; existing page-only plugins need no new registration.
+[Implemented interfaces](plugin-extensions.md) describe user directory policy, native document snapshots, library traversal, `host.platform`, `host.ui` and optional commands/views/placements. Plugins using new methods declare `sdkRange: "^0.2.0"`; existing page-only plugins need no new registration.
 
 ## Template and material plugins
 

@@ -1,5 +1,7 @@
 # Doca 插件开发规范
 
+当前源码使用 SDK **0.2.0**，AI 服务为 `ai.v2` / `ai.continuations.v2`。工具上下文始终提供 `jobId`，只有真实聊天执行才提供 `sessionId`。插件须重新构建并声明 `sdkRange: "^0.2.0"`；旧 SDK 范围和旧 AI 服务契约直接拒绝，不提供适配。本次源码变更不代表 npm 发布或部署。参见 [MCP 执行隔离](mcp.zh-CN.md#执行记录与升级)。
+
 外部 AI 客户端通过 [MCP 服务](mcp.zh-CN.md)接入。工具须显式声明 MCP exposure 并保留正常授权/准入校验；SKILL 是操作手册，不授予工具权限。
 
 0.1.26 使用与核心库分开的[插件共享业务数据库](plugin-database-isolation.zh-CN.md)，自动创建插件命名空间，取代 0.1.25 的每插件独立库。升级须先在旧宿主正常卸载，再重装，不迁移插件数据。
@@ -56,7 +58,7 @@ manifest.json 必须为静态 JSON，版本与 package.json 一致：
   "id": "example.attachments",
   "version": "1.0.0",
   "displayName": "Attachments",
-  "sdkRange": "^0.1.9",
+  "sdkRange": "^0.2.0",
   "dependencies": [{ "id": "doca.files", "range": "^0.1.0" }]
 }
 ```
@@ -126,7 +128,7 @@ export default () =>
 
 目录来源返回当前有效用户关系。宿主统一执行管理员 all/related/none 策略，并过滤有效用户；来源错误不扩大可见范围。可搜索不等于可以读取资源。来源使用 schemaVersion: 1、分页 related 和当前事实 verify，插件自行维护关系索引；分页、超时和候选复核见交接文档。
 
-AI 工具通过 `aiServiceToken.registerTool` 注册，包含 id、description、inputSchema 和 execute。execute 获得认证用户、sessionId、turnId、jobId、callId、signal，不能绕过文件权限。`registerSkill` 接收 id、name、description、content、formats；手册进入宿主技能库。业务工具必须自行校验业务资源权限，在插件数据库保存跨重试稳定的操作 ID 做副作用幂等；callId 可用于关联调用，但不能假定新调用会复用旧 callId。文件/文件夹创建应传稳定 idempotencyKey；上传创建同时传 uploads.complete 返回的 contentIdentity。使用 files.receipts.get 查询持久回执；pending 可重试、异参为 409，已删除结果不能借重放重建。完整协议见 SDK 契约第 7.1 节。
+AI 工具通过 `aiServiceToken.registerTool` 注册，包含 id、description、inputSchema 和 execute。execute 获得认证用户、turnId、jobId、callId、signal；只有真实聊天执行才提供 sessionId，不能绕过文件权限。`registerSkill` 接收 id、name、description、content、formats；手册进入宿主技能库。业务工具必须自行校验业务资源权限，在插件数据库保存跨重试稳定的操作 ID 做副作用幂等；callId 可用于关联调用，但不能假定新调用会复用旧 callId。文件/文件夹创建应传稳定 idempotencyKey；上传创建同时传 uploads.complete 返回的 contentIdentity。使用 files.receipts.get 查询持久回执；pending 可重试、异参为 409，已删除结果不能借重放重建。完整协议见 SDK 契约第 7.1 节。
 
 Doca 不内置会员、货币价格、积分或业务额度。模型管理中的输入/输出速率和每张图片 Token 只负责把厂商原始用量统一折算为 Token，不是最终售价。用量记录区分未确认调用与实际指标；`ai.usage.recorded` 在结算事务内写入持久事件，顶层 `metrics` 是已折算用量，`provider.metrics` 保留厂商原始事实。插件通过 events.read(cursor, limit) 拉取，持久保存消费位置并按事件 ID 幂等处理。策略 check 可以拒绝调用；跨插件预留、失败补偿和资金一致性尚未提供完整事务协议，不能将一次 check 当作完整计费实现。
 
@@ -233,7 +235,7 @@ Web 与受限移动 WebView 复用插件 Web 产物。`@smartdoca/plugin-sdk/web
 
 ## 公共读取与多位置展示（SDK 0.1.4）
 
-新增用户目录、原生文档快照、知识库目录、`host.platform`、`host.ui` 及可选 commands/views/placements 的实际导出和接入示例见[插件公共读取与多位置展示](plugin-extensions.md)。使用新方法的插件声明最低 `sdkRange: "^0.1.9"`；当前只注册常规页面的插件无需新增注册。
+新增用户目录、原生文档快照、知识库目录、`host.platform`、`host.ui` 及可选 commands/views/placements 的实际导出和接入示例见[插件公共读取与多位置展示](plugin-extensions.md)。使用新方法的插件声明最低 `sdkRange: "^0.2.0"`；当前只注册常规页面的插件无需新增注册。
 
 ## 模板与素材插件
 
@@ -249,11 +251,11 @@ SDK 0.1.5 新增可选的创作资源提供者／消费者、公共客户端和�
 素材集查询已在 SDK 源码 0.1.9 实现：materials.v2 / version:2 提供者，素材和集合独立结果组、分页、标签和检索；集合元数据不内嵌成员。按用户确认不适配 materials.v1，不迁移既有文件/文档。集合管理与业务存储由插件实现，所有持久化仍使用公共宿主托管能力。详见[资源协议](creation-resources.md)。
 
 
-SDK 源码 0.1.10 已导出通用 `ai.continuations.v1`，插件通过公开入口登记等待并在提交后台结果后唤醒助手；只处理显式新等待，不迁移历史任务。参见[接入协议](plugin-ai-continuations.zh-CN.md)。源码实现不代表 npm 发布或生产部署。
+SDK 源码 0.1.10 已导出通用 `ai.continuations.v2`，插件通过公开入口登记等待并在提交后台结果后唤醒助手；只处理显式新等待，不迁移历史任务。参见[接入协议](plugin-ai-continuations.zh-CN.md)。源码实现不代表 npm 发布或生产部署。
 
 ## 监控与遥测（SDK 0.1.11）
 
-`@smartdoca/plugin-sdk/monitoring` 导出 monitoringServiceToken、telemetryServiceToken，Web 通过管理员专用的 `host.platform.monitoring` 读取。声明 required 服务和 `sdkRange: "^0.1.11"`，使用公共服务采集全站/在线统计、HTTP 指标、日志、审计、任务、AI 用量和健康。长期历史通过托管存储保存。具体接口、限制和已确认的数据/版本处理见[监控契约](plugin-monitoring.zh-CN.md)。不增加主数据库迁移或旧宿主适配。
+`@smartdoca/plugin-sdk/monitoring` 导出 monitoringServiceToken、telemetryServiceToken，Web 通过管理员专用的 `host.platform.monitoring` 读取。声明 required 服务和 `sdkRange: "^0.2.0"`，使用公共服务采集全站/在线统计、HTTP 指标、日志、审计、任务、AI 用量和健康。长期历史通过托管存储保存。具体接口、限制和已确认的数据/版本处理见[监控契约](plugin-monitoring.zh-CN.md)。不增加主数据库迁移或旧宿主适配。
 
 ## SDK 发布 — 2026-10-13
 
