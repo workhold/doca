@@ -6,6 +6,8 @@ Implementation notes, proposals and historical acceptance records have distinct 
 
 ## Implementation notes
 
+- [Plugin startup isolation](../specs/003-plugin-startup-isolation/spec.md)
+
 - [权限申请、本地副本与事件同步（2026-09-11）](access-offline-events.md)
 - [AI 附件、文档读取与草稿](ai-attachments.md)
 - [插件架构下的 AI 交付与消耗优化](ai-efficiency.md)

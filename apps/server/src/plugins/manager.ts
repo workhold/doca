@@ -27,10 +27,12 @@ import {
 import type { DB } from "@db/index.js";
 import type {
   PluginInventory,
+  PluginStartupIssue,
   StoreRelease,
 } from "@core/shared/plugin-store.js";
 import { inspectPlugin, instantiateInstalledPlugin } from "./installation.js";
 import { PluginStore } from "./store.js";
+import { selectPluginGraph, compatibilityError } from "./selection.js";
 import {
   digest,
   materialize,
@@ -78,6 +80,7 @@ export class PluginManager {
   private selected: Record<string, Entry> = {};
   private selectedGenerations: Record<string, number> = {};
   private runningGenerations: Record<string, number> = {};
+  private startupIssues = new Map<string, PluginStartupIssue>();
   constructor(
     readonly directory: string,
     readonly core: readonly PluginManifest[],
@@ -190,11 +193,24 @@ export class PluginManager {
           `Incompatible data structure for ${id}: package ${entry.manifest.version} declares ${entry.dataVersion}, but the installed structure is ${state.dataVersions[id]}. An upgrade must keep the same structure; uninstall clears it.`,
         );
     }
-    validatePluginGraph([...this.core, ...all.map((p) => p.manifest)]);
-    validatePluginGraph([
-      ...this.core,
-      ...all.filter((p) => p.enabled).map((p) => p.manifest),
-    ]);
+    return selectPluginGraph(this.core, all);
+  }
+  private validateChange(state: State, before: State, installing?: string) {
+    const previous = this.validate(before).issues;
+    const next = this.validate(state).issues;
+    if (installing) {
+      const issue = selectPluginGraph(
+        this.core,
+        Object.values(state.desired).map((entry) => ({
+          manifest: entry.manifest,
+          enabled: true,
+        })),
+      ).issues.get(installing);
+      if (issue) throw compatibilityError(installing, issue);
+    }
+    for (const [id, issue] of next)
+      if (id === installing || !previous.has(id))
+        throw compatibilityError(id, issue);
   }
   private materialize(hash: string, bytes: Uint8Array) {
     const existing = this.materializations.get(hash);
@@ -265,27 +281,42 @@ export class PluginManager {
       incoming.set(plugin.manifest.id, { root, plugin });
     }
     const initial = (await this.read()).state;
-    const ordered = validatePluginGraph([
-      ...this.core,
+    const candidates = [
       ...Object.values(initial.desired)
         .filter((p) => !incoming.has(p.manifest.id))
-        .map((p) => p.manifest),
-      ...[...incoming.values()].map((p) => p.plugin.manifest),
-    ]);
-    for (const manifest of ordered) {
+        .map((p) => ({ manifest: p.manifest, enabled: p.enabled })),
+      ...[...incoming.values()].map((p) => ({
+        manifest: p.plugin.manifest,
+        enabled: true,
+      })),
+    ];
+    const { ordered } = selectPluginGraph(this.core, candidates);
+    // Preserve manually installed incompatible packages too, without importing their code.
+    const importOrder = [
+      ...ordered,
+      ...candidates
+        .map((p) => p.manifest)
+        .filter((p) => !ordered.some((item) => item.id === p.id)),
+    ];
+    for (const manifest of importOrder) {
       const local = incoming.get(manifest.id);
       if (!local) continue;
       const { root, plugin } = local;
       const bytes = await pack(root);
       const current = (await this.read()).state.desired[plugin.manifest.id];
       if (!current || current.sha256 !== digest(bytes))
-        await this.install(bytes, "local");
+        await this.publish(bytes, "local", undefined, undefined, true);
       const imported = path.join(this.directory, ".imports", randomUUID());
       await mkdir(path.dirname(imported), { recursive: true });
       await rename(root, imported);
     }
     const { state } = await this.read();
+    const entries = Object.values(state.desired).map((entry) => ({
+      manifest: entry.manifest,
+      enabled: entry.enabled && disabled[entry.manifest.id] !== false,
+    }));
     this.validate(state);
+    this.startupIssues = selectPluginGraph(this.core, entries).issues;
     this.selected = structuredClone(state.desired);
     this.selectedGenerations = await this.generations(this.selected);
     const descriptors = [];
@@ -295,7 +326,8 @@ export class PluginManager {
       }
       // Disabled packages are synchronized too, so a future enable needs no registry fetch.
       const descriptor = await this.ensure(entry);
-      if (this.selected[id]!.enabled) descriptors.push(descriptor);
+      if (this.selected[id]!.enabled && !this.startupIssues.has(id))
+        descriptors.push(descriptor);
     }
     validatePluginGraph([...this.core, ...descriptors.map((p) => p.manifest)]);
     return descriptors;
@@ -303,6 +335,14 @@ export class PluginManager {
   async confirm() {
     this.running = structuredClone(this.selected);
     this.runningGenerations = { ...this.selectedGenerations };
+  }
+  unavailable() {
+    return Object.values(this.selected).flatMap((entry) => {
+      const issue = this.startupIssues.get(entry.manifest.id);
+      return entry.enabled && issue
+        ? [{ id: entry.manifest.id, version: entry.manifest.version, issue }]
+        : [];
+    });
   }
   async inventory(): Promise<PluginInventory> {
     const { state } = await this.read();
@@ -323,9 +363,11 @@ export class PluginManager {
         source: entry.source,
         npm: entry.npm,
         enabled: target?.enabled ?? false,
-        runningVersion: this.running[id]?.enabled
-          ? this.running[id]!.manifest.version
-          : null,
+        runningVersion:
+          this.running[id]?.enabled && !this.startupIssues.has(id)
+            ? this.running[id]!.manifest.version
+            : null,
+        startupIssue: this.startupIssues.get(id) ?? null,
         pending:
           !equal(target, this.running[id]) ||
           generations[id] !== this.runningGenerations[id],
@@ -349,11 +391,21 @@ export class PluginManager {
     expected?: { id: string; release: StoreRelease },
     npm?: import("@core/shared/plugin-store.js").NpmRelease,
   ) {
+    return this.publish(bytes, source, expected, npm);
+  }
+  private async publish(
+    bytes: Uint8Array,
+    source: "local" | "store" | "npm",
+    expected?: { id: string; release: StoreRelease },
+    npm?: import("@core/shared/plugin-store.js").NpmRelease,
+    startup = false,
+  ) {
     unpack(bytes);
     await this.generations((await this.read()).state.desired);
     await cleanupPluginDatabases(this.db);
     const hash = digest(bytes);
     const { state, revision } = await this.read();
+    const before = structuredClone(state);
     // A matching hash is immutable. Never repair a currently running release during a request.
     if (Object.values(this.running).some((p) => p.sha256 === hash))
       throw new Error("Plugin release already running");
@@ -399,7 +451,8 @@ export class PluginManager {
       dataVersion: plugin.dataVersion,
       manifest: plugin.manifest,
     };
-    this.validate(state);
+    if (startup) this.validate(state);
+    else this.validateChange(state, before, id);
     state.dataVersions[id] = plugin.dataVersion;
     const archived = await this.archiveStore.putImmutable(
       hostPluginReleaseKey(hash),
@@ -419,6 +472,7 @@ export class PluginManager {
     return this.inventory();
   }
   async assetPlugin(id: string, version: string) {
+    if (this.startupIssues.has(id)) return undefined;
     const { state } = await this.read();
     if (!Object.hasOwn(state.desired, id) && !Object.hasOwn(this.running, id))
       return undefined;
@@ -450,6 +504,7 @@ export class PluginManager {
   }
   async change(id: string, action: "enable" | "disable" | "remove" | "cancel") {
     const { state, revision } = await this.read();
+    const before = structuredClone(state);
     if (!Object.hasOwn(state.desired, id) && !Object.hasOwn(this.running, id))
       throw new Error("Plugin not found");
     if (action === "cancel") {
@@ -468,6 +523,12 @@ export class PluginManager {
     } else if (action === "remove") {
       const entry = state.desired[id] ?? this.running[id];
       if (!entry) throw new Error("Plugin not found");
+      const issue = this.validate(state).issues.get(id);
+      if (issue) throw compatibilityError(id, issue);
+      // Check the resulting graph before invoking any cleanup hook.
+      delete state.desired[id];
+      delete state.dataVersions[id];
+      this.validateChange(state, before);
       const installed = await instantiateInstalledPlugin(
         await this.ensure(entry),
         await bindPluginStorage(
@@ -479,13 +540,11 @@ export class PluginManager {
         ),
       );
       await runPluginUninstall(installed);
-      delete state.desired[id];
-      delete state.dataVersions[id];
     } else {
       if (!state.desired[id]) throw new Error("Plugin pending removal");
       state.desired[id]!.enabled = action === "enable";
     }
-    this.validate(state);
+    this.validateChange(state, before, action === "enable" ? id : undefined);
     await this.save(
       state,
       revision,

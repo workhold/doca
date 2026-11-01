@@ -97,6 +97,7 @@ export async function providePlatform(
     services.permissions.clear();
     services.continuations.clear();
     services.policies.clear();
+    services.unavailablePlugins.clear();
     services.skills.clear();
   });
   const verify = async (request: PluginRequestContext) => {

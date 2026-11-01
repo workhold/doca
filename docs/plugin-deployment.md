@@ -56,6 +56,14 @@ The host validates SDK range, duplicate IDs, data version and plugin dependencie
 
 Disabling and uninstalling apply on restart. Until then the old process still serves the old plugin. Old code caches and immutable archives are retained for running instances and reinstallation; there is no automatic archive garbage collection in v1. Disable/shutdown preserve durable state. User attachments, document payloads, other-business references and file receipts are not automatically deleted; managed private-state cleanup is host-owned and still requires a cluster coordinator. Cancellation restores the answering instance's startup selection; it is a new global desired-state change, not an instant rollback of other processes.
 
-If initialization fails, Doca refuses startup rather than skipping a required plugin. Correct the package or desired installation using another healthy instance. The first release does not offer a repair-mode server, automatic database migrations, hot unloading, native mobile dynamic code or a cluster-wide completion dashboard.
+Actual plugin initialization failures still stop startup. SDK and dependency compatibility failures are isolated as described below, leaving plugin management available. There is no hot uninstall, cluster completion dashboard or native mobile dynamic-code installation.
 
 Validation uses isolated databases and temporary directories. See [store acceptance](plugin-store-protocol.md#cross-repository-acceptance).
+
+## Compatibility failure isolation
+
+An incompatible SDK range or unavailable required dependency isolates the affected business plugin. The host and unrelated plugins start, and Admin → Plugins explains the reason and asks for an upgrade. Installed selection, archives, business data and credentials are preserved. Old packages are not converted and old SDK code is not executed. New online installations still reject incompatible packages. Complete offline installation folders retain their original identity and receive the same isolation.
+
+Old packages do not statically declare every business policy they register. While this instance has an enabled but unavailable plugin, writes covered by the existing plugin policy checks return 503. Login, reads and plugin management remain available. Upgrade to a compatible package, or explicitly disable the affected plugins, then restart every instance to lift this protection. Missing plugin permission sources continue to deny authorization. Incompatible SDK code cannot run uninstall hooks; upgrade first. Replacement packages must retain dataVersion and the existing business structure.
+
+Isolation is instance-local diagnostic state, not a registry or database schema change. Corrupt archives, invalid metadata, core failures and actual lifecycle errors still fail explicitly. No data migration or application downgrade is introduced.

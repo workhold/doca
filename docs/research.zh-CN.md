@@ -22,6 +22,7 @@
 
 ## 设计与升级记录
 
+- [插件兼容性故障隔离（2026-11-01）](../specs/003-plugin-startup-isolation/spec.md)
 - [全项目分级 SDD 接入（2026-11-01）](../specs/001-sdd-adoption/spec.md)
 
 - [Saved-image revision contract (approved 2026-10-07)](ai-image-revision-proposal.md)

@@ -1,7 +1,7 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { mkdtemp, rm, writeFile, readFile, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 import { createServer } from "node:http";
 import { zipSync, strToU8 } from "fflate";
 import { openTestDatabase, testTableColumns } from "./database.js";
@@ -14,6 +14,12 @@ import type { DB } from "@db/index.js";
 import { storageRuntime } from "@server/adapters/storage.js";
 import { createHostFileStore } from "@server/services/host-file-store.js";
 import { configuredFileStore } from "@server/services/file-store-config.js";
+import { bindPluginStorage } from "@server/services/plugin-storage.js";
+import {
+  checkOperation,
+  pluginServices,
+} from "@core/shared/plugin-services.js";
+import { systemErrorReason } from "@core/shared/errors.js";
 
 const dirs: string[] = [],
   dbs: DB[] = [];
@@ -39,13 +45,14 @@ function bundle(
   id = "example.demo",
   dependencies: any[] = [],
   uninstall = "async uninstall() {}",
+  sdkRange = "^0.2.0",
 ) {
   const manifest = {
     schemaVersion: 1,
     id,
     version,
     displayName: "Demo",
-    sdkRange: "^0.2.0",
+    sdkRange,
     dependencies,
   };
   return zipSync(
@@ -76,6 +83,223 @@ function bundle(
     { mtime: new Date("2020-01-01T00:00:00Z") },
   );
 }
+async function dropPlugin(root: string, bytes: Uint8Array) {
+  const files = unpack(bytes);
+  const manifest = JSON.parse(Buffer.from(files["manifest.json"]!).toString());
+  for (const [name, data] of Object.entries(files)) {
+    const file = join(root, manifest.id, name);
+    await mkdir(dirname(file), { recursive: true });
+    await writeFile(file, data);
+  }
+}
+it("starts core and management with old SDK plugins isolated, then upgrades one without deleting data", async () => {
+  const db = await database(),
+    root = await directory();
+  const old = "example.old",
+    other = "example.other",
+    consumer = "example.consumer";
+  for (const id of [old, other])
+    await dropPlugin(
+      root,
+      bundle(
+        "1.0.0",
+        "1",
+        id,
+        [],
+        "async uninstall() { throw Error('old code must not run') }",
+        "^0.1.9",
+      ),
+    );
+  await dropPlugin(
+    root,
+    bundle("1.0.0", "1", consumer, [{ id: old, range: "^1.0.0" }]),
+  );
+  await dropPlugin(root, bundle("1.0.0", "1", "example.healthy"));
+  const manager = new PluginManager(root, [], db);
+  expect((await manager.prepare()).map((p) => p.manifest.id)).toEqual([
+    "example.healthy",
+  ]);
+  await manager.confirm();
+  const storage = await bindPluginStorage(db, manager.archiveStore, old, "1");
+  await storage.database.defineSchema({
+    version: 1,
+    tables: {
+      retained: {
+        columns: {
+          id: { type: "text", nullable: false },
+          value: { type: "text", nullable: false },
+        },
+        primaryKey: ["id"],
+        unique: [],
+      },
+    },
+  });
+  await storage.database.insert("retained", [
+    { id: "original", value: "keep me" },
+  ]);
+  const saved = await db.selectFrom("plugin_registry").selectAll().execute();
+  const namespace = await db
+    .selectFrom("plugin_storage_namespaces")
+    .selectAll()
+    .where("plugin_id", "=", old)
+    .execute();
+  const origin = "http://127.0.0.1:39130",
+    headers = { host: "127.0.0.1:39130", origin };
+  const app = await createApp(db, { origin, pluginDirectory: root });
+  try {
+    expect((await app.inject({ url: "/health", headers })).statusCode).toBe(
+      200,
+    );
+    const bootstrap = (
+      await app.inject({ url: "/api/v1/bootstrap", headers })
+    ).json();
+    expect(bootstrap.plugins.map((p: any) => p.id)).toContain(
+      "example.healthy",
+    );
+    expect(bootstrap.plugins.map((p: any) => p.id)).not.toContain(old);
+    expect(bootstrap.plugins.map((p: any) => p.id)).not.toContain(consumer);
+    expect(
+      (
+        await app.inject({
+          url: `/api/v1/plugin-assets/${old}/1.0.0/index.js`,
+          headers,
+        })
+      ).statusCode,
+    ).toBe(404);
+    expect(
+      (await app.inject({ url: "/api/v1/admin/plugins", headers })).statusCode,
+    ).toBe(401);
+    await createUser(
+      db,
+      {
+        login: "isolated-admin",
+        displayName: "Isolated admin",
+        password: "isolated-password-2026",
+      },
+      { bootstrap: true },
+    );
+    const login = await app.inject({
+      method: "POST",
+      url: "/api/v1/auth/login",
+      headers,
+      payload: { login: "isolated-admin", password: "isolated-password-2026" },
+    });
+    expect(login.statusCode, login.body).toBe(200);
+    const cookie = String(login.headers["set-cookie"]).split(";")[0]!;
+    const guarded = await app.inject({
+      method: "POST",
+      url: "/api/v1/resources",
+      headers: { ...headers, cookie },
+      payload: {
+        kind: "document",
+        format: "markdown",
+        title: "Must remain blocked",
+      },
+    });
+    expect(guarded.statusCode, guarded.body).toBe(503);
+    expect(guarded.body).toContain("plugin_policies_unavailable");
+    const missingSource = await app.inject({
+      method: "POST",
+      url: "/api/v1/content/list",
+      headers: { ...headers, cookie },
+      payload: {
+        sourceId: `${old}.content`,
+        purpose: "analysis",
+        config: {},
+        cursor: null,
+        limit: 10,
+      },
+    });
+    expect(missingSource.statusCode, missingSource.body).toBe(404);
+    const inventory = (
+      await app.inject({
+        url: "/api/v1/admin/plugins",
+        headers: { ...headers, cookie },
+      })
+    ).json();
+    expect([...pluginServices(db).unavailablePlugins].sort()).toEqual(
+      [consumer, old, other].sort(),
+    );
+    const blocked = await checkOperation(
+      db,
+      "any-principal",
+      "resources.create",
+    ).catch((error) => error);
+    expect(blocked.status).toBe(503);
+    expect(systemErrorReason(blocked)?.code).toBe(
+      "plugin_policies_unavailable",
+    );
+    expect(pluginServices(db).permissions.has(`${old}.resource`)).toBe(false);
+    expect(inventory.restartRequired).toBe(false);
+    expect(inventory.plugins.find((p: any) => p.id === old)).toMatchObject({
+      enabled: true,
+      runningVersion: null,
+      pending: false,
+      startupIssue: { code: "sdk_incompatible", sdkRange: "^0.1.9" },
+    });
+    expect(
+      await db.selectFrom("plugin_registry").selectAll().execute(),
+    ).toEqual(saved);
+  } finally {
+    await app.close();
+  }
+  expect(pluginServices(db).unavailablePlugins.size).toBe(0);
+  await expect(
+    manager.install(
+      bundle("1.1.0", "1", old, [], "async uninstall() {}", "^0.1.9"),
+      "local",
+    ),
+  ).rejects.toThrow(/SDK/);
+  await expect(manager.change(old, "remove")).rejects.toThrow(/SDK/);
+  expect(await db.selectFrom("plugin_registry").selectAll().execute()).toEqual(
+    saved,
+  );
+  await manager.install(bundle("1.1.0", "1", old), "local");
+  expect(
+    (await manager.inventory()).plugins.find((p) => p.id === old),
+  ).toMatchObject({ version: "1.1.0", pending: true, runningVersion: null });
+  const restart = new PluginManager(await directory(), [], db);
+  expect((await restart.prepare()).map((p) => p.manifest.id).sort()).toEqual(
+    [consumer, "example.healthy", old].sort(),
+  );
+  await restart.confirm();
+  expect(
+    (await restart.inventory()).plugins.find((p) => p.id === old),
+  ).toMatchObject({
+    runningVersion: "1.1.0",
+    pending: false,
+    startupIssue: null,
+  });
+  expect(
+    (await restart.inventory()).plugins.find((p) => p.id === other)
+      ?.startupIssue?.code,
+  ).toBe("sdk_incompatible");
+  expect(
+    await db
+      .selectFrom("plugin_storage_namespaces")
+      .selectAll()
+      .where("plugin_id", "=", old)
+      .execute(),
+  ).toEqual(namespace);
+  const restored = await bindPluginStorage(db, restart.archiveStore, old, "1");
+  expect(await restored.database.select("retained")).toEqual([
+    { id: "original", value: "keep me" },
+  ]);
+  // An explicit disable takes effect after restart and lifts the conservative write guard.
+  await restart.change(other, "disable");
+  const recovered = await createApp(db, {
+    origin,
+    pluginDirectory: await directory(),
+  });
+  try {
+    expect(pluginServices(db).unavailablePlugins.size).toBe(0);
+    await expect(
+      checkOperation(db, "any-principal", "resources.create"),
+    ).resolves.toBeUndefined();
+  } finally {
+    await recovered.close();
+  }
+});
 it("installs and restores S3 plugin archives with frozen deployment credentials through the real SDK", async () => {
   const objects = new Map<string, Buffer>();
   const requests: {
