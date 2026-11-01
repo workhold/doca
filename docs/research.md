@@ -74,4 +74,3 @@ Implementation notes, proposals and historical acceptance records have distinct 
 - [文档任务真实环境测试与整改记录](qa/document-task-regression.md)
 - [统一存储改造与本地浏览器验收](storage-browser-acceptance.md)
 - [Verification records](verification/README.md)
-
