@@ -181,13 +181,11 @@ try {
       `export default () => ({manifest:${JSON.stringify(upgraded)},async uninstall(){}});`,
     ),
   });
-  await page
-    .locator('input[type="file"][accept=".zip"]')
-    .setInputFiles({
-      name: "resources-compatible.zip",
-      mimeType: "application/zip",
-      buffer: Buffer.from(bytes),
-    });
+  await page.locator('input[type="file"][accept=".zip"]').setInputFiles({
+    name: "resources-compatible.zip",
+    mimeType: "application/zip",
+    buffer: Buffer.from(bytes),
+  });
   await page
     .getByRole("dialog")
     .getByRole("button", { name: "OK", exact: true })
@@ -200,6 +198,14 @@ try {
   ).json();
   assert.equal(inventory.plugins[0].version, "0.1.6");
   assert.equal(inventory.restartRequired, true);
+  assert.equal(inventory.plugins[0].canCancel, false);
+  await page
+    .locator(".plugin-restart")
+    .getByRole("button", { name: "Installed", exact: true })
+    .click();
+  await page
+    .getByText("Changes are ready; restart this instance", { exact: false })
+    .waitFor();
   assert.equal(errors.length, 0, JSON.stringify(errors));
   await writeFile(
     join(root, "report.json"),
@@ -213,6 +219,8 @@ try {
         en: true,
         mobileOverflow: false,
         realZipUpgrade: true,
+        stagedUpgradeGuidance: true,
+        incompatibleCancelUnavailable: true,
         pageErrors: errors,
       },
       null,

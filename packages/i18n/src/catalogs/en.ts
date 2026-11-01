@@ -933,6 +933,7 @@ export const en = {
   "plugins.version": "Target version",
   "plugins.running": "This instance’s version",
   "plugins.unavailableTitle": "Plugin unavailable",
+  "plugins.unavailablePending": "This plugin is currently unavailable. Changes are ready; restart this instance, then check its status again.",
   "plugins.unavailableHelp": "Some plugins were not loaded because their versions are incompatible. Installed packages and data are preserved. The host has started, but writes checked by plugin policies are temporarily unavailable. Upgrade or explicitly disable the affected plugins and restart.",
   "error.system.pluginPoliciesUnavailable": "Plugin policies are temporarily unavailable. Ask an administrator to upgrade or disable incompatible plugins and restart, then retry.",
   "plugins.sdkUnavailable": "This plugin requires SDK {sdkRange}; the host provides {sdkVersion}. Upgrade the plugin and restart. Restarting alone will not resolve this.",

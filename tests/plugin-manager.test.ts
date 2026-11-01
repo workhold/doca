@@ -257,7 +257,8 @@ it("starts core and management with old SDK plugins isolated, then upgrades one 
   await manager.install(bundle("1.1.0", "1", old), "local");
   expect(
     (await manager.inventory()).plugins.find((p) => p.id === old),
-  ).toMatchObject({ version: "1.1.0", pending: true, runningVersion: null });
+  ).toMatchObject({ version: "1.1.0", pending: true, runningVersion: null, canCancel: false });
+  await expect(manager.change(old, "cancel")).rejects.toThrow(/SDK/);
   const restart = new PluginManager(await directory(), [], db);
   expect((await restart.prepare()).map((p) => p.manifest.id).sort()).toEqual(
     [consumer, "example.healthy", old].sort(),

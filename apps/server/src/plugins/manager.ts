@@ -374,6 +374,10 @@ export class PluginManager {
         canCancel:
           !!target &&
           !!this.running[id] &&
+          !(
+            this.startupIssues.get(id)?.code === "sdk_incompatible" &&
+            target.sha256 !== this.running[id]!.sha256
+          ) &&
           generations[id] === this.runningGenerations[id] &&
           !equal(target, this.running[id]),
         removing: !target,

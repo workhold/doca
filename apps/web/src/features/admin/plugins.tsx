@@ -49,19 +49,27 @@ const categoryIcons: Record<string, typeof Package> = {
   developer: Code2,
   other: LayoutGrid,
 };
-function PluginStartupNotice({ issue }: { issue: PluginStartupIssue }) {
+function PluginStartupNotice({
+  issue,
+  pending,
+}: {
+  issue: PluginStartupIssue;
+  pending: boolean;
+}) {
   const { t } = useI18n();
   return (
     <p className="plugin-error" role="alert">
-      {issue.code === "sdk_incompatible"
-        ? t("plugins.sdkUnavailable", {
-            sdkVersion: issue.sdkVersion,
-            sdkRange: issue.sdkRange,
-          })
-        : t("plugins.dependencyUnavailable", {
-            dependency: issue.dependencyId,
-            range: issue.requiredRange,
-          })}
+      {pending
+        ? t("plugins.unavailablePending")
+        : issue.code === "sdk_incompatible"
+          ? t("plugins.sdkUnavailable", {
+              sdkVersion: issue.sdkVersion,
+              sdkRange: issue.sdkRange,
+            })
+          : t("plugins.dependencyUnavailable", {
+              dependency: issue.dependencyId,
+              range: issue.requiredRange,
+            })}
     </p>
   );
 }
@@ -882,6 +890,7 @@ export function Plugins() {
                         {installedItem?.startupIssue && (
                           <PluginStartupNotice
                             issue={installedItem.startupIssue}
+                            pending={installedItem.pending}
                           />
                         )}
                         {remote && (
@@ -1025,7 +1034,10 @@ export function Plugins() {
             {local && (
               <>
                 {local.startupIssue && (
-                  <PluginStartupNotice issue={local.startupIssue} />
+                  <PluginStartupNotice
+                    issue={local.startupIssue}
+                    pending={local.pending}
+                  />
                 )}
                 <dl>
                   <dt>{t("plugins.version")}</dt>
