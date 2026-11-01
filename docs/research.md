@@ -6,8 +6,6 @@ Implementation notes, proposals and historical acceptance records have distinct 
 
 ## Implementation notes
 
-- [Plugin startup isolation](../specs/003-plugin-startup-isolation/spec.md)
-
 - [权限申请、本地副本与事件同步（2026-09-11）](access-offline-events.md)
 - [AI 附件、文档读取与草稿](ai-attachments.md)
 - [插件架构下的 AI 交付与消耗优化](ai-efficiency.md)
@@ -24,6 +22,7 @@ Implementation notes, proposals and historical acceptance records have distinct 
 
 ## Design and upgrade records
 
+- [Plugin startup isolation (2026-11-01)](../specs/003-plugin-startup-isolation/spec.md)
 - [Tiered SDD adoption (2026-11-01)](../specs/001-sdd-adoption/spec.md)
 
 - [Saved-image revision contract (approved 2026-10-07)](ai-image-revision-proposal.md)
@@ -65,6 +64,8 @@ Implementation notes, proposals and historical acceptance records have distinct 
 
 ## Audits and acceptance
 
+- [0.2.31 发布验证](verification/release-0.2.31.md)
+
 - [全仓库文档审查与修正（2026-10-28）](verification/documentation-audit-2026-10-28.md)
 - [文档能力与部署核对（2026-10-04）](documentation-audit-2026-10-04.md)
 - [界面国际化审计（2026-09-25）](i18n-audit.md)
@@ -73,3 +74,4 @@ Implementation notes, proposals and historical acceptance records have distinct 
 - [文档任务真实环境测试与整改记录](qa/document-task-regression.md)
 - [统一存储改造与本地浏览器验收](storage-browser-acceptance.md)
 - [Verification records](verification/README.md)
+

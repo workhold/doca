@@ -64,6 +64,8 @@
 
 ## 审查与验收
 
+- [0.2.31 发布验证](verification/release-0.2.31.md)
+
 - [全仓库文档审查与修正（2026-10-28）](verification/documentation-audit-2026-10-28.md)
 - [文档能力与部署核对（2026-10-04）](documentation-audit-2026-10-04.md)
 - [界面国际化审计（2026-09-25）](i18n-audit.md)
@@ -72,3 +74,4 @@
 - [文档任务真实环境测试与整改记录](qa/document-task-regression.md)
 - [统一存储改造与本地浏览器验收](storage-browser-acceptance.md)
 - [Verification records](verification/README.md)
+
