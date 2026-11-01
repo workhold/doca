@@ -28,6 +28,7 @@ import {
 import { PLUGIN_SDK_VERSION } from "@smartdoca/plugin-sdk/version";
 import type {
   PluginInventory,
+  PluginStartupIssue,
   StoreCatalog,
   StorePlugin,
   StoreRelease,
@@ -48,6 +49,30 @@ const categoryIcons: Record<string, typeof Package> = {
   developer: Code2,
   other: LayoutGrid,
 };
+function PluginStartupNotice({
+  issue,
+  pending,
+}: {
+  issue: PluginStartupIssue;
+  pending: boolean;
+}) {
+  const { t } = useI18n();
+  return (
+    <p className="plugin-error" role="alert">
+      {pending
+        ? t("plugins.unavailablePending")
+        : issue.code === "sdk_incompatible"
+          ? t("plugins.sdkUnavailable", {
+              sdkVersion: issue.sdkVersion,
+              sdkRange: issue.sdkRange,
+            })
+          : t("plugins.dependencyUnavailable", {
+              dependency: issue.dependencyId,
+              range: issue.requiredRange,
+            })}
+    </p>
+  );
+}
 export function Plugins() {
   const { t, locale } = useI18n();
   const [modal, modalContext] = Modal.useModal();
@@ -498,6 +523,22 @@ export function Plugins() {
           <p>{t("plugins.restartOther")}</p>
         </div>
       )}
+      {inventory?.plugins.some(
+        (plugin) => plugin.enabled && plugin.startupIssue,
+      ) && (
+        <div className="plugin-restart" role="alert">
+          <strong>{t("plugins.unavailableTitle")}</strong>
+          <p>{t("plugins.unavailableHelp")}</p>
+          <button
+            onClick={() => {
+              openDetail(null);
+              setTab("installed");
+            }}
+          >
+            {t("plugins.installed")}
+          </button>
+        </div>
+      )}
       {(operationLocked || completed || operationError) &&
         createPortal(
           <aside
@@ -825,6 +866,11 @@ export function Plugins() {
                               )}
                             </span>
                           )}
+                          {installedItem?.startupIssue && (
+                            <span className="plugin-badge">
+                              {t("plugins.unavailableTitle")}
+                            </span>
+                          )}
                           {installedItem?.pending &&
                             !installedItem.runningVersion && (
                               <span className="plugin-badge">
@@ -841,6 +887,12 @@ export function Plugins() {
                           {remote?.summary ??
                             ("description" in p ? p.description : "")}
                         </p>
+                        {installedItem?.startupIssue && (
+                          <PluginStartupNotice
+                            issue={installedItem.startupIssue}
+                            pending={installedItem.pending}
+                          />
+                        )}
                         {remote && (
                           <small className="plugin-author">
                             {remote.author.name}
@@ -981,6 +1033,12 @@ export function Plugins() {
             )}
             {local && (
               <>
+                {local.startupIssue && (
+                  <PluginStartupNotice
+                    issue={local.startupIssue}
+                    pending={local.pending}
+                  />
+                )}
                 <dl>
                   <dt>{t("plugins.version")}</dt>
                   <dd>{local.version}</dd>
@@ -1008,7 +1066,10 @@ export function Plugins() {
                           local.enabled ? "disable" : "enable",
                           local.id,
                         )}
-                        disabled={operationLocked}
+                        disabled={
+                          operationLocked ||
+                          (!local.enabled && !!local.startupIssue)
+                        }
                         onClick={() =>
                           change(local.id, local.enabled ? "disable" : "enable")
                         }
@@ -1022,7 +1083,7 @@ export function Plugins() {
                         className="plugin-remove-button"
                         icon={<Trash2 size={16} />}
                         loading={operationPending("remove", local.id)}
-                        disabled={operationLocked}
+                        disabled={operationLocked || !!local.startupIssue}
                         onClick={async () => {
                           if (
                             await confirmAction(

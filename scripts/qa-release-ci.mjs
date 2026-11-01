@@ -46,6 +46,11 @@ if (process.argv[2] === "native") {
   const render = read(resolve(output, `render-${arch}.json`));
   assert(render.passed && render.uid === 1000 && render.providerCalls === 0);
   assert.equal(render.arch, arch === "amd64" ? "x64" : "arm64");
+  const isolation = read(resolve(output, `plugin-isolation-${arch}.json`));
+  assert(isolation.passed && isolation.oldCodeNeverImported && isolation.managementAvailable && isolation.registryPreservedAcrossRestart);
+  assert.equal(isolation.guardedWrites, 503);
+  assert.equal(isolation.version, version);
+  assert.equal(isolation.arch, arch === "amd64" ? "x64" : "arm64");
   const evidence = resolve("artifacts/verification/release-image/build/acceptance");
   mkdirSync(evidence, { recursive: true });
   write(resolve(evidence, "native.json"), {
@@ -57,6 +62,7 @@ if (process.argv[2] === "native") {
   copyFileSync(resolve(output, "docker-smoke.json"), resolve(evidence, "docker-smoke.json"));
   copyFileSync(resolve(output, `runtime-${arch}.json`), resolve(evidence, `runtime-${arch}.json`));
   copyFileSync(resolve(output, `render-${arch}.json`), resolve(evidence, `render-${arch}.json`));
+  copyFileSync(resolve(output, `plugin-isolation-${arch}.json`), resolve(evidence, `plugin-isolation-${arch}.json`));
   copyFileSync("artifacts/verification/release-image/build/image-build-metadata.json", resolve(evidence, "image-build-metadata.json"));
 } else if (process.argv[2] === "publish") {
   const native = {};
@@ -86,6 +92,9 @@ if (process.argv[2] === "native") {
     results.push(...smoke.results);
     copyFileSync(resolve(input, `runtime-${arch}.json`), resolve(output, `runtime-${arch}.json`));
     copyFileSync(resolve(input, `render-${arch}.json`), resolve(output, `render-${arch}.json`));
+    const isolation = read(resolve(input, `plugin-isolation-${arch}.json`));
+    assert(isolation.passed && isolation.version === version && isolation.guardedWrites === 503);
+    copyFileSync(resolve(input, `plugin-isolation-${arch}.json`), resolve(output, `plugin-isolation-${arch}.json`));
     copyFileSync(resolve(input, "native.json"), resolve(output, `native-${arch}.json`));
     copyFileSync(resolve(input, "image-build-metadata.json"), resolve(output, `image-build-${arch}-metadata.json`));
   }
@@ -102,6 +111,7 @@ if (process.argv[2] === "native") {
   mkdirSync(evidence, { recursive: true });
   for (const name of ["image-build.json", "docker-smoke.json", "runtime-amd64.json", "runtime-arm64.json",
     "render-amd64.json", "render-arm64.json",
+    "plugin-isolation-amd64.json", "plugin-isolation-arm64.json",
     "native-amd64.json", "native-arm64.json", "image-build-amd64-metadata.json", "image-build-arm64-metadata.json",
     `registry-${version}.json`, "registry-latest.json", "ci-publication.json"])
     copyFileSync(resolve(output, name), resolve(evidence, name));

@@ -69,6 +69,8 @@ jobs:
         env:
           DOCA_RELEASE_QA_ARCH: ${{ matrix.arch }}
         run: node scripts/qa-release-browser-image.mjs
+      - name: Verify incompatible plugins do not stop the host
+        run: node scripts/qa-release-plugin-image.mjs
       - name: Verify browser-free PDF, Canvas pixels and Office conversion
         env:
           ARCH: ${{ matrix.arch }}

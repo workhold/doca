@@ -451,6 +451,10 @@ export async function composeServerPlugins(
         ...(installedPlugin?.web ? { web: pluginWebUrl(installedPlugin) } : {}),
       };
     });
+    const unavailable = pluginServices(runtime.db).unavailablePlugins;
+    unavailable.clear();
+    for (const plugin of manager.unavailable()) unavailable.add(plugin.id);
+    runtime.api.addHook("onClose", async () => { unavailable.clear(); });
     await host.start();
     try {
       await manager.confirm();
@@ -458,6 +462,8 @@ export async function composeServerPlugins(
       await host.dispose();
       throw error;
     }
+    for (const plugin of manager.unavailable())
+      runtime.api.log.warn({ pluginId: plugin.id, version: plugin.version, issue: plugin.issue }, "Plugin unavailable; upgrade the plugin and restart");
     pluginServices(runtime.db).continuationsReady = true;
     registerPluginManagement(runtime.api, runtime.db, runtime.admin, manager);
     const iconPluginIds = new Set(
@@ -504,6 +510,7 @@ export async function composeServerPlugins(
     return { host, search, plugins: descriptors };
   } catch (error) {
     pluginServices(runtime.db).continuationsReady = false;
+    pluginServices(runtime.db).unavailablePlugins.clear();
     try {
       await host.dispose();
     } finally {

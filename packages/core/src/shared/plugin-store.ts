@@ -60,6 +60,14 @@ export interface StoreUpdate {
   release: StoreRelease | null;
   reason: string | null;
 }
+export type PluginStartupIssue =
+  | { code: "sdk_incompatible"; sdkVersion: string; sdkRange: string }
+  | {
+      code: "dependency_unavailable";
+      dependencyId: string;
+      requiredRange: string;
+      installedVersion: string | null;
+    };
 export interface ManagedPlugin {
   id: string;
   name: string;
@@ -70,6 +78,7 @@ export interface ManagedPlugin {
   npm?: NpmRelease;
   enabled: boolean;
   runningVersion: string | null;
+  startupIssue: PluginStartupIssue | null;
   pending: boolean;
   canCancel: boolean;
   removing: boolean;

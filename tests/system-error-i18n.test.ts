@@ -13,6 +13,12 @@ afterEach(() => {
   setAPIErrorLocale("zh");
 });
 
+it("explains unavailable plugin policy checks in both languages", () => {
+  const encoded = encodeSystemError({ code: "plugin_policies_unavailable" });
+  expect(systemErrorMessage(encoded, createTranslator("zh"))).toContain("升级或停用不兼容插件");
+  expect(systemErrorMessage(encoded, createTranslator("en"))).toContain("upgrade or disable incompatible plugins");
+});
+
 it.each(["image_auth_failed", "image_candidate_region_invalid", "ai_workflow_incomplete", "image_review_result_invalid"])("keeps presentation metadata out of model-facing messages and tool error serialisation: %s", (code) => {
   const message = "图片模型认证失败，请检查厂商密钥";
   const original = new AppError(502, message);

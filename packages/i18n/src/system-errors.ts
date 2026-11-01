@@ -35,6 +35,7 @@ export function decodeSystemError(value: string): SystemErrorReason | undefined 
 type Translator = (key: MessageKey, values?: MessageValues) => string;
 
 const reasonKeys = {
+  plugin_policies_unavailable: "error.system.pluginPoliciesUnavailable",
   group_invalid: "groups.error.invalid",
   group_unavailable: "groups.error.unavailable",
   group_forbidden: "groups.error.forbidden",
