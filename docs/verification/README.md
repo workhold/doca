@@ -9,6 +9,8 @@ The untracked raw attachments and seven temporary diagnostic or intermediate-run
 
 ## Release verification
 
+- [Doca 0.2.32 当前用户提及与发布验收](release-0.2.32.md)
+
 - [Doca 0.2.31 插件隔离与发布验收](release-0.2.31.md)
 
 - [Doca 0.2.30 发布验收](release-0.2.30.md)
