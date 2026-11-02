@@ -190,9 +190,9 @@ body,
   color: #3370ff;
   border-radius: 4px;
 }
-.user-mention.is-self,
-.document-user-mention.is-self,
-.comment-mention.is-self {
+.user-mention.is-self .user-badge,
+.document-user-mention.is-self .user-badge,
+.comment-mention.is-self .user-badge {
   display: inline;
   background: #3370ff;
   color: #fff;
@@ -213,7 +213,7 @@ body,
 .user-mention.is-self .user-badge[role="button"]:hover,
 .document-user-mention.is-self .user-badge[role="button"]:hover,
 .comment-mention.is-self .user-badge[role="button"]:hover {
-  background: transparent;
+  background: #3370ff;
   color: #fff;
 }
 .document-mention-menu,
