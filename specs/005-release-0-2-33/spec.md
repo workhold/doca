@@ -1,7 +1,7 @@
 # Doca 0.2.33 提及样式发布
 
 **Level**: full
-**Status**: accepted
+**Status**: verified
 **Created**: 2026-11-03
 **Decision**: 用户明确要求“发dockerhub和github”，发布本会话已完成的文档与表格提及样式，使用正式 Sheet 0.2.17。
 
