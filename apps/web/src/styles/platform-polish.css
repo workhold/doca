@@ -190,31 +190,34 @@ body,
   color: #3370ff;
   border-radius: 4px;
 }
-.user-mention.is-self .user-badge,
-.document-user-mention.is-self .user-badge,
-.comment-mention.is-self .user-badge {
-  display: inline;
-  background: #3370ff;
-  color: #fff;
-  padding: 0 8px;
-  border-radius: 999px;
-  line-height: inherit;
-  vertical-align: baseline;
+.user-mention.is-self {
+  --mention-background: #3370ff;
+  --mention-color: #fff;
+  --mention-padding: 0.05em 0.45em;
 }
 .user-mention .user-badge,
-.document-user-mention .user-badge,
-.comment-mention .user-badge {
-  display: inline;
+a[href^="#/u/"],
+.sk-content a[href^="#/u/"],
+.doca-markdown .markdown-body a[href^="#/u/"] {
+  display: inline-flex;
+  align-items: center;
   font: inherit;
-  color: inherit;
-  line-height: inherit;
+  color: var(--mention-color, #3370ff);
+  background: var(--mention-background, transparent);
+  padding: var(--mention-padding, 0);
+  border-radius: 999px;
+  border-bottom: 0;
+  text-decoration: none;
+  line-height: 1.25;
   vertical-align: baseline;
+  white-space: nowrap;
 }
-.user-mention.is-self .user-badge[role="button"]:hover,
-.document-user-mention.is-self .user-badge[role="button"]:hover,
-.comment-mention.is-self .user-badge[role="button"]:hover {
-  background: #3370ff;
-  color: #fff;
+.user-mention .user-badge[role="button"]:hover,
+a[href^="#/u/"]:hover,
+.sk-content a[href^="#/u/"]:hover,
+.doca-markdown .markdown-body a[href^="#/u/"]:hover {
+  background: var(--mention-background, transparent);
+  color: var(--mention-color, #3370ff);
 }
 .document-mention-menu,
 .sheet-native-candidates {

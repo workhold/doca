@@ -10,7 +10,7 @@
 | --- | --- | --- |
 | 富文本 | @smartdoca/slate 0.4.26 | document-editor.tsx |
 | Markdown | @smartdoca/markdown 0.4.4 | markdown-editor.tsx |
-| 表格 | @smartdoca/sheet 0.2.15 | spreadsheet-editor.tsx |
+| 表格 | @smartdoca/sheet 0.2.17 | spreadsheet-editor.tsx |
 | 画布 | @smartdoca/canvas 0.5.16 | canvas-editor.tsx |
 | 幻灯片 | @smartdoca/slides 0.3.0-alpha.5 | presentation-editor.tsx |
 
@@ -206,3 +206,9 @@ Doca 0.2.23 使用正式 npm 精确版本：Sheet 0.2.14、Canvas 0.5.16、Slide
 Sheet 新增 `commentHighlightAnchor`，宿主从当前可见、授权、未解决的评论标记中选择明确点击的评论锚点；Slides 新增 `activeCommentId`，宿主传入当前标记的 ID。五种格式打开侧栏、链接定位或点击正文原生标记时均不添加背景；点击评论卡片或评论导航后，只高亮该评论对应内容。切换评论时替换，点击其他位置（包括编辑器和侧栏空白）、评论解决或侧栏关闭时清除，重新打开不恢复；定位仍显式使用既有 reveal 接口。只读模式也可高亮，进入放映时隐藏。重叠候选继续由宿主选择。表格支持当前稳定锚点解析出的多段区域；幻灯片遵循现有整元素/整表锚点范围，不新增永久单元格或字形锚点。
 
 Canvas 在非编辑悬停和小手选中整表时显示连接点，编辑单元格时隐藏。宿主仅为明确点击的画布评论对应内容增加半透明背景。所有变化仅为交互视图，不改文档样式、永久锚点、Yjs 事务、schema/codec、epoch、检查点、ACK 或 outbox，也不添加历史读取、转换或适配。回退保留正式旧包版本、锁文件及后续业务数据。
+
+## 表格当前用户提及样式 — 2026-11-03
+
+Sheet 0.2.17 提供 `SpreadsheetEditor.currentUserId?: string | null`。Doca 传入当前登录用户 UUID，原生 `type: 'user'` 原子节点按 `refId` 精确匹配：@ 自己使用胶囊圆角的蓝底白字，其他用户蓝字，所有用户提及去掉下划线。网格、公式栏及单元格草稿采用同一 Canvas 绘制规则，只读也支持；普通链接保留原生样式。整格用户对象继续使用共享的 `UserMention` 渲染器。
+
+切换或清空身份仅重绘现有运行时，身份和展示颜色不写入单元格、撤销、剪贴板、XLSX、协同和历史。自定义运行时可读取可选 `RuntimeFactoryContext.userMentions.currentUserId()` 并实现 `SpreadsheetRuntime.refreshUserMentions()`；这是视图能力，没有新增存储格式或旧 API 适配。用户节点数据、schema 6 和历史读取及既有默认规则不变。model/Yjs/XLSX/preferences 八个 JS 入口与 0.2.15 字节一致。本地验证和发布范围见[变更验证](../specs/004-sheet-self-mentions/validation.md)。

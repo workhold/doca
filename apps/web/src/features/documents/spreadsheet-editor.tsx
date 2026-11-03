@@ -321,6 +321,7 @@ export default function SheetDocument({
           showHeader={false}
           showInsertToolbar={false}
           showSaveState={false}
+          currentUserId={user?.id}
           currentSessionId={sync.presence.self}
           remoteSelections={remoteSelections}
           onSelectionChange={publish}

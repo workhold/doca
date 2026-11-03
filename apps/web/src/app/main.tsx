@@ -4,12 +4,14 @@ import { createRoot } from "react-dom/client";
 import { App } from "./app.js";
 import { FeedbackViewport } from "@web/shared/components/feedback.js";
 import { LocaleProvider } from "@web/shared/i18n.js";
+import { UserMentionLinkStyles } from "@web/shared/components/user-mention.js";
 import { loadWebPlugins } from "../plugins/load.js";
 import { readDocumentStartup } from "../shared/document-startup-cache.js";
 
 function mount() {
   createRoot(document.getElementById("root")!).render(
     <LocaleProvider>
+      <UserMentionLinkStyles />
       <App />
       <PluginExtensionHost />
       <FeedbackViewport />

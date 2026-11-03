@@ -1,5 +1,6 @@
 import { useCanvasRichExtensions } from "./canvas-rich-extensions.js";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useCurrentUserId } from "@web/shared/components/user-mention.js";
 import { useI18n } from "@web/shared/i18n.js";
 import * as Y from "yjs";
 import { PresentationWorkspace } from "@smartdoca/slides";
@@ -41,6 +42,7 @@ export default function SurfacePreview({
   audit?: boolean;
 }) {
   const { t, locale } = useI18n();
+  const currentUserId = useCurrentUserId();
   const richTextExtensions = useCanvasRichExtensions();
   const sheetHandle = useRef<SpreadsheetEditorHandle | null>(null);
   const sheetReady = useCallback((handle: SpreadsheetEditorHandle) => {
@@ -150,6 +152,7 @@ export default function SurfacePreview({
       ) : model ? (
         <SpreadsheetEditor
           locale={locale}
+          currentUserId={currentUserId}
           onAttachmentPreview={attachmentPreview.onSheetAttachmentPreview}
           onImagePreview={attachmentPreview.onSheetImagePreview}
           onReady={sheetReady}
