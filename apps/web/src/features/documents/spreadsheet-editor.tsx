@@ -150,8 +150,8 @@ export default function SheetDocument({
       { id: "doca-ai", title: t("editor.citeAi"), ariaLabel: t("editor.citeAi"), path: "ribbon.others.others", order: 998, icon: <Sparkles size={18} />, requiresEditPermission: false, enabled: context => !!context.selection && !!aiRef.current?.userId, action: () => aiRef.current?.add() },
       {
         id: "doca-region-comment",
-        title: "评论",
-        ariaLabel: "评论选中区域",
+        title: t("editor.comment"),
+        ariaLabel: t("editor.commentSelection"),
         path: "ribbon.others.others",
         order: 999,
         icon: <MessageSquare size={18} />,

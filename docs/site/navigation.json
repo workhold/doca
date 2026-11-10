@@ -312,6 +312,11 @@
     "zh": "发行记录",
     "pages": [
       [
+        "releases/0.2.34",
+        "0.2.34 — English spreadsheet toolbar",
+        "0.2.34 — 英文表格工具栏"
+      ],
+      [
         "releases/0.2.33",
         "0.2.33 — User mention badges",
         "0.2.33 — 用户提及样式"

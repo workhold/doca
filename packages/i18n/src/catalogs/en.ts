@@ -2941,6 +2941,7 @@ export const en = {
   "editor.videoDecodeError": "The video is damaged or its encoding is unsupported by this browser.",
   "editor.videoUnsupported": "This browser does not support the video format or the file is invalid.",
   "editor.citeAi": "Cite for AI",
+  "editor.comment": "Comment",
   "editor.commentSelection": "Comment on selection",
   "editor.canvasPreferenceUnsupported": "This browser has an unsupported canvas preference record. It is preserved; changes in this view will not overwrite it.",
   "editor.canvasPreferenceUnavailable": "Canvas preferences could not be saved in this browser. Changes apply to this view only.",
