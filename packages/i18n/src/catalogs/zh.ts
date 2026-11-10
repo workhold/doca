@@ -2729,6 +2729,7 @@ export const zh = {
   "editor.videoDecodeError": "视频已损坏，或当前浏览器不支持其编码。",
   "editor.videoUnsupported": "当前浏览器不支持该视频格式，或文件内容无效。",
   "editor.citeAi": "引用给 AI",
+  "editor.comment": "评论",
   "editor.commentSelection": "评论选中区域",
   "editor.canvasPreferenceUnsupported": "本浏览器保存的画布偏好格式暂不支持，已保留原记录；本次视图调整不会覆盖它。",
   "editor.canvasPreferenceUnavailable": "无法在本浏览器保存画布偏好，本次调整仅在当前视图生效。",

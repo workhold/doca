@@ -488,11 +488,34 @@ body:has(.modal-shade) > .exmd-selection-toolbar {
   visibility: hidden;
 }
 
-/* View mode keeps host comment/reference actions while hiding SDK editing chrome. */
+/* Fit translated tile groups without changing the SDK's overflow menu. */
+.sheet-document .uos-office-group:has(> .uos-office-tile) {
+  width: max-content !important;
+  min-width: 0;
+  flex: 0 1 auto;
+}
+.sheet-document .uos-office-group > .uos-office-tile,
+.sheet-document .uos-office-group > span:has(> .uos-office-tile) {
+  flex: 0 1 auto;
+  min-width: 40px;
+}
+.sheet-document .uos-office-group > span > .uos-office-tile {
+  width: 100%;
+  min-width: 0;
+}
+/* Tile groups grow to fit translations and shrink when space is scarce. Keep
+   long labels inside buttons; title and aria-label retain the full name. */
+.sheet-document .uos-office-group .uos-office-label {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .sheet-document .uos-office-toolbar .uos-toolbar-host-actions {
+  max-width: none;
   gap: 6px;
   padding-left: 8px;
-  margin-left: 8px;
+  margin-left: 0;
   overflow: visible;
 }
 .sheet-document .uos-office-toolbar .uos-toolbar-host-actions button {
@@ -505,7 +528,7 @@ body:has(.modal-shade) > .exmd-selection-toolbar {
   color: #a66d00 !important;
   font-size: 12px;
 }
-.sheet-document .uos-office-toolbar .uos-toolbar-host-actions button[aria-label="引用给 AI"] {
+.sheet-document .uos-office-toolbar .uos-toolbar-host-actions button:has(.lucide-sparkles) {
   color: #7859b8 !important;
 }
 .sheet-document .uos-office-toolbar .uos-toolbar-host-actions button:hover:not(:disabled) {
@@ -517,6 +540,7 @@ body:has(.modal-shade) > .exmd-selection-toolbar {
   justify-content: center;
   line-height: 1;
 }
+/* View mode keeps host comment/reference actions while hiding SDK editing chrome. */
 .sheet-document.is-reading .uos-office-groups > :not(.uos-toolbar-host-actions),
 body:has(.sheet-document.is-reading) .uos-office-popover,
 .presentation-document.is-reading .eppt-toolbar {
