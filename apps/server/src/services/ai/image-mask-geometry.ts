@@ -1,5 +1,4 @@
 import { createHash } from "node:crypto";
-import sharp from "sharp";
 import { z } from "zod";
 import type { DB } from "@db/index.js";
 import type { ToolContext } from "@core/workflows/ai-documents.js";
@@ -7,6 +6,7 @@ import type { StorageRuntime } from "../../adapters/storage.js";
 import { fail } from "@core/shared/errors.js";
 import { editRegionsSchema, emptyEditRegionsSchema, type EditRegions } from "./image-edit-regions.js";
 import { readImageEditMask } from "./image-edit-mask.js";
+import { rasterizeMaskRegions } from "./image-mask-raster.js";
 
 const regions = z.union([emptyEditRegionsSchema, editRegionsSchema]);
 const rectangleSchema = z
@@ -100,22 +100,6 @@ const MAX_PIXELS = 25_000_000,
   TAB_WIDTH_PIXELS = 0.1;
 const sha = (data: Buffer) => createHash("sha256").update(data).digest("hex");
 
-// This deliberately matches image-edit-mask's SVG alpha >=128 rule, without
-// modifying that persisted v2 recipe or adding a different raster convention.
-async function raster(input: EditRegions | [], width: number, height: number) {
-  if (!input.length) return Buffer.alloc(width * height);
-  const svg = Buffer.from(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">${input.map((region) => `<polygon fill="white" points="${region.points.map(([x, y]) => `${x * width},${y * height}`).join(" ")}"/>`).join("")}</svg>`,
-  );
-  const pixels = await sharp(svg, { limitInputPixels: MAX_PIXELS })
-    .ensureAlpha()
-    .extractChannel(3)
-    .raw()
-    .toBuffer();
-  for (let i = 0; i < pixels.length; i++)
-    pixels[i] = pixels[i]! >= 128 ? 255 : 0;
-  return pixels;
-}
 function pixelFacts(pixels: Buffer, width: number, height: number) {
   let count = 0,
     left = width,
@@ -317,8 +301,8 @@ async function verifyGeometry(
         .join("; ")}`,
     };
   const [include, exclude] = await Promise.all([
-    raster(geometry.include, width, height),
-    raster(geometry.exclude, width, height),
+    rasterizeMaskRegions(geometry.include, width, height),
+    rasterizeMaskRegions(geometry.exclude, width, height),
   ]);
   for (let i = 0; i < include.length; i++)
     if (exclude[i] === 255) include[i] = 0;
@@ -692,7 +676,7 @@ export async function readImageMaskGeometry(
   const { width, height } = current.receipt.source,
     { s, g, p, t, conflicts } = current.computed;
   const clip = input.clipRegions
-    ? await raster(input.clipRegions, width, height)
+    ? await rasterizeMaskRegions(input.clipRegions, width, height)
     : undefined;
   const pixels = Buffer.alloc(width * height);
   for (let i = 0; i < pixels.length; i++) {

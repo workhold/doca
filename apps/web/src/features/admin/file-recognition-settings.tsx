@@ -21,6 +21,37 @@ type Settings = {
   models: Array<{ id: string; name: string; vision: boolean; pdf: boolean }>;
 };
 
+function PolicyChoices<T extends string>({
+  options,
+  selected,
+  onChange,
+}: {
+  options: ReadonlyArray<readonly [T, string]>;
+  selected: T[];
+  onChange: (values: T[]) => void;
+}) {
+  return (
+    <div>
+      {options.map(([value, label]) => (
+        <label key={value}>
+          <input
+            type="checkbox"
+            checked={selected.includes(value)}
+            onChange={() =>
+              onChange(
+                selected.includes(value)
+                  ? selected.filter((item) => item !== value)
+                  : [...selected, value],
+              )
+            }
+          />
+          {label}
+        </label>
+      ))}
+    </div>
+  );
+}
+
 export function FileRecognitionSettings() {
   const { t } = useI18n();
   const [data, setData] = useState<Settings | null>(null);
@@ -55,10 +86,6 @@ export function FileRecognitionSettings() {
     setData((old) =>
       old ? { ...old, config: { ...old.config, ...patch } } : old,
     );
-  const toggle = <T extends string>(values: T[], value: T) =>
-    values.includes(value)
-      ? values.filter((item) => item !== value)
-      : [...values, value];
   const groups = [
     ["image", t("recognition.image")],
     ["pdf", "PDF"],
@@ -153,68 +180,29 @@ export function FileRecognitionSettings() {
           <div className="file-recognition-policy">
             <strong>{t("recognition.groups")}</strong>
             <p>{t("recognition.groupsHelp")}</p>
-            <div>
-              {groups.map(([value, label]) => (
-                <label key={value}>
-                  <input
-                    type="checkbox"
-                    checked={data.config.recognitionGroups.includes(value)}
-                    onChange={() =>
-                      update({
-                        recognitionGroups: toggle(
-                          data.config.recognitionGroups,
-                          value,
-                        ),
-                      })
-                    }
-                  />
-                  {label}
-                </label>
-              ))}
-            </div>
+            <PolicyChoices
+              options={groups}
+              selected={data.config.recognitionGroups}
+              onChange={(recognitionGroups) => update({ recognitionGroups })}
+            />
           </div>
           <div className="file-recognition-policy">
             <strong>{t("recognition.sources")}</strong>
             <p>{t("recognition.sourcesHelp")}</p>
-            <div>
-              {sources.map(([value, label]) => (
-                <label key={value}>
-                  <input
-                    type="checkbox"
-                    checked={data.config.recognitionSources.includes(value)}
-                    onChange={() =>
-                      update({
-                        recognitionSources: toggle(
-                          data.config.recognitionSources,
-                          value,
-                        ),
-                      })
-                    }
-                  />
-                  {label}
-                </label>
-              ))}
-            </div>
+            <PolicyChoices
+              options={sources}
+              selected={data.config.recognitionSources}
+              onChange={(recognitionSources) => update({ recognitionSources })}
+            />
           </div>
           <div className="file-recognition-policy">
             <strong>{t("recognition.searchGroups")}</strong>
             <p>{t("recognition.searchGroupsHelp")}</p>
-            <div>
-              {groups.map(([value, label]) => (
-                <label key={value}>
-                  <input
-                    type="checkbox"
-                    checked={data.config.searchGroups.includes(value)}
-                    onChange={() =>
-                      update({
-                        searchGroups: toggle(data.config.searchGroups, value),
-                      })
-                    }
-                  />
-                  {label}
-                </label>
-              ))}
-            </div>
+            <PolicyChoices
+              options={groups}
+              selected={data.config.searchGroups}
+              onChange={(searchGroups) => update({ searchGroups })}
+            />
           </div>
           {!data.models.length && (
             <p className="admin-note">{t("recognition.noModels")}</p>

@@ -14,8 +14,9 @@ import {
   rawImageCandidateCanvas,
   rawImageTransformSchema,
 } from "./image-candidates.js";
-import { editRegionsSchema, emptyEditRegionsSchema, type EditRegions } from "./image-edit-regions.js";
+import { editRegionsSchema, emptyEditRegionsSchema } from "./image-edit-regions.js";
 import { bindImageEditBitmap } from "./image-edit-bitmap.js";
+import { rasterizeMaskRegions } from "./image-mask-raster.js";
 import {
   readUsableImageMaskSegment,
   type ImageMaskSegmentInput,
@@ -221,23 +222,6 @@ async function png(pixels: Buffer, width: number, height: number) {
     .png()
     .toBuffer();
 }
-async function polygons(
-  input: EditRegions | [],
-  width: number,
-  height: number,
-) {
-  if (!input.length) return Buffer.alloc(width * height);
-  const svg = Buffer.from(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">${input.map((region) => `<polygon fill="white" points="${region.points.map(([x, y]) => `${x * width},${y * height}`).join(" ")}"/>`).join("")}</svg>`,
-  );
-  const alpha = await sharp(svg, { limitInputPixels: 25_000_000 })
-    .ensureAlpha()
-    .extractChannel(3)
-    .raw()
-    .toBuffer();
-  for (let i = 0; i < alpha.length; i++) alpha[i] = alpha[i]! >= 128 ? 255 : 0;
-  return alpha;
-}
 async function selection(
   input: Selection,
   width: number,
@@ -245,8 +229,8 @@ async function selection(
   proposalPixels?: Buffer,
 ) {
   const [included, excluded] = await Promise.all([
-    polygons(input.include, width, height),
-    polygons(input.exclude, width, height),
+    rasterizeMaskRegions(input.include, width, height),
+    rasterizeMaskRegions(input.exclude, width, height),
   ]);
   if (proposalPixels)
     for (let i = 0; i < included.length; i++)

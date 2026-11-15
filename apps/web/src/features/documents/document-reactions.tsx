@@ -11,6 +11,18 @@ export type ReactionChange = {
   resource?: Pick<Resource, "id" | "title" | "kind" | "format" | "favorite" | "pinned">;
 };
 
+export function applyReactionChange(items: Resource[], change: ReactionChange) {
+  return items.map((item) =>
+    item.id === change.id
+      ? {
+          ...item,
+          ...(change.favorite !== undefined ? { favorite: change.favorite } : {}),
+          ...(change.pinned !== undefined ? { pinned: change.pinned } : {}),
+        }
+      : item,
+  );
+}
+
 export function publishReaction(change: ReactionChange) {
   window.dispatchEvent(new CustomEvent<ReactionChange>("resource-reaction", { detail: change }));
 }

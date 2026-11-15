@@ -5,6 +5,7 @@ import { Pin } from "lucide-react";
 import { api, type Page, type Resource } from "@web/shared/api.js";
 import { FileIcon } from "@web/features/documents/document-controls.js";
 import {
+  applyReactionChange,
   DocumentReactionButtons,
   type ReactionChange,
 } from "@web/features/documents/document-reactions.js";
@@ -60,15 +61,7 @@ export function PinnedDocuments({ refresh }: { refresh: number }) {
       if (!change?.id) return;
       setItems((old) => {
         if (change.pinned === false) return old.filter((item) => item.id !== change.id);
-        const next = old.map((item) =>
-          item.id === change.id
-            ? {
-                ...item,
-                ...(change.favorite !== undefined ? { favorite: change.favorite } : {}),
-                ...(change.pinned !== undefined ? { pinned: change.pinned } : {}),
-              }
-            : item,
-        );
+        const next = applyReactionChange(old, change);
         if (change.pinned === true && change.resource && !next.some((item) => item.id === change.id))
           return [{ ...change.resource, pinned: true } as Resource, ...next];
         return next;

@@ -17,6 +17,7 @@ import {
   readImageMaskGeometry,
   type ImageMaskGeometryOutput,
 } from "./image-mask-geometry.js";
+import { rasterizeMaskRegions } from "./image-mask-raster.js";
 
 const regions = z.union([emptyEditRegionsSchema, editRegionsSchema]);
 const explicitRegions = (message: string) =>
@@ -112,19 +113,6 @@ type Selection = "source-protected" | "generated-protected";
 const sha = (pixels: Buffer) =>
   createHash("sha256").update(pixels).digest("hex");
 
-async function raster(input: EditRegions | [], width: number, height: number) {
-  if (!input.length) return Buffer.alloc(width * height);
-  const svg = Buffer.from(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">${input.map((region) => `<polygon fill="white" points="${region.points.map(([x, y]) => `${x * width},${y * height}`).join(" ")}"/>`).join("")}</svg>`,
-  );
-  const alpha = await sharp(svg, { limitInputPixels: 25_000_000 })
-    .ensureAlpha()
-    .extractChannel(3)
-    .raw()
-    .toBuffer();
-  for (let i = 0; i < alpha.length; i++) alpha[i] = alpha[i]! >= 128 ? 255 : 0;
-  return alpha;
-}
 async function selectedPixels(
   base: ReadMask,
   selection: Selection,
@@ -132,7 +120,7 @@ async function selectedPixels(
 ) {
   const { width, height } = base.receipt.source;
   const clip = clipRegions
-    ? await raster(clipRegions, width, height)
+    ? await rasterizeMaskRegions(clipRegions, width, height)
     : undefined;
   const pixels = Buffer.alloc(width * height),
     { s, g, p, t } = base.computed;
@@ -334,13 +322,13 @@ export async function refineImageEditMask(
       expectedG = Buffer.from(base.computed.g.pixels),
       expectedO = Buffer.from(base.computed.o.pixels);
     async function append(target: Buffer, regions: EditRegions | []) {
-      const pixels = await raster(regions, width, height);
+      const pixels = await rasterizeMaskRegions(regions, width, height);
       for (let i = 0; i < target.length; i++)
         if (pixels[i] === 255) target[i] = 255;
       return sha(pixels);
     }
     async function subtract(target: Buffer, regions: EditRegions | []) {
-      const pixels = await raster(regions, width, height);
+      const pixels = await rasterizeMaskRegions(regions, width, height);
       for (let i = 0; i < target.length; i++)
         if (pixels[i] === 255) target[i] = 0;
       return sha(pixels);
