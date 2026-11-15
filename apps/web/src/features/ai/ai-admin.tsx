@@ -251,6 +251,26 @@ export function AIAdmin() {
   const d = edit?.draft;
   const modelVendor = config.vendors.find((v: any) => v.id === d?.vendorId);
   const modelProtocol = providerPreset(modelVendor?.provider).protocol;
+  const renderModelInput = (imageDeployment = false) => (
+    <AutoComplete
+      className="ai-choice"
+      {...(imageDeployment
+        ? { "aria-label": t("aiAdmin.imageDeploymentId"), maxLength: 160 }
+        : {})}
+      value={d.model}
+      placeholder={t("aiAdmin.modelIdPlaceholder")}
+      options={(catalogs[d.vendorId] ?? []).map((m) => ({
+        value: m.id,
+        label: m.name && m.name !== m.id ? `${m.id} (${m.name})` : m.id,
+      }))}
+      filterOption={(input, option) =>
+        String(option?.label ?? "")
+          .toLowerCase()
+          .includes(input.trim().toLowerCase())
+      }
+      onChange={(model) => change({ model: model.slice(0, 160) })}
+    />
+  );
   const imageChoices = (operation?: ImageOperation) =>
     config.models
       .filter((m: any) => {
@@ -1113,28 +1133,7 @@ export function AIAdmin() {
                       </label>
                       <label>
                         {t("aiAdmin.imageDeploymentId")}
-                        <AutoComplete
-                          className="ai-choice"
-                          aria-label={t("aiAdmin.imageDeploymentId")}
-                          maxLength={160}
-                          value={d.model}
-                          placeholder={t("aiAdmin.modelIdPlaceholder")}
-                          options={(catalogs[d.vendorId] ?? []).map((m) => ({
-                            value: m.id,
-                            label:
-                              m.name && m.name !== m.id
-                                ? `${m.id} (${m.name})`
-                                : m.id,
-                          }))}
-                          filterOption={(input, option) =>
-                            String(option?.label ?? "")
-                              .toLowerCase()
-                              .includes(input.trim().toLowerCase())
-                          }
-                          onChange={(model) =>
-                            change({ model: model.slice(0, 160) })
-                          }
-                        />
+                        {renderModelInput(true)}
                         <small>{t("aiAdmin.imageDeploymentHelp")}</small>
                         <button
                           type="button"
@@ -1165,26 +1164,7 @@ export function AIAdmin() {
                       {modelVendor?.provider === "azure"
                         ? t("aiAdmin.azureDeployment")
                         : t("aiAdmin.modelId")}
-                      <AutoComplete
-                        className="ai-choice"
-                        value={d.model}
-                        placeholder={t("aiAdmin.modelIdPlaceholder")}
-                        options={(catalogs[d.vendorId] ?? []).map((m) => ({
-                          value: m.id,
-                          label:
-                            m.name && m.name !== m.id
-                              ? `${m.id} (${m.name})`
-                              : m.id,
-                        }))}
-                        filterOption={(input, option) =>
-                          String(option?.label ?? "")
-                            .toLowerCase()
-                            .includes(input.trim().toLowerCase())
-                        }
-                        onChange={(model) =>
-                          change({ model: model.slice(0, 160) })
-                        }
-                      />
+                      {renderModelInput()}
                     </label>
                   )}
                   {supportsApiMode && !d.imageGeneration && (

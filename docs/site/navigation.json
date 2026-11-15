@@ -312,6 +312,11 @@
     "zh": "发行记录",
     "pages": [
       [
+        "releases/0.2.35",
+        "0.2.35 — Behavior-equivalent code simplification",
+        "0.2.35 — 代码等价简化"
+      ],
+      [
         "releases/0.2.34",
         "0.2.34 — English spreadsheet toolbar",
         "0.2.34 — 英文表格工具栏"

@@ -30,7 +30,7 @@ import {
 import { GlobalSearch } from "@web/features/search/search.js";
 export { GlobalSearch } from "@web/features/search/search.js";
 import { FileIcon, TypeFilter } from "@web/features/documents/document-controls.js";
-import { DocumentReactionButtons, type ReactionChange } from "@web/features/documents/document-reactions.js";
+import { applyReactionChange, DocumentReactionButtons, type ReactionChange } from "@web/features/documents/document-reactions.js";
 import { CoverDialog, ResourceActionDialog } from "@web/features/documents/uploads.js";
 import { Dialog } from "@web/features/documents/dialogs.js";
 import { assetUrl } from "@web/shared/api.js";
@@ -190,15 +190,7 @@ export function Dashboard({
           };
         return {
           ...old,
-          items: old.items.map((item) =>
-            item.id === change.id
-              ? {
-                  ...item,
-                  ...(change.favorite !== undefined ? { favorite: change.favorite } : {}),
-                  ...(change.pinned !== undefined ? { pinned: change.pinned } : {}),
-                }
-              : item,
-          ),
+          items: applyReactionChange(old.items, change),
         };
       });
     };

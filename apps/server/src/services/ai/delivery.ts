@@ -177,9 +177,7 @@ export function needsLlmReview(options: {
   plan?: { mode?: string; criteria?: string[] } | null;
   round: number;
 }) {
-  if (!options.written) return false;
-  if (options.plan?.mode === "clarify") return false;
-  return true;
+  return !!options.written && options.plan?.mode !== "clarify";
 }
 
 function directFolderMutation(text: string) {

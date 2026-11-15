@@ -122,6 +122,20 @@ type NameConflictPrompt = {
   conflicts: NameConflict[];
 };
 
+const systemFolderOrder: Record<string, number> = { ai: 0, documents: 1, shared: 2 };
+function compareFolders(a: FileFolder, b: FileFolder, locale: string) {
+  if (a.virtual || b.virtual)
+    return (systemFolderOrder[a.id] ?? 99) - (systemFolderOrder[b.id] ?? 99);
+  return a.name.localeCompare(b.name, locale);
+}
+function compareFiles(a: FileItem, b: FileItem, mode: SortMode, locale: string) {
+  return mode === "size"
+    ? b.size - a.size
+    : mode === "updated"
+      ? b.updated_at.localeCompare(a.updated_at)
+      : a.name.localeCompare(b.name, locale);
+}
+
 const root: Location = { type: "system", id: "root", name: "我的文件夹" };
 function readFocusId() {
   if (typeof window === "undefined") return null;
@@ -658,15 +672,7 @@ export function FilesExplorer({
           ),
       )
       .filter((folder) => !q || folder.name.toLocaleLowerCase().includes(q))
-      .sort((a, b) => {
-        const special = { ai: 0, documents: 1, shared: 2 } as Record<
-          string,
-          number
-        >;
-        if (a.virtual || b.virtual)
-          return (special[a.id] ?? 99) - (special[b.id] ?? 99);
-        return a.name.localeCompare(b.name, textLocale);
-      });
+      .sort((a, b) => compareFolders(a, b, textLocale));
   }, [data, location.id, location.type, search, textLocale]);
   const visibleFiles = useMemo(() => {
     const q = search.trim().toLocaleLowerCase();
@@ -678,13 +684,7 @@ export function FilesExplorer({
             value?.toLocaleLowerCase().includes(q),
           ),
       )
-      .sort((a, b) =>
-        sortMode === "size"
-          ? b.size - a.size
-          : sortMode === "updated"
-            ? b.updated_at.localeCompare(a.updated_at)
-            : a.name.localeCompare(b.name, textLocale),
-      );
+      .sort((a, b) => compareFiles(a, b, sortMode, textLocale));
   }, [data, search, sortMode, textLocale]);
   const items = useMemo(
     () => [...visibleFolders, ...visibleFiles],
@@ -2103,24 +2103,10 @@ export function FilesExplorer({
       .filter(
         (folder) => !query || folder.name.toLocaleLowerCase().includes(query),
       )
-      .sort((a, b) => {
-        const special = { ai: 0, documents: 1, shared: 2 } as Record<
-          string,
-          number
-        >;
-        if (a.virtual || b.virtual)
-          return (special[a.id] ?? 99) - (special[b.id] ?? 99);
-        return a.name.localeCompare(b.name, textLocale);
-      });
+      .sort((a, b) => compareFolders(a, b, textLocale));
     const files = page.files
       .filter((file) => !query || file.name.toLocaleLowerCase().includes(query))
-      .sort((a, b) =>
-        sortMode === "size"
-          ? b.size - a.size
-          : sortMode === "updated"
-            ? b.updated_at.localeCompare(a.updated_at)
-            : a.name.localeCompare(b.name, textLocale),
-      );
+      .sort((a, b) => compareFiles(a, b, sortMode, textLocale));
     return [
       ...folders.map((value) => ({ kind: "folder" as const, value })),
       ...files.map((value) => ({ kind: "file" as const, value })),
@@ -3846,6 +3832,28 @@ function FolderBrowserPicker({
       setBusy(false);
     }
   }
+  const renderFileButton = (file: FileItem) => (
+    <button
+      key={file.id}
+      className={
+        (
+          selectFiles
+            ? chosenFiles.some((item) => item.id === file.id)
+            : chosen?.id === file.id
+        )
+          ? "selected"
+          : ""
+      }
+      onClick={() => chooseFile(file)}
+      onDoubleClick={selectFiles ? undefined : () => void confirm(file)}
+    >
+      <FileGlyph file={file} />
+      <span>
+        <strong>{file.name}</strong>
+        <small>{formatSize(file.size)}</small>
+      </span>
+    </button>
+  );
   return createPortal(
     <div
       className="file-info-backdrop folder-file-picker-backdrop"
@@ -3952,30 +3960,7 @@ function FolderBrowserPicker({
               <div className="finder-picker-column">
                 {(results ?? [])
                   .filter((file) => !accept || accept(file))
-                  .map((file) => (
-                    <button
-                      key={file.id}
-                      className={
-                        (
-                          selectFiles
-                            ? chosenFiles.some((item) => item.id === file.id)
-                            : chosen?.id === file.id
-                        )
-                          ? "selected"
-                          : ""
-                      }
-                      onClick={() => chooseFile(file)}
-                      onDoubleClick={
-                        selectFiles ? undefined : () => void confirm(file)
-                      }
-                    >
-                      <FileGlyph file={file} />
-                      <span>
-                        <strong>{file.name}</strong>
-                        <small>{formatSize(file.size)}</small>
-                      </span>
-                    </button>
-                  ))}
+                  .map(renderFileButton)}
               </div>
             ) : (
               columns.map((column, index) => (
@@ -4016,30 +4001,7 @@ function FolderBrowserPicker({
                   ))}
                   {column.page.files
                     .filter((file) => !accept || accept(file))
-                    .map((file) => (
-                      <button
-                        key={file.id}
-                        className={
-                          (
-                            selectFiles
-                              ? chosenFiles.some((item) => item.id === file.id)
-                              : chosen?.id === file.id
-                          )
-                            ? "selected"
-                            : ""
-                        }
-                        onClick={() => chooseFile(file)}
-                        onDoubleClick={
-                          selectFiles ? undefined : () => void confirm(file)
-                        }
-                      >
-                        <FileGlyph file={file} />
-                        <span>
-                          <strong>{file.name}</strong>
-                          <small>{formatSize(file.size)}</small>
-                        </span>
-                      </button>
-                    ))}
+                    .map(renderFileButton)}
                   {!column.page.folders.length &&
                     !column.page.files.filter((file) => !accept || accept(file))
                       .length && <p>{t("fileManager.emptyPicker")}</p>}
