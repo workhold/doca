@@ -312,6 +312,11 @@
     "zh": "发行记录",
     "pages": [
       [
+        "releases/0.2.36",
+        "0.2.36 — Spreadsheet corner styling",
+        "0.2.36 — 表格左上角样式"
+      ],
+      [
         "releases/0.2.35",
         "0.2.35 — Behavior-equivalent code simplification",
         "0.2.35 — 代码等价简化"
