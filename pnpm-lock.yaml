@@ -181,8 +181,8 @@ importers:
         specifier: workspace:*
         version: link:packages/search-host
       '@smartdoca/sheet':
-        specifier: 0.2.15
-        version: 0.2.15(@types/react-dom@19.2.7(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: 0.2.17
+        version: 0.2.17(@types/react-dom@19.2.7(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@smartdoca/slate':
         specifier: 0.4.26
         version: 0.4.26(katex@0.18.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(slate-dom@0.118.1(slate@0.118.1))(slate-history@0.113.1(slate@0.118.1))(slate-react@0.118.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(slate-dom@0.118.1(slate@0.118.1))(slate@0.118.1))(slate@0.118.1)
@@ -3888,8 +3888,8 @@ packages:
       react-dom: '>=18.2.0'
       yjs: 13.6.32
 
-  '@smartdoca/sheet@0.2.15':
-    resolution: {integrity: sha512-+K81VisjVhX4TVUq1hkpmtLdDweXjuuacGZ5s3JVBF1Zcqnr5SqATyCaIwbUlvvomgUKBt7bb5aQJS5jJnAO4w==}
+  '@smartdoca/sheet@0.2.17':
+    resolution: {integrity: sha512-xpiUbvWMIvNg5elTF71DdM4n7C9niM7BKYxFzvOsp88p5+tC4Zm653wiFexv1u0FfD0ur24lNdQ7po7u8pvuYw==}
     peerDependencies:
       react: '>=18'
       react-dom: '>=18'
@@ -13818,7 +13818,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@smartdoca/sheet@0.2.15(@types/react-dom@19.2.7(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
+  '@smartdoca/sheet@0.2.17(@types/react-dom@19.2.7(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
       '@antv/g2': 5.4.8
       '@univerjs/core': 0.25.1(react@19.2.8)(rxjs@7.8.2)

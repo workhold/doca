@@ -15,6 +15,23 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener);
 }
 
+export function useCurrentUserId() {
+  return useSyncExternalStore(subscribe, () => currentUserId, () => null);
+}
+
+/** Style the host's user links without changing SDK rendering or document data. */
+export function UserMentionLinkStyles() {
+  const id = useCurrentUserId();
+  if (!id) return null;
+  return (
+    <style>{`a[href="#/u/${CSS.escape(id)}"] {
+      --mention-background: #3370ff;
+      --mention-color: #fff;
+      --mention-padding: 0.05em 0.45em;
+    }`}</style>
+  );
+}
+
 export function UserMention({
   id,
   name,
@@ -24,11 +41,7 @@ export function UserMention({
   name: string;
   className?: string;
 }) {
-  const self = useSyncExternalStore(
-    subscribe,
-    () => currentUserId,
-    () => null,
-  );
+  const self = useCurrentUserId();
   const label = name.replace(/^@/, "");
   return (
     <span

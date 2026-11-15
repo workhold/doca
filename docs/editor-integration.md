@@ -10,7 +10,7 @@ This is the integration source document for all five editors; subpackages consum
 | --- | --- | --- |
 | Rich text | @smartdoca/slate 0.4.26 | document-editor.tsx |
 | Markdown | @smartdoca/markdown 0.4.4 | markdown-editor.tsx |
-| Spreadsheet | @smartdoca/sheet 0.2.15 | spreadsheet-editor.tsx |
+| Spreadsheet | @smartdoca/sheet 0.2.17 | spreadsheet-editor.tsx |
 | Canvas | @smartdoca/canvas 0.5.16 | canvas-editor.tsx |
 | Slides | @smartdoca/slides 0.3.0-alpha.5 | presentation-editor.tsx |
 
@@ -220,3 +220,9 @@ Doca 0.2.23 pins official npm releases: Sheet 0.2.14, Canvas 0.5.16 and Slides 0
 Sheet adds `commentHighlightAnchor`: the host supplies the explicitly clicked comment anchor from its visible, authorized, unresolved markers. Slides adds `activeCommentId`: the host supplies a current marker ID. Across all five formats, opening the drawer, following a link or clicking a native content marker does not request a background. Clicking a comment card or its navigation requests only that comment’s background. Switching comments replaces it; clicking elsewhere (including the editor or drawer blank space), resolution or drawer close clears it, and reopening starts without a highlight; navigation still explicitly uses the existing reveal method. Readonly views support highlighting; slideshow hides it. The host continues choosing overlapping candidates. Sheet paints the parts resolved by its current stable cell anchor; Slides retains existing whole-element/table scope and adds no permanent cell or glyph anchors.
 
 Canvas exposes table ports on non-editing hover or whole-table selection, hiding them during cell editing. The host paints a translucent background for the explicitly clicked Canvas comment. These are runtime view changes, with no document-style, permanent-anchor, Yjs transaction, schema/codec, epoch, checkpoint, ACK or outbox change, and no historical reader, conversion or adapter. Retain prior official version pins/lockfiles and all later business data for rollback.
+
+## Spreadsheet viewer mention styles — 2026-11-03
+
+Sheet 0.2.17 exposes `SpreadsheetEditor.currentUserId?: string | null`. Doca supplies its authenticated user UUID; native `type: 'user'` atomic nodes match `refId` exactly. Matching mentions paint a capsule-shaped rounded blue background with white text, other user mentions paint blue text, and all user mentions omit underlines. Grid, formula-bar and cell-draft Canvas rendering use the same rule, including readonly. Other hyperlinks retain their native styles. Whole-cell host mention objects continue using the shared `UserMention` renderer.
+
+Identity changes or clearing only repaint the existing runtime. The identity and resulting colors are never stored in cells, undo, clipboard, XLSX, collaboration or history. Custom runtimes receive the optional `RuntimeFactoryContext.userMentions.currentUserId()` getter and may implement `SpreadsheetRuntime.refreshUserMentions()`; these are view capabilities, not stored-format or old-API adapters. Native user node data and schema 6 remain unchanged. The eight model/Yjs/XLSX/preferences JS entrypoints are byte-identical to 0.2.15; historical readers and approved defaults remain outside this change. See [the change validation](../specs/004-sheet-self-mentions/validation.md) for local verification and publication scope.

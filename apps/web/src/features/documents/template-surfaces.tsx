@@ -1,3 +1,4 @@
+import { useCurrentUserId } from "@web/shared/components/user-mention.js";
 import { useI18n } from "@web/shared/i18n.js";
 import { blankTemplateContent } from "@core/modules/templates/content.js";
 import { useEffect, useRef, useState } from "react";
@@ -199,6 +200,7 @@ function SheetSurface({
   onContent?: (read: () => Promise<unknown>) => void;
 }) {
   const { locale } = useI18n();
+  const currentUserId = useCurrentUserId();
   const [session, setSession] = useState<ExlsxCollaborationSession | null>(
     null,
   );
@@ -256,6 +258,7 @@ function SheetSurface({
       {session && (
         <SpreadsheetEditor
           locale={locale}
+          currentUserId={currentUserId}
           workbookId={workbookId}
           collaboration={session}
           runtimeFactory={templateSpreadsheetRuntime}

@@ -7,3 +7,5 @@ Use the next unique three-digit directory prefix. Full work has spec, plan, task
 - [001 — 分级 SDD 接入](001-sdd-adoption/spec.md)
 - [002 — Doca 0.2.30 合并发布](002-release-0-2-30/spec.md)
 - [003 — 插件兼容性故障隔离](003-plugin-startup-isolation/spec.md)
+
+- [004 — 表格当前用户提及样式](004-sheet-self-mentions/spec.md)
