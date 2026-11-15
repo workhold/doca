@@ -64,6 +64,7 @@
 
 ## 审查与验收
 
+- [0.2.32 发布验证](verification/release-0.2.32.md)
 - [0.2.31 发布验证](verification/release-0.2.31.md)
 
 - [全仓库文档审查与修正（2026-10-28）](verification/documentation-audit-2026-10-28.md)

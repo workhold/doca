@@ -9,3 +9,5 @@ Use the next unique three-digit directory prefix. Full work has spec, plan, task
 - [003 — 插件兼容性故障隔离](003-plugin-startup-isolation/spec.md)
 
 - [004 — 表格当前用户提及样式](004-sheet-self-mentions/spec.md)
+
+- [005 — Doca 0.2.33 提及样式发布](005-release-0-2-33/spec.md)
