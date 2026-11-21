@@ -174,14 +174,20 @@ pub fn has_token(directory: &Path, id: &str) -> Result<bool, String> {
 #[cfg(target_os = "macos")]
 fn keychain_exists(id: &str) -> Result<bool, String> {
     use security_framework::item::{ItemClass, ItemSearchOptions};
-    let found = ItemSearchOptions::new()
+    // errSecItemNotFound means "no credential yet" (freshly added endpoint or a
+    // removed legacy entry), not a broken keychain; only real failures surface.
+    const ERR_SEC_ITEM_NOT_FOUND: i32 = -25300;
+    match ItemSearchOptions::new()
         .class(ItemClass::generic_password())
         .service("com.smartdoca.desktop")
         .account(id)
         .load_attributes(true)
         .search()
-        .map_err(|e| format!("无法读取系统凭据库：{e}"))?;
-    Ok(!found.is_empty())
+    {
+        Ok(found) => Ok(!found.is_empty()),
+        Err(error) if error.code() == ERR_SEC_ITEM_NOT_FOUND => Ok(false),
+        Err(error) => Err(format!("无法读取系统凭据库：{error}")),
+    }
 }
 
 #[cfg(not(target_os = "macos"))]
