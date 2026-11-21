@@ -1,4 +1,5 @@
 import { BrowserClipperConnect } from "@web/features/browser-clipper/browser-clipper-connect.js";
+import { DesktopConnect } from "@web/features/auth/desktop-connect.js";
 import { BrowserClipperSettings } from "@web/features/browser-clipper/browser-clipper-settings.js";
 import { McpSettings } from "@web/features/mcp/mcp-settings.js";
 import { ResourceAccessTag } from "@web/features/documents/resource-access-tag.js";
@@ -10,6 +11,7 @@ import { MobilePluginPage } from "@web/plugins/mobile-page.js";
 import { NavigationArea, MoreNavigation, LeftNavigation, navigateToDefaultHome, useNavigationLayout } from "@web/plugins/navigation.js";
 import { isAdminNavigationPath } from "@smartdoca/web-plugin-registry";
 import { WorkspaceHome } from "@web/features/workspace/home.js";
+import { DesktopBackendSwitch } from "@web/features/workspace/desktop-backend-switch.js";
 
 import { pluginRouteScope } from "./plugin-route-scope.js";
 
@@ -824,7 +826,7 @@ function WorkspaceApp() {
     location.hash = path;
     setScope(next);
   }
-  function create(kind: "document" | "library", parent?: Resource, mode: "create" | "import" = "create") {
+  function create(kind: "document" | "library", parent?: Resource, mode: "create" | "import" = "create", anchor?: HTMLElement) {
     setCreateMode(mode);
     setCreation({
       kind,
@@ -833,10 +835,7 @@ function WorkspaceApp() {
         parent?.kind === "library" ? parent.id : (parent?.library_id ?? null),
     });
     if (kind === "document")
-      setCreateAnchor(
-        (document.activeElement as HTMLElement)?.getBoundingClientRect() ??
-          new DOMRect(220, 80, 0, 0),
-      );
+      setCreateAnchor(anchor?.getBoundingClientRect() ?? new DOMRect(window.innerWidth / 2, 80, 0, 0));
     else setModal("create");
   }
   async function prepareMove() {
@@ -881,6 +880,10 @@ function WorkspaceApp() {
     const state=new URLSearchParams(hash.split("?")[1]).get("state");
     window.postMessage({source:"doca-browser-auth",state,status:"login-required"},location.origin);
   },[hash,bootstrap]);
+  useEffect(() => {
+    if (!hash.startsWith("#/desktop-connect?") || !bootstrap || bootstrap.user) return;
+    sessionStorage.setItem("doca.desktop-login.pending", hash);
+  }, [hash, bootstrap]);
   if (fatal)
     return (
       <main className="auth">
@@ -906,6 +909,8 @@ function WorkspaceApp() {
           setBootstrap(await api("/bootstrap"));
           const browserPending=sessionStorage.getItem("doca.browser-login.pending");
           if(browserPending?.startsWith("#/browser-connect?")) {location.hash=browserPending;return;}
+          const desktopPending = sessionStorage.getItem("doca.desktop-login.pending");
+          if (desktopPending?.startsWith("#/desktop-connect?")) { location.hash = desktopPending; return; }
           const token = rememberedShareToken();
           const documentLocation = takeLoginDocument();
           location.hash = ["linked", "security_verified"].includes(status)
@@ -942,6 +947,7 @@ function WorkspaceApp() {
           const token = rememberedShareToken();
           if (resourceId) return;
           if (hash.split("?")[0] === "#/shared-files/join" || hash.startsWith("#/browser-connect?")) return;
+          if (hash.startsWith("#/desktop-connect?")) return;
           if(token) location.hash = "/s/" + token;
           else if (documentLocation) location.hash = documentLocation;
           else await navigateToDefaultHome().catch(()=>{location.hash="/home"});
@@ -949,6 +955,7 @@ function WorkspaceApp() {
       />
     );
   if(hash.startsWith("#/browser-connect?") && bootstrap.user) return <BrowserClipperConnect/>;
+  if (hash.startsWith("#/desktop-connect?") && bootstrap.user) return <DesktopConnect />;
   if (hash.startsWith("#/m/plugins/") && bootstrap.user) return <main className="mobile-plugin-page">{renderedPluginRoute ?? <p>{t("navigation.unavailable")}</p>}</main>;
   if (shareInvitation)
     return (
@@ -1029,6 +1036,7 @@ function WorkspaceApp() {
           <div className="global-header-tools">
           <NavigationArea slot="web.topRight" action="other"/>
           <MoreNavigation />
+          <DesktopBackendSwitch onError={setError} />
           <Notifications />
           <LocaleSwitch />
           <AccountMenu
@@ -1213,7 +1221,7 @@ function WorkspaceApp() {
                 title={t("nav.create")}
                 aria-label={t("nav.create")}
                 aria-haspopup="dialog"
-                onClick={() => create("document")}
+                onClick={(event) => create("document", undefined, "create", event.currentTarget)}
               >
                 <span className="sidebar-create-plus" aria-hidden="true">
                   <Plus size={16} strokeWidth={2.6} />
@@ -1233,7 +1241,7 @@ function WorkspaceApp() {
             {libraryInfo && roleRank(libraryInfo.role) >= 3 && <button
               className="icon"
               aria-label={t("nav.newLibraryDocument")}
-              onClick={() => create("document", libraryInfo)}
+              onClick={(event) => create("document", libraryInfo, "create", event.currentTarget)}
             >
               <Plus size={17} />
             </button>}
@@ -1246,10 +1254,10 @@ function WorkspaceApp() {
             libraryId={currentLibraryId}
             knowledgeEnabled={false}
             accountActions={!!user}
-            create={(r) => create("document", r)}
+            create={(r, anchor) => create("document", r, "create", anchor)}
             changed={() => setRefresh((n) => n + 1)}
           />}
-        </aside>
+                  </aside>
       )}
       <main className="workspace">
         {user && <NavigationArea slot="web.right"/>}
@@ -1505,7 +1513,7 @@ function WorkspaceApp() {
                   ) : (
                     <LibraryLanding
                       resource={currentDetail.resource}
-                      create={() => create("document", currentDetail.resource)}
+                      create={(anchor) => create("document", currentDetail.resource, "create", anchor)}
                     />
                   )
                 ) : (
@@ -1552,8 +1560,8 @@ function WorkspaceApp() {
               currentUserId={user?.id}
               refresh={refresh}
               preferences={me?.preferences}
-              create={create}
-              upload={() => create("document", undefined, "import")}
+              create={(kind, anchor) => create(kind, undefined, "create", anchor)}
+              upload={(anchor) => create("document", undefined, "import", anchor)}
               changed={() => setRefresh((n) => n + 1)}
             />
           )}

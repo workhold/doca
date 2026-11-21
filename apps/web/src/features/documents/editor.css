@@ -35,12 +35,21 @@
   flex: 1;
   background: #fff;
 }
-.editor-panel-toggle.comment-control {
+/* Zero-height sticky anchor keeps the floating comment toggle pinned without
+   consuming vertical flow space above .editor-columns, which used to push the
+   document's first line down whenever the comments panel was closed. */
+.comment-toggle-anchor {
   position: sticky;
   top: 16px;
   float: right;
-  margin: 14px 14px 0 0;
+  height: 0;
   z-index: 9;
+}
+.comment-toggle-anchor > .editor-panel-toggle.comment-control {
+  position: absolute;
+  top: 0;
+  right: 14px;
+  margin: 0;
   background: #fff;
   border: 1px solid #e4e7ed;
   border-radius: 10px;

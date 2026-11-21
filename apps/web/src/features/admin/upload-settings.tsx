@@ -6,9 +6,9 @@ import type {
   AIUploadLimits,
   AIUploadPolicy,
 } from "@core/modules/ai/upload-policy.js";
-import { uploadErrorMessage } from "./ai-upload-errors.js";
+import { uploadErrorMessage } from "@web/features/ai/ai-upload-errors.js";
 
-export function AIUploadSettings() {
+export function UploadSettings() {
   const { t } = useI18n();
   const [saved, setSaved] = useState<{
     policy: AIUploadPolicy;
@@ -72,8 +72,13 @@ export function AIUploadSettings() {
     );
   };
   return (
-    <div className="ai-upload-settings">
-      <p>{t("aiUpload.help")}</p>
+    <section className="admin-card upload-settings">
+      <div className="card-heading">
+        <div>
+          <h3>{t("aiUpload.title")}</h3>
+          <p className="subtle">{t("aiUpload.help")}</p>
+        </div>
+      </div>
       <label>
         {t("aiUpload.scope")}
         <Select
@@ -184,6 +189,6 @@ export function AIUploadSettings() {
           }
         />
       )}
-    </div>
+    </section>
   );
 }

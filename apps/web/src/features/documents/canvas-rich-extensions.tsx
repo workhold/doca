@@ -8,7 +8,7 @@ import {
   mentionLabel,
 } from "@web/features/comments/rich-comments.js";
 import { LocaleScope, useI18n } from "@web/shared/i18n.js";
-import { internalDocumentId } from "./internal-document-id.js";
+import { workspaceDocumentId } from "./internal-document-id.js";
 
 type Data = { userId?: string; documentId?: string; label: string };
 export function useCanvasRichExtensions() {
@@ -61,9 +61,9 @@ export function useCanvasRichExtensions() {
             </a>
           </span>
         ),
-        matchPaste: (text) => !!internalDocumentId(text, location.origin),
+        matchPaste: (text) => !!workspaceDocumentId(text),
         paste: async (text, { signal }) => {
-          const id = internalDocumentId(text, location.origin);
+          const id = workspaceDocumentId(text);
           if (!id) return undefined;
           const detail = await api<Detail>(
             `/resources/${id}`,

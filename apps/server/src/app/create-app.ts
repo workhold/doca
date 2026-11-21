@@ -4,6 +4,12 @@ import { createUserDirectory } from "@core/modules/discovery/users.js";
 import { HOST_VERSION } from "./version.js";
 import { createHistoryWorker } from "../jobs/history-worker.js";
 import { sessionDurations } from "./session-policy.js";
+import {
+  desktopBearerToken,
+  desktopSessionUser,
+  isDesktopToken,
+  registerDesktopClient,
+} from "./desktop-client.js";
 import { imagePageAttemptLimit } from "../services/ai/image-attempt-policy.js";
 import { pluginMobileActor } from "../plugins/mobile-session.js";
 import { emitIntegrationEvent } from "@core/modules/automation/events.js";
@@ -50,6 +56,7 @@ import {
   hashPassword,
   publicUser,
   recordLogin,
+  revokeDesktopSessions,
   tokenHash,
   verifyPassword,
   type Actor,
@@ -219,6 +226,7 @@ export async function createApp(db: DB, options: CreateAppOptions) {
     return token && /^[a-f0-9]{64}$/.test(token) ? token : null;
   }
   async function sessionUser(token: string) {
+    if (isDesktopToken(token)) return desktopSessionUser(db, token);
     return (
       (await db
         .selectFrom("sessions")
@@ -257,8 +265,12 @@ export async function createApp(db: DB, options: CreateAppOptions) {
       fail(421, "访问地址与服务配置不符");
     const presentedCookie = cookieToken(req);
     const presentedBearer = bearerSession(req.headers.authorization);
+    const presentedDesktop = desktopBearerToken(req.headers.authorization);
     const bearerUser = presentedBearer
       ? await sessionUser(presentedBearer)
+      : null;
+    const desktopUser = presentedDesktop
+      ? await desktopSessionUser(db, presentedDesktop)
       : null;
     if (bearerUser && presentedBearer)
       await renewMobileSession(db, presentedBearer);
@@ -278,6 +290,10 @@ export async function createApp(db: DB, options: CreateAppOptions) {
         "/api/v1/auth/sms/complete",
         "/api/v1/auth/email/complete",
       ].includes(path);
+    const desktopHandoff = !req.headers.origin && [
+      "/api/v1/auth/desktop/start",
+      "/api/v1/auth/desktop/exchange",
+    ].includes(path);
     if (
       !["GET", "HEAD", "OPTIONS"].includes(req.method) &&
       !browserClipper &&
@@ -288,17 +304,19 @@ export async function createApp(db: DB, options: CreateAppOptions) {
       !(req.routeOptions.config as { docaPluginExternal?: boolean })
         .docaPluginExternal &&
       !bearerUser &&
+      !desktopUser &&
       !mobileCredential &&
+      !desktopHandoff &&
       req.headers.origin !== origin.origin
     )
       fail(403, "来源校验失败");
-    const token = bearerUser ? presentedBearer : presentedCookie;
+    const token = desktopUser ? presentedDesktop : bearerUser ? presentedBearer : presentedCookie;
     const externalPlugin = (
       req.routeOptions.config as { docaPluginExternal?: boolean }
     ).docaPluginExternal;
     let user: Actor | null = externalPlugin
       ? null
-      : (bearerUser ?? (token ? await sessionUser(token) : null));
+      : (desktopUser ?? bearerUser ?? (token ? await sessionUser(token) : null));
     if (browserClipper) user = path === "/api/v1/browser-clipper/token" ? null : (await authenticateBrowserConnection(db, req.headers.authorization)).actor;
     const scopedToken = /(?:^|;\s*)doca_plugin_session=([a-f0-9]{64})(?:;|$)/.exec(req.headers.cookie ?? "")?.[1];
     if(scopedToken && path.startsWith("/api/") && path!=="/api/v1/plugins-mobile/redeem") {
@@ -450,6 +468,7 @@ export async function createApp(db: DB, options: CreateAppOptions) {
     await stopMobilePush();
   });
   registerMobileClient(api, db, authenticated, cookie, limit);
+  registerDesktopClient(api, db, { origin, limit, admin, sessionToken });
   registerIdentity(
     api,
     db,
@@ -475,28 +494,8 @@ export async function createApp(db: DB, options: CreateAppOptions) {
     async (req) => {
       const token = sessionToken(req);
       if (!token) return null;
-      const session = await db
-        .selectFrom("sessions")
-        .select("user_id")
-        .where("id", "=", tokenHash(token))
-        .executeTakeFirst();
-      if (session && (await profileRequirements(db, session.user_id)))
-        return null;
-      return (
-        (await db
-          .selectFrom("sessions")
-          .innerJoin("users", "users.id", "sessions.user_id")
-          .select([
-            "users.id",
-            "users.public_id",
-            "users.display_name",
-            "users.admin",
-          ])
-          .where("sessions.id", "=", tokenHash(token))
-          .where("sessions.expires_at", ">", new Date().toISOString())
-          .where("users.status", "=", "active")
-          .executeTakeFirst()) ?? null
-      );
+      const user = await sessionUser(token);
+      return user && !(await profileRequirements(db, user.id)) ? user : null;
     },
     realtimeCluster,
   );
@@ -835,7 +834,13 @@ export async function createApp(db: DB, options: CreateAppOptions) {
   );
   route("POST", "/auth/logout", "退出当前会话", undefined, async (req) => {
     const token = sessionToken(req);
-    if (token)
+    if (isDesktopToken(token))
+      await db.updateTable("desktop_sessions")
+        .set({ revoked_at: new Date().toISOString() })
+        .where("id", "=", tokenHash(token))
+        .where("revoked_at", "is", null)
+        .execute();
+    else if (token)
       await db
         .deleteFrom("sessions")
         .where("id", "=", tokenHash(token))
@@ -870,6 +875,7 @@ export async function createApp(db: DB, options: CreateAppOptions) {
           .executeTakeFirst();
         if (!changed.numUpdatedRows) fail(409, "密码已变更，请重新登录");
         await tx.deleteFrom("sessions").where("user_id", "=", a.id).execute();
+        await revokeDesktopSessions(tx, a.id);
       });
       return { ok: true };
     },
@@ -1038,11 +1044,13 @@ export async function createApp(db: DB, options: CreateAppOptions) {
             status: req.body.status,
             previousStatus: user.status,
           });
-        if (req.body.status === "disabled")
+        if (req.body.status === "disabled") {
           await tx
             .deleteFrom("sessions")
             .where("user_id", "=", user.id)
             .execute();
+          await revokeDesktopSessions(tx, user.id);
+        }
         await tx
           .insertInto("audit_events")
           .values({

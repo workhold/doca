@@ -193,6 +193,8 @@ MCP 使用四张独立表记录用户开关、服务凭据哈希与授权、执�
 | `browser_clipper_activations` | `id`, `connection_id`, `secret_hash`, `connection_revision`, `expires_at`, `consumed_at`, `created_at` |
 | `browser_clipper_receipts` | `user_id`, `request_id`, `connection_id`, `input_hash`, `profile_id`, `profile_json`, `payload_json`, `images_json`, `status`, `resource_id`, `expires_at`, `created_at`, `updated_at` |
 | `browser_clipper_assistant_sessions` | `session_id`, `connection_id`, `user_id`, `profile_id`, `profile_revision`, `resource_ids`, `job_ids`, `created_at` |
+| `desktop_auth_flows` | `id`, `challenge`, `code_hash`, `user_id`, `browser_session_id`, `expires_at`, `created_at` |
+| `desktop_sessions` | `id`, `user_id`, `device_name`, `created_at`, `revoked_at` |
 | `group_directory_policies` | `id`, `user_id`, `mode`, `revision` |
 | `user_groups` | `id`, `owner_id`, `name`, `avatar`, `revision`, `dissolved_at`, `cleaned_at`, `created_at`, `updated_at` |
 | `user_group_members` | `group_id`, `user_id`, `role`, `joined_at` |

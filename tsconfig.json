@@ -27,5 +27,5 @@
     "tests/**/*.ts",
     "vitest.config.ts"
   ],
-  "exclude": ["apps/mobile"]
+  "exclude": ["apps/mobile", "apps/desktop/src-tauri/target", "apps/desktop/dist"]
 }

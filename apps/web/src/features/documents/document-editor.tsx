@@ -91,7 +91,9 @@ import { DocumentPageWidthMenu, canEditPageWidth, useDocumentPageWidth } from "@
 import { useAttachmentPreview } from "@web/features/documents/attachment-preview.js";
 import { UpdateOutbox } from "@web/features/documents/update-outbox.js";
 import { openReplica } from "@web/features/documents/offline-replica.js";
-import { documentLinkPlugin, internalDocumentId } from "@web/features/documents/document-link.js";
+import { documentLinkPlugin } from "@web/features/documents/document-link.js";
+import { workspaceDocumentId } from "@web/features/documents/internal-document-id.js";
+import { publicWorkspaceUrl } from "@web/shared/desktop-context.js";
 import { mentionPlugin, DocumentMentions } from "@web/features/documents/document-mentions.js";
 import { DocaYjsDocument as YjsDocument } from "@core/modules/documents/codecs/rich-runtime.js";
 import { pluginElementPlugin, RichPluginElements } from "./rich-plugin-elements.js";
@@ -781,10 +783,8 @@ function RichDocument({
                           filename: r.name,
                         }
                       : {
-                          url: new URL(
+                          url: publicWorkspaceUrl(assetUrl(r.path) + "?download=1") ??
                             assetUrl(r.path) + "?download=1",
-                            location.origin,
-                          ).href,
                         };
                   },
                 },
@@ -808,10 +808,8 @@ function RichDocument({
                   return purpose === "embed"
                     ? { bytes: blob }
                     : {
-                        url: new URL(
+                        url: publicWorkspaceUrl(assetUrl(r.path) + "?download=1") ??
                           assetUrl(r.path) + "?download=1",
-                          location.origin,
-                        ).href,
                       };
                 },
               },
@@ -853,17 +851,19 @@ function RichDocument({
           liveInfo,
         )}
       {!commentsOpen && (
-        <button
-          className="icon comment-control editor-panel-toggle"
-          aria-label={t("comment.openRegion")}
-          title={t("comment.region")}
-          aria-expanded={false}
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => setCommentsOpen(true)}
-        >
-          <MessageSquare size={18} />
-          {roots.length > 0 && <small className="comment-control-count">{roots.length}</small>}
-        </button>
+        <div className="comment-toggle-anchor">
+          <button
+            className="icon comment-control editor-panel-toggle"
+            aria-label={t("comment.openRegion")}
+            title={t("comment.region")}
+            aria-expanded={false}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => setCommentsOpen(true)}
+          >
+            <MessageSquare size={18} />
+            {roots.length > 0 && <small className="comment-control-count">{roots.length}</small>}
+          </button>
+        </div>
       )}
       {error && (
         <div className="error" role="alert">
@@ -1024,10 +1024,7 @@ function RichDocument({
             )
               return;
             if (
-              internalDocumentId(
-                e.clipboardData.getData("text/plain").trim(),
-                location.origin,
-              )
+              workspaceDocumentId(e.clipboardData.getData("text/plain").trim())
             ) {
               e.preventDefault();
               e.stopPropagation();

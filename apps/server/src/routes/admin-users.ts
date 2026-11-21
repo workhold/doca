@@ -4,6 +4,7 @@ import { transact } from "@db/transactions.js";
 import {
   createUser,
   hashPassword,
+  revokeDesktopSessions,
   type Actor,
 } from "@core/modules/identity/passwords.js";
 import {
@@ -197,6 +198,7 @@ export async function resetUserPassword(
       .where("id", "=", user.id)
       .execute();
     await tx.deleteFrom("sessions").where("user_id", "=", user.id).execute();
+    await revokeDesktopSessions(tx, user.id);
     await securityAudit(tx, actor.id, user.id, "password.admin_reset", {
       username: user.public_id,
     });

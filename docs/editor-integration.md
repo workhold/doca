@@ -10,7 +10,7 @@ This is the integration source document for all five editors; subpackages consum
 | --- | --- | --- |
 | Rich text | @smartdoca/slate 0.4.26 | document-editor.tsx |
 | Markdown | @smartdoca/markdown 0.4.4 | markdown-editor.tsx |
-| Spreadsheet | @smartdoca/sheet 0.2.18 | spreadsheet-editor.tsx |
+| Spreadsheet | @smartdoca/sheet 0.2.19 | spreadsheet-editor.tsx |
 | Canvas | @smartdoca/canvas 0.5.16 | canvas-editor.tsx |
 | Slides | @smartdoca/slides 0.3.0-alpha.5 | presentation-editor.tsx |
 
@@ -226,3 +226,9 @@ Canvas exposes table ports on non-editing hover or whole-table selection, hiding
 Sheet 0.2.17 exposes `SpreadsheetEditor.currentUserId?: string | null`. Doca supplies its authenticated user UUID; native `type: 'user'` atomic nodes match `refId` exactly. Matching mentions paint a capsule-shaped rounded blue background with white text, other user mentions paint blue text, and all user mentions omit underlines. Grid, formula-bar and cell-draft Canvas rendering use the same rule, including readonly. Other hyperlinks retain their native styles. Whole-cell host mention objects continue using the shared `UserMention` renderer.
 
 Identity changes or clearing only repaint the existing runtime. The identity and resulting colors are never stored in cells, undo, clipboard, XLSX, collaboration or history. Custom runtimes receive the optional `RuntimeFactoryContext.userMentions.currentUserId()` getter and may implement `SpreadsheetRuntime.refreshUserMentions()`; these are view capabilities, not stored-format or old-API adapters. Native user node data and schema 6 remain unchanged. The eight model/Yjs/XLSX/preferences JS entrypoints are byte-identical to 0.2.15; historical readers and approved defaults remain outside this change. See [the change validation](../specs/004-sheet-self-mentions/validation.md) for local verification and publication scope.
+
+## Spreadsheet cell-draft history shortcuts — 2026-11-20
+
+Doca pins the official npm `@smartdoca/sheet` 0.2.19. While its native cell editor owns focus, Cmd/Ctrl+Z undoes the text draft and Cmd/Ctrl+Y or Cmd/Ctrl+Shift+Z redoes it. After the draft is committed, sheet undo and redo continue through the existing collaborative history. Other host inputs do not acquire these editor shortcuts.
+
+Relative to 0.2.18, the public declarations, CSS and model/Yjs/XLSX/preferences ESM/CJS runtimes are byte-identical; the change is confined to the Sheet UI runtime. No persisted workbook format, schema 6, baseline, epoch, checkpoint, host save path or compatibility rule changes. The source and packed-entry Chrome regressions use an isolated workbook. Rollback restores the previous package pin and lockfile while preserving later content writes.

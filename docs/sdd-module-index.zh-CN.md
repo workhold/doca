@@ -1,5 +1,7 @@
 # SDD 模块索引
 
+[桌面版](desktop-client.md)涉及 Tauri 外壳、远端登录、内置 Web 传输和窗口会话；对应的功能记录为 [`specs/006-desktop-client`](../specs/006-desktop-client/spec.md) 与 [`specs/007-desktop-workspace-tabs`](../specs/007-desktop-workspace-tabs/spec.md)。
+
 [English](sdd-module-index.md) · [执行流程](sdd.zh-CN.md)
 
 本索引关联已有模块的源码、现行契约和可复用检查，不证明存量功能已经验收，也不重跑历史验收。开发前核对实际导出与锁文件版本，当前限制参照[架构](architecture.zh-CN.md)及适用发行说明。修改模块时建立新的 SDD，并在同一个 PR 中更新权威契约。

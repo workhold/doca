@@ -1,6 +1,7 @@
 import { runAssetUpload } from "./upload-queue.js";
 import { apiErrorMessage } from "./system-errors.js";
 import { cacheStartupBootstrap, clearDocumentStartupCache, startupIdentityRevision } from "./document-startup-cache.js";
+import { updateDesktopContext } from "./desktop-context.js";
 
 export interface User {
   public_id?: string;
@@ -191,6 +192,7 @@ export async function api<T>(
     lastAccount = data.user?.id ?? null;
   }
   if (path === "/bootstrap") {
+    updateDesktopContext(response.headers);
     if (identityRevision !== startupIdentityRevision()) throw new DOMException("Session changed during startup", "AbortError");
     cacheStartupBootstrap(data);
   }

@@ -26,11 +26,12 @@ export function DocumentTree({
   knowledgeEnabled?: boolean;
   accountActions?: boolean;
   selected?: string;
-  create: (parent: Resource) => void;
+  create: (parent: Resource, anchor: HTMLElement) => void;
   changed?: () => void;
 }) {
   const { t } = useI18n();
   const arrangeRefreshPending = useRef(false);
+  const expandAfterArrange = useRef<string | null>(null);
   const [items, setItems] = useState<Resource[]>([]),
     [truncated, setTruncated] = useState(false),
     [menu, setMenu] = useState<{ resource: Resource; trigger: HTMLElement } | null>(null),
@@ -43,7 +44,7 @@ export function DocumentTree({
       left: number;
       top: number;
     } | null>(null),
-    [busy, setBusy] = useState(false),
+    [arrangingId, setArrangingId] = useState<string | null>(null),
     [expanded, setExpanded] = useState<Set<string>>(() => {
       try {
         return new Set(
@@ -87,6 +88,10 @@ export function DocumentTree({
       } while (cursor);
       if (!controller.signal.aborted) {
         setItems(all);
+        if (completingArrange && expandAfterArrange.current) {
+          const targetId = expandAfterArrange.current;
+          setExpanded((old) => new Set([...old, targetId]));
+        }
         setTruncated(wasTruncated);
         setError("");
       }
@@ -97,7 +102,8 @@ export function DocumentTree({
       .finally(() => {
         if (completingArrange && !controller.signal.aborted) {
           arrangeRefreshPending.current = false;
-          setBusy(false);
+          expandAfterArrange.current = null;
+          setArrangingId(null);
         }
       });
     return () => controller.abort();
@@ -126,6 +132,7 @@ export function DocumentTree({
     });
   }, [selected, items]);
   const available = new Set(items.map((r) => r.id));
+  const busy = arrangingId !== null;
   const parentId = (r: Resource) =>
     available.has(r.parent_id ?? "")
       ? r.parent_id
@@ -207,7 +214,7 @@ export function DocumentTree({
               };
             setDragged(null);
             setDrop(null);
-            setBusy(true);
+            setArrangingId(source.id);
             setError("");
             void api(`/resources/${source.id}/arrange`, "POST", {
               version: source.version,
@@ -216,7 +223,7 @@ export function DocumentTree({
             })
               .then(() => {
                 if (destination.placement === "inside")
-                  setExpanded((old) => new Set([...old, r.id]));
+                  expandAfterArrange.current = r.id;
               })
               .catch((e) => {
                 notifyFeedback(e.message, "error");
@@ -282,16 +289,16 @@ export function DocumentTree({
             <FileIcon r={r} size="compact" />
             <span>{splitTitleIcon(r.title).text}</span>
           </button>
-          {roleRank(r.role) >= 3 && (
+          {arrangingId !== r.id && roleRank(r.role) >= 3 && (
             <button
               className="hover-add icon"
               aria-label={"在" + r.title + "中创建"}
-              onClick={() => create(r)}
+              onClick={(event) => create(r, event.currentTarget)}
             >
               <Plus size={14} />
             </button>
           )}
-          {accountActions && r.kind === "document" && roleRank(r.role) > 0 && (
+          {arrangingId !== r.id && accountActions && r.kind === "document" && roleRank(r.role) > 0 && (
             <button
               className="tree-more icon"
               aria-label={r.title + "的更多操作"}
@@ -299,6 +306,12 @@ export function DocumentTree({
               aria-expanded={menu?.resource.id === r.id}
               onClick={(e) => setMenu(menu?.resource.id === r.id ? null : { resource: r, trigger: e.currentTarget })}
             ><MoreHorizontal size={15} /></button>
+          )}
+          {arrangingId === r.id && (
+            <span className="tree-row-arranging" role="status">
+              <LoaderCircle size={14} aria-hidden="true" />
+              <span>{t("tree.arranging")}</span>
+            </span>
           )}
         </div>
         {open && nested.map((c) => node(c, depth + 1))}
@@ -313,12 +326,6 @@ export function DocumentTree({
       {error && <Feedback message={error} tone="error" />}
       {truncated && (
         <Feedback message={t("tree.tooLarge")} tone="warning" />
-      )}
-      {busy && (
-        <div className="tree-arrange-status" role="status">
-          <LoaderCircle size={14} aria-hidden="true" />
-          <span>{t("tree.arranging")}</span>
-        </div>
       )}
       <div aria-busy={busy}>{roots.map((r) => node(r))}</div>
       {!items.length && !error && !knowledgeEnabled && (

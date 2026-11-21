@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main",
+  "description": "Connection manager only; workspace webviews have no native API access",
+  "windows": ["main"],
+  "permissions": ["core:default", "core:event:default"]
+}

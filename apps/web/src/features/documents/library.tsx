@@ -23,7 +23,7 @@ export function LibraryLanding({
   create,
 }: {
   resource: Resource;
-  create: () => void;
+  create: (anchor: HTMLElement) => void;
 }) {
   const { locale, t } = useI18n();
   const [empty, setEmpty] = useState(false),
@@ -69,7 +69,7 @@ export function LibraryLanding({
           {roleRank(resource.role) >= 3 && (
             <button
               className="primary"
-              onClick={create}
+              onClick={(event) => create(event.currentTarget)}
             >
               {t("library.createFirst")}
             </button>

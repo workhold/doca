@@ -36,7 +36,6 @@ import { Feedback } from "@web/shared/components/feedback.js";
 import { Dialog } from "@web/features/documents/dialogs.js";
 import { SettingsTabs } from "@web/features/settings/settings-tabs.js";
 import "@web/features/ai/ai.css";
-import { AIUploadSettings } from "./ai-upload-settings.js";
 
 function Choice({
   value,
@@ -433,7 +432,6 @@ export function AIAdmin() {
           ["models", t("aiAdmin.tab.models")],
           ["skills", t("aiAdmin.tab.skills")],
           ["tools", t("aiAdmin.tab.tools")],
-          ["uploads", t("aiUpload.title")],
         ]}
       />
       {!edit && (
@@ -447,9 +445,7 @@ export function AIAdmin() {
           )}
         </>
       )}
-      {tab === "uploads" ? (
-        <AIUploadSettings />
-      ) : tab === "tools" ? (
+      {tab === "tools" ? (
         <>
           <div className="ai-section-heading">
             <div>

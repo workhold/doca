@@ -1,10 +1,12 @@
 import { browserClipperZh } from "./browser-clipper.js";
+import { desktopZh } from "./desktop.js";
 import { handoverZh } from "./resource-handover.js";
 import { groupsZh } from "./groups.js";
 import type { MessageKey } from "./en";
 
 export const zh = {
   ...browserClipperZh,
+  ...desktopZh,
   ...handoverZh,
   ...groupsZh,
   "mcp.executions": "执行记录",
@@ -1527,7 +1529,7 @@ export const zh = {
   "chat.draftReadFailed": "此草稿格式无效，原始本地记录已保留。",
   "aiUpload.title": "上传限制",
   "aiUpload.help":
-    "设置附件和文件夹上传的个数、单文件大小及总大小。填 0 表示不限；用户覆盖优先于全局设置。",
+    "设置附件和文件夹上传的个数、单文件大小及总大小；单文件大小同时限制文件管理中的上传。填 0 表示不限；用户覆盖优先于全局设置。",
   "aiUpload.scope": "应用范围",
   "aiUpload.global": "全局",
   "aiUpload.inherit": "使用全局设置",
@@ -1615,6 +1617,7 @@ export const zh = {
   "sharingUi.perLink": "每条链接独立计算",
   "sharingUi.custom": "自定义",
   "sharingUi.customLimit": "自定义分享人数",
+  "sharingUi.noPublicAddress": "本地工作空间没有可分享的公网地址",
   "sharingUi.linkAccess": "链接访问权限",
   "sharingUi.copied": "已复制",
   "sharingUi.copyLink": "复制链接",
@@ -1743,10 +1746,10 @@ export const zh = {
   "chat.referenceLimit": "每条消息最多引用 20 项资料",
   "chat.localFileReady": "文件已准备好，发送时上传。",
   "chat.attachmentLimit":
-    "上传超出当前个数或大小限制，请在 AI 管理的上传限制中调整",
+    "上传超出当前个数或大小限制，请在上传限制中调整",
   "chat.uploadFailed": "上传失败，请移除后重试",
   "chat.folderTooLarge":
-    "文件夹超出当前个数或大小限制，请在 AI 管理的上传限制中调整",
+    "文件夹超出当前个数或大小限制，请在上传限制中调整",
   "chat.folderUnavailable": "文件夹已上传，但没有得到可选择的文件夹",
   "chat.accessChanged": "会话或引用资料的访问权限已变化，请重新打开会话",
   "chat.waitParsing": "请等待文件解析完成后再发送",
@@ -3168,6 +3171,7 @@ export const zh = {
   "admin.templates": "文档模板",
   "admin.ai": "AI 能力",
   "admin.recognition": "文件识别",
+  "admin.uploads": "上传限制",
   "admin.platform": "站点与服务",
   "admin.mail": "邮箱系统",
   "admin.hooks": "Webhook 管理",

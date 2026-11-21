@@ -79,8 +79,8 @@ export function Dashboard({
   section: string;
   refresh: number;
   preferences?: Preferences;
-  create: (kind: "document" | "library") => void;
-  upload: () => void;
+  create: (kind: "document" | "library", anchor: HTMLElement) => void;
+  upload: (anchor: HTMLElement) => void;
   changed: () => void;
   currentUserId?: string;
 }) {
@@ -330,7 +330,7 @@ export function Dashboard({
       {!trash && (
         <div className={`quick-actions${libraries ? " library-quick-actions" : ""}`}>
           <button
-            onClick={() => create(libraries ? "library" : "document")}
+            onClick={(event) => create(libraries ? "library" : "document", event.currentTarget)}
           >
             <span className="quick-icon">
               <Plus size={23} />
@@ -344,7 +344,7 @@ export function Dashboard({
             <ArrowUpRight size={17} />
           </button>
           {!libraries && (
-            <button onClick={upload}>
+            <button onClick={(event) => upload(event.currentTarget)}>
               <span className="quick-icon"><Upload size={22} /></span>
               <span>
                 <strong>{t("home.upload")}</strong>
@@ -354,8 +354,8 @@ export function Dashboard({
             </button>
           )}
           <button
-            onClick={() =>
-              libraries ? navigateBackOr("/documents") : create("library")
+            onClick={(event) =>
+              libraries ? navigateBackOr("/documents") : create("library", event.currentTarget)
             }
           >
             <span className="quick-icon green">

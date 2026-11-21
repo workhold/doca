@@ -19,6 +19,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { api, type FileFolder } from "@web/shared/api.js";
+import { publicWorkspaceUrl } from "@web/shared/desktop-context.js";
 import { Feedback } from "@web/shared/components/feedback.js";
 import { UserBadge } from "@web/shared/components/user-badge.js";
 import { Select } from "@web/shared/components/select.js";
@@ -231,9 +232,8 @@ export function FolderPermissionPanel({
   async function copyLink() {
     if (!link?.url) return;
     try {
-      await writeClipboardText(
-        `${window.location.origin}${window.location.pathname}${link.url}`,
-      );
+      const url = publicWorkspaceUrl(link.url);
+      await writeClipboardText(url);
       setError("");
       setNotice(t("sharingUi.linkCopied"));
     } catch {

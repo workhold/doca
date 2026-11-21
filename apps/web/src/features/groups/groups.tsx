@@ -10,6 +10,7 @@ import {
   Users,
 } from "lucide-react";
 import { api } from "@web/shared/api.js";
+import { publicWorkspaceUrl } from "@web/shared/desktop-context.js";
 import { useI18n } from "@web/shared/i18n.js";
 import { Feedback } from "@web/shared/components/feedback.js";
 import { UserBadge } from "@web/shared/components/user-badge.js";
@@ -638,7 +639,7 @@ export function GroupsPage({ userId, hash }: { userId: string; hash: string }) {
                   <input
                     readOnly
                     aria-label={t("groups.byLink")}
-                    value={new URL(link.url, location.href).href}
+                    value={publicWorkspaceUrl(link.url) ?? ""}
                   />
                   <small>{t("groups.linkExpires")}</small>
                 </>
@@ -694,7 +695,7 @@ export function GroupsPage({ userId, hash }: { userId: string; hash: string }) {
                     try {
                       if (link) {
                         await writeClipboardText(
-                          new URL(link.url, location.href).href,
+                          publicWorkspaceUrl(link.url) ?? "",
                         );
                         setNotice(t("groups.copied"));
                       } else {

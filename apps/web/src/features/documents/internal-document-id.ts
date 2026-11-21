@@ -1,3 +1,5 @@
+import { workspacePublicOrigin } from "@web/shared/desktop-context.js";
+
 export function internalDocumentId(
   value: string,
   origin: string,
@@ -12,4 +14,10 @@ export function internalDocumentId(
   } catch {
     return null;
   }
+}
+
+export function workspaceDocumentId(value: string): string | null {
+  const local = internalDocumentId(value, location.origin);
+  const remote = workspacePublicOrigin();
+  return local ?? (remote ? internalDocumentId(value, remote) : null);
 }

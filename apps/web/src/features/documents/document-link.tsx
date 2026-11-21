@@ -7,7 +7,7 @@ import {
   type EditorPlugin,
 } from "@smartdoca/slate";
 import { api, type Detail } from "@web/shared/api.js";
-import { internalDocumentId } from "@web/features/documents/internal-document-id.js";
+import { workspaceDocumentId } from "@web/features/documents/internal-document-id.js";
 export { internalDocumentId } from "@web/features/documents/internal-document-id.js";
 
 import { referenceCodec } from "@core/modules/documents/codecs/rich-runtime.js";
@@ -35,10 +35,7 @@ export const documentLinkPlugin: EditorPlugin = {
     const e = extension.plugin.withEditor?.(editor) ?? editor;
     const insertData = e.insertData;
     e.insertData = (data) => {
-      const id = internalDocumentId(
-        data.getData("text/plain").trim(),
-        location.origin,
-      );
+      const id = workspaceDocumentId(data.getData("text/plain").trim());
       if (!id || data.files.length) return insertData(data);
       const nodeId = crypto.randomUUID();
       Transforms.insertNodes(e, {

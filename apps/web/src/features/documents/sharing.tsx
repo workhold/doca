@@ -10,6 +10,7 @@ import {
 import { createPortal } from "react-dom";
 import { ChevronDown, Copy, Link as LinkIcon } from "lucide-react";
 import { api } from "@web/shared/api.js";
+import { publicWorkspaceUrl } from "@web/shared/desktop-context.js";
 import { Select } from "@web/shared/components/select.js";
 import { Feedback } from "@web/shared/components/feedback.js";
 import { accessText } from "@web/features/documents/access-management.js";
@@ -41,7 +42,7 @@ type ShareState = {
   supportsDescendants: boolean;
 };
 const linkUrl = (l: ShareLink) =>
-  `${location.origin}${location.pathname}#/s/${l.token}`;
+  publicWorkspaceUrl(`#/s/${l.token}`);
 export function ShareLinkSettings({
   id,
   changed,
@@ -196,11 +197,13 @@ export function ShareLinkSettings({
   }
   async function copy(l: ShareLink) {
     try {
-      await writeClipboardText(linkUrl(l));
+      const url = linkUrl(l);
+      if (!url) throw new Error(t("sharingUi.noPublicAddress"));
+      await writeClipboardText(url);
       setCopied(l.id);
       setFallback("");
     } catch {
-      setFallback(linkUrl(l));
+      setFallback(linkUrl(l) ?? "");
       setError(t("sharingUi.manualCopyHelp"));
     }
   }

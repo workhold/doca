@@ -27,6 +27,7 @@ import {
   hashPassword,
   publicUser,
   recordLogin,
+  revokeDesktopSessions,
   tokenHash,
   verifyPassword,
   type Actor,
@@ -558,6 +559,7 @@ export function registerIdentity(
           .where("user_id", "=", a.id)
           .where("id", "!=", tokenHash(ctx.sessionToken(req)!))
           .execute();
+        await revokeDesktopSessions(tx, a.id, tokenHash(ctx.sessionToken(req)!));
         await audit(tx, a.id, "auth.password_initialized");
       });
       return { ok: true };
@@ -820,6 +822,7 @@ export function registerIdentity(
                 .where("user_id", "=", a.id)
                 .where("id", "!=", flow.session_id!)
                 .execute();
+              await revokeDesktopSessions(tx, a.id, flow.session_id!);
             }
           }
           if (!linked)

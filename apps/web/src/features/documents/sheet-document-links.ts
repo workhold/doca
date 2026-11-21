@@ -6,7 +6,7 @@ import type {
   SpreadsheetTextTarget,
 } from "@smartdoca/sheet";
 import { api, type Detail } from "@web/shared/api.js";
-import { internalDocumentId } from "@web/features/documents/internal-document-id.js";
+import { workspaceDocumentId } from "@web/features/documents/internal-document-id.js";
 
 /** The retained SDK token rejects changed drafts instead of inserting in another cell. */
 export async function insertSheetDocumentLink(
@@ -67,7 +67,7 @@ export function useSheetDocumentLinks(
   );
   const paste = useCallback(
     (content: { files: File[]; text: string; range: SpreadsheetCellRange }) => {
-      const id = internalDocumentId(content.text.trim(), location.origin);
+      const id = workspaceDocumentId(content.text.trim());
       if (!enabled || !handle || !id || content.files.length) return false;
       const native = handle.getNativeText();
       if (!native || native.getState()?.formula || native.getState()?.composing)

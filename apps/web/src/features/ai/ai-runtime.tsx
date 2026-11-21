@@ -1,5 +1,6 @@
 import { createContext, useContext, type ReactNode } from "react";
 import { api } from "@web/shared/api.js";
+import { workspaceIdentityOrigin } from "@web/shared/desktop-context.js";
 import { readPageState, writePageState } from "@web/features/page-state/client.js";
 import type { FileSourceDialog, FolderFilePicker } from "@web/features/files/files.js";
 import type { SearchPanel } from "@web/features/search/search.js";
@@ -48,7 +49,7 @@ const hostRuntime: AIChatRuntime = {
 const AIRuntimeContext = createContext<AIChatRuntime>(hostRuntime);
 export const useAIChatRuntime = () => useContext(AIRuntimeContext);
 export function pendingQueueScope(runtime: AIChatRuntime, userId: string): PendingQueueScope {
-  return runtime.pendingScope ?? { docaOrigin: location.origin, userId, connectionId: "website", profile: null };
+  return runtime.pendingScope ?? { docaOrigin: workspaceIdentityOrigin(), userId, connectionId: "website", profile: null };
 }
 export function AIChatRuntimeProvider({ runtime, children }: { runtime: AIChatRuntime; children: ReactNode }) {
   return <AIRuntimeContext.Provider value={runtime}>{children}</AIRuntimeContext.Provider>;

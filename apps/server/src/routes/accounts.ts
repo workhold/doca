@@ -16,6 +16,7 @@ import { mobileSession, sessionExpiresAt } from "../app/mobile-client.js";
 import {
   hashPassword,
   recordLogin,
+  revokeDesktopSessions,
   tokenHash,
   publicUser,
 } from "@core/modules/identity/passwords.js";
@@ -859,6 +860,7 @@ export function registerAccounts(
           .deleteFrom("sessions")
           .where("user_id", "=", c.user_id)
           .execute();
+        await revokeDesktopSessions(tx, c.user_id);
         await securityAudit(tx, null, c.user_id, "password.recovered", {});
       });
       return { ok: true };

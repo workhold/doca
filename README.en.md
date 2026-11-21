@@ -71,6 +71,7 @@ Rich text for plans and meeting notes, with a library tree, formatting tools, pe
 | **Knowledge management** | Knowledge libraries with document trees, plus shared knowledge books with workflows, source evidence, and human review. |
 | **Personal AI assistant** | Work with authorized documents and files, read PDF/Office attachments, generate or edit images, and analyze webpage material. Requires configured models and services. |
 | **Browser extension** | Capture pages or selections in Chrome / Edge with text, source links, and images; choose create/append destinations and organize webpages with Doca AI in the sidebar. |
+| **Desktop client** | Windows and macOS desktop apps for your own Doca service: a multi-tab workspace, multiple backends, system-browser sign-in and per-backend page restoration. Plugins keep running on your server. |
 | **MCP services** | Connect external AI clients such as Codex to authorized Doca tools and SKILLs, using personal services or company integrations acting as a named user. |
 | **Files and sharing** | Personal files, shared folders, invitations, permission controls, share links, search, notifications, and trash. Local or S3-compatible file storage. |
 | **Accounts and languages** | Password, OIDC, Google, GitHub, WeChat QR, and QQ sign-in; Chinese and English interfaces. External login requires service configuration. |
@@ -90,6 +91,12 @@ Doca exposes Streamable HTTP MCP so compatible clients can discover authorized t
 
 Enable MCP in personal settings, create a service, and copy its generated client configuration. Administrators manage company services in the administration area. Tokens are displayed only when created or reset and can be supplied through the client's environment. See [MCP services and client setup](docs/mcp.md).
 
+### Doca on your desktop
+
+The Doca desktop client (Windows, macOS) connects to your own Doca service: workspace windows with independent tabs, several backends at once — signing out or removing one backend closes only its own pages. Sign-in uses system-browser authorization and desktop credentials stay in a local encrypted file. Windows, tabs, and routes are saved per backend and restored on relaunch. Plugins remain installed and executed on your server and load through the authenticated proxy.
+
+Installers are available from [GitHub Releases](https://github.com/workhold/doca/releases). Current builds are unsigned and not notarized: on macOS, right-click the app and choose **Open** the first time; Windows may show a SmartScreen prompt. Your server must run 0.2.37 or newer. See the [desktop client guide](docs/desktop-client.md).
+
 ## Useful links
 
 | Destination | Address |
@@ -104,12 +111,12 @@ Enable MCP in personal settings, create a service, and copy its generated client
 
 ## Quick start with Docker
 
-Requires Docker Engine, Docker Compose, and an HTTP(S) origin served by a reverse proxy. A fresh SQLite/local-storage installation needs one YAML file. Existing installations must read the [release requirements](https://workhold.github.io/doca/#/en/releases/0.2.36) and retain their project name, volumes, databases, attachments and master key.
+Requires Docker Engine, Docker Compose, and an HTTP(S) origin served by a reverse proxy. A fresh SQLite/local-storage installation needs one YAML file. Existing installations must read the [release requirements](https://workhold.github.io/doca/#/en/releases/0.2.37) and retain their project name, volumes, databases, attachments and master key.
 
 ```sh
 # 1. Download the standalone configuration into a permanent deployment directory
 mkdir doca && cd doca
-curl -fL https://github.com/workhold/doca/releases/download/v0.2.36/doca-compose-v0.2.36.yaml -o compose.yaml
+curl -fL https://github.com/workhold/doca/releases/download/v0.2.37/doca-compose-v0.2.37.yaml -o compose.yaml
 
 # 2. Generate the master key with openssl rand -hex 32
 # Edit compose.yaml: fill in DOCA_ORIGIN and DOCA_CREDENTIAL_MASTER_KEY
@@ -150,11 +157,11 @@ Open `http://127.0.0.1:39130`. Initialize the administrator with `bash scripts/b
 ## Documentation
 
 - [User guide](https://workhold.github.io/doca/#/en/getting-started/user-guide)
-- [Browser assistant](docs/browser-assistant.md) · [MCP services](docs/mcp.md)
+- [Browser assistant](docs/browser-assistant.md) · [MCP services](docs/mcp.md) · [Desktop client](docs/desktop-client.md)
 - [Deployment and configuration](https://workhold.github.io/doca/#/en/operations/deployment)
 - [Plugin development](https://workhold.github.io/doca/#/en/plugins/plugin-development)
 - [HTTP API](https://workhold.github.io/doca/#/en/reference/api); the running application also provides `/api/openapi.json`.
-- [Release notes](https://workhold.github.io/doca/#/en/releases/0.2.36)
+- [Release notes](https://workhold.github.io/doca/#/en/releases/0.2.37)
 - [Documentation source](docs/README.md)
 
 For a documentation preview, run `pnpm docs:dev` and open `http://127.0.0.1:39140/#/en/`. `pnpm docs:check` verifies bilingual coverage and local links. GitHub Pages setup is in [documentation maintenance](docs/documentation.md).
