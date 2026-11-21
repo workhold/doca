@@ -7,14 +7,17 @@ use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
+    collections::HashMap,
     path::{Path, PathBuf},
     sync::{
         atomic::{AtomicBool, Ordering},
-        Mutex as SyncMutex,
+        Arc, Mutex as SyncMutex,
     },
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
-use tauri::{Emitter, Manager, WebviewUrl, WebviewWindowBuilder, WindowEvent};
+use tauri::{
+    webview::DownloadEvent, Emitter, Manager, WebviewUrl, WebviewWindowBuilder, WindowEvent,
+};
 use tauri_plugin_deep_link::DeepLinkExt;
 use tokio::{sync::Mutex, task::JoinHandle};
 use url::Url;
@@ -187,10 +190,142 @@ fn build_workspace_window(
                 .join(safe_id),
         );
     }
+    let app_for_downloads = app.clone();
+    let endpoint_for_downloads = endpoint_id.to_string();
+    let download_paths: Arc<SyncMutex<HashMap<String, PathBuf>>> =
+        Arc::new(SyncMutex::new(HashMap::new()));
+    let paths_for_events = download_paths.clone();
+    builder = builder.on_download(move |_webview, event| match event {
+        DownloadEvent::Requested { url, destination } => {
+            // Workspace downloads usually stay on the loopback proxy, where the
+            // native download carries the capability cookie. Plugin resources on
+            // the remote origin need the desktop bearer, so fetch them in the
+            // background instead of letting the webview navigate (which used to
+            // leave a blank page).
+            if remote_origin_for_endpoint(&app_for_downloads, &endpoint_for_downloads)
+                .is_some_and(|origin| is_endpoint_url(&origin, &url))
+            {
+                let destination = destination.clone();
+                let url = url.clone();
+                let app = app_for_downloads.clone();
+                let endpoint_id = endpoint_for_downloads.clone();
+                tauri::async_runtime::spawn(async move {
+                    let saved =
+                        download_endpoint_file(&app, &endpoint_id, &url, &destination).await;
+                    if !matches!(saved, Ok(true)) {
+                        let _ = std::fs::remove_file(&destination);
+                    } else {
+                        reveal_in_file_manager(&destination);
+                    }
+                });
+                return false;
+            }
+            if let Ok(mut known) = paths_for_events.lock() {
+                known.insert(url.to_string(), destination.clone());
+            }
+            true
+        }
+        DownloadEvent::Finished { url, success, .. } => {
+            // macOS never reports the saved path in this event, so the Requested
+            // handler records the destination for the reveal step.
+            if let Ok(mut known) = paths_for_events.lock() {
+                let recorded = known.remove(url.as_str());
+                if success {
+                    match recorded {
+                        Some(path) => reveal_in_file_manager(&path),
+                        None => {}
+                    }
+                }
+            }
+            true
+        }
+        // DownloadEvent is non-exhaustive; future events download natively.
+        _ => true,
+    });
     builder
         .build()
         .map_err(|e| format!("无法打开工作空间：{e}"))?;
     Ok(())
+}
+
+fn remote_origin_for_endpoint(app: &tauri::AppHandle, endpoint_id: &str) -> Option<String> {
+    // Only called from the wry download callback on the main thread, outside
+    // any tokio execution context, so the blocking lock cannot deadlock.
+    let state = app.state::<AppState>();
+    let stored = state.settings.blocking_lock();
+    stored
+        .endpoints
+        .iter()
+        .find(|entry| entry.id == endpoint_id)
+        .map(|entry| entry.origin.clone())
+}
+
+fn is_endpoint_url(origin: &str, url: &Url) -> bool {
+    url.origin().ascii_serialization().trim_end_matches('/') == origin.trim_end_matches('/')
+}
+
+async fn download_endpoint_file(
+    app: &tauri::AppHandle,
+    endpoint_id: &str,
+    url: &Url,
+    destination: &Path,
+) -> Result<bool, String> {
+    let state = app.state::<AppState>();
+    let directory = state.directory.clone();
+    let connected = state
+        .settings
+        .lock()
+        .await
+        .endpoints
+        .iter()
+        .any(|entry| entry.id == endpoint_id);
+    if !connected {
+        return Err("当前工作空间地址不存在".into());
+    }
+    let token =
+        credentials::get_token(&directory, endpoint_id)?.ok_or("尚未登录，无法下载该文件")?;
+    let response = remote_client()?
+        .get(url.clone())
+        .bearer_auth(token)
+        .send()
+        .await
+        .map_err(|e| format!("下载失败：{e}"))?;
+    if !response.status().is_success() {
+        return Err(format!("下载失败：{}", response.status()));
+    }
+    use futures_util::StreamExt;
+    let mut file = tokio::fs::File::create(destination)
+        .await
+        .map_err(|e| format!("无法创建下载文件：{e}"))?;
+    use tokio::io::AsyncWriteExt;
+    let mut written: u64 = 0;
+    let mut stream = response.bytes_stream();
+    while let Some(chunk) = stream.next().await {
+        let chunk = chunk.map_err(|e| format!("下载中断：{e}"))?;
+        file.write_all(&chunk)
+            .await
+            .map_err(|e| format!("无法写入下载文件：{e}"))?;
+        written += chunk.len() as u64;
+        if written > 4 * 1024 * 1024 * 1024 {
+            return Err("下载文件超过 4 GB 上限".into());
+        }
+    }
+    file.flush()
+        .await
+        .map_err(|e| format!("无法写入下载文件：{e}"))?;
+    Ok(written > 0)
+}
+
+fn reveal_in_file_manager(path: &Path) {
+    #[cfg(target_os = "macos")]
+    let _ = std::process::Command::new("open")
+        .arg("-R")
+        .arg(path)
+        .spawn();
+    #[cfg(target_os = "windows")]
+    let _ = std::process::Command::new("explorer")
+        .arg(format!("/select,{}", path.display()))
+        .spawn();
 }
 
 async fn revoke_remote(directory: &Path, id: &str, origin: &str) -> Result<(), String> {
@@ -1205,4 +1340,33 @@ pub fn run() {
                     .store(true, Ordering::SeqCst);
             }
         });
+}
+
+#[cfg(test)]
+mod download_tests {
+    use super::is_endpoint_url;
+    use url::Url;
+
+    #[test]
+    fn endpoint_url_matches_origin_and_rejects_lookalikes() {
+        let origin = "https://doca.heyphp.com";
+        let parse = |value: &str| Url::parse(value).unwrap();
+        assert!(is_endpoint_url(
+            origin,
+            &parse("https://doca.heyphp.com/api/v1/files/items/x/content?download=1")
+        ));
+        assert!(is_endpoint_url(origin, &parse("https://doca.heyphp.com")));
+        assert!(!is_endpoint_url(
+            origin,
+            &parse("https://doca.heyphp.com.evil.test/api/v1/files/items/x/content")
+        ));
+        assert!(!is_endpoint_url(
+            origin,
+            &parse("http://doca.heyphp.com/api/v1/files/items/x/content")
+        ));
+        assert!(!is_endpoint_url(
+            origin,
+            &parse("https://127.0.0.1:39131/api/v1/files/items/x/content")
+        ));
+    }
 }
