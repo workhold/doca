@@ -68,3 +68,17 @@
 | `Doca_0.2.37_x64_en-US.msi` | 26.89 MB | `dfc58da2c09f0ef6d26e9098b6173adfc9143ea0b4436b0491b0c8e078437515` |
 
 以当前附件校验和为准；本记录保留的两次历史校验和仅作过程记录。下载行为仅在 CI 构建层面验证，未在真实 Windows 机器执行。
+
+## 安装包第三次修复重发（11-22 00:00）：+ 号按钮几何
+
+用户实测工作空间标签栏的悬浮 + 按钮渲染成放大的浮起块。[PR #143](https://github.com/workhold/doca/pull/143)（合入 main 为 `ccacb62c`）给该按钮固定 34×30 尺寸、`align-self: flex-end` 钉在标签行内，并把条带对齐从较新的 `end` 关键字换成各 WebKit 版本都支持的 `flex-end`。`cargo test --locked` 18 项通过、`cargo fmt --check` 通过；Playwright WebKit 18.2 离屏渲染确认按钮 34×30 与标签行底对齐（截图在 `artifacts/verification/desktop-shots/tabstrip-webkit-new.png`）。
+
+桌面发布工作流[重跑](https://github.com/workhold/doca/actions/runs/44921258897)成功后于 2026-11-22 00:00 覆盖安装包。当前生效校验和：
+
+| 附件 | 大小 | SHA-256 |
+| --- | --- | --- |
+| `Doca_0.2.37_universal.dmg` | 32.12 MB | `4fb872ed363e7878049073c369c7e41a73822b988aa4bf61036b0daae7abff6c` |
+| `Doca_0.2.37_x64-setup.exe` | 18.71 MB | `e44ab2333e3e6d59dddc9558c3367af56bc88b255038cd235e04141549c0660c` |
+| `Doca_0.2.37_x64_en-US.msi` | 26.90 MB | `075748eac00ca1e5561f86e439f147a52c6276e1e848c613fabb7df79e2ecb69` |
+
+此前各轮校验和仅作过程记录，以下载附件自带的 `.sha256` 为准。
