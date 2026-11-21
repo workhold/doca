@@ -82,3 +82,19 @@
 | `Doca_0.2.37_x64_en-US.msi` | 26.90 MB | `075748eac00ca1e5561f86e439f147a52c6276e1e848c613fabb7df79e2ecb69` |
 
 此前各轮校验和仅作过程记录，以下载附件自带的 `.sha256` 为准。
+
+## 安装包第四次修复重发（11-22 00:53）：iframe 下载仍白屏
+
+用户实测右键菜单「下载」（文件卡片、文件信息、预览页的下载链接均为 iframe 内的普通 `<a href>`）依旧白屏：这些导航发生在**子框架**内，WKWebView 的窗口级下载委托（上一版挂的 `on_download`）不触发，iframe 直接导航到无法渲染的响应。[PR #145](https://github.com/workhold/doca/pull/145)（合入 main 为 `e54bb3f5`）在标签壳拦截工作空间框架内的下载链接（`[download]`、`?download=1`、`*/content` 路径），阻止导航并调用新的 `downloadFile` 代理动作：校验路径必须为 `/api/v1/…`（拒绝穿越与绝对 URL），用桌面凭证从所选后端拉取，流式保存到系统下载目录（RFC 5987 文件名解码、重名自动编号、上限 4 GB）并定位文件。blob 导出继续走窗口级下载处理。
+
+`cargo test` 21 项通过，新增真实 HTTP 集成测试：axum 固件返回 RFC 5987 Content-Disposition，断言解码文件名「营业执照.jpg」与字节一致的落盘内容；含 origin/穿越拒绝用例。同时移除该测试中对 HOME 环境变量的改写——并行测试进程里改 HOME 会破坏整个进程的钥匙串解析（并行 credentials 测试报 "default keychain could not be found" 的根因），并让 credentials 测试容忍无默认钥匙串沙箱中的存在性检查。
+
+桌面发布工作流[重跑](https://github.com/workhold/doca/actions/runs/44926113765)成功后于 00:53 覆盖安装包。当前生效校验和：
+
+| 附件 | 大小 | SHA-256 |
+| --- | --- | --- |
+| `Doca_0.2.37_universal.dmg` | 32.14 MB | `3f5627912663712131deb0a6e423a93803d569cd0d884eabad6e6f6d026fd7bd` |
+| `Doca_0.2.37_x64-setup.exe` | 18.71 MB | `541545403939327adda76102d056fdcf71f11782298d45888cb640158772966e` |
+| `Doca_0.2.37_x64_en-US.msi` | 26.92 MB | `ce974574ec5f09075bb72785bfb3856b2f27dab0003530dc9117332048d0897a` |
+
+下载数据不会写入服务器或共享存储；本轮 CI 层面验证，未在真实 Windows 机器执行。
