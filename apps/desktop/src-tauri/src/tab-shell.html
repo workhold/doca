@@ -14,8 +14,8 @@
     .skip { position: absolute; z-index: 5; top: -60px; left: 8px; padding: 8px 12px; background: white; color: #2d4cb8; }
     .skip:focus { top: 6px; }
     .chrome { height: 48px; display: flex; align-items: stretch; gap: 6px; padding: 5px 7px 0; border-bottom: 1px solid #dce1ea; background: #edf0f5; user-select: none; -webkit-user-select: none; }
-    .tabs { min-width: 0; flex: 1; display: flex; align-items: end; gap: 8px; }
-    .tab-list { flex: 0 1 auto; min-width: 0; display: flex; align-items: end; gap: 4px; overflow-x: auto; scrollbar-width: thin; }
+    .tabs { min-width: 0; flex: 1; display: flex; align-items: flex-end; gap: 8px; }
+    .tab-list { flex: 0 1 auto; min-width: 0; display: flex; align-items: flex-end; gap: 4px; overflow-x: auto; scrollbar-width: thin; }
     .tab { min-width: 130px; max-width: 230px; flex: 0 1 160px; height: 40px; display: flex; align-items: center; border: 1px solid transparent; border-bottom: 0; border-radius: 9px 9px 0 0; color: #596171; background: #e5e9f0; }
     .tab.active { color: #202634; background: white; border-color: #dce1ea; }
 .tab.dragging { position: relative; z-index: 20; background: white; border-color: #dce1ea; box-shadow: 0 10px 26px #1e293b33; transition: none; will-change: transform; }
@@ -27,7 +27,7 @@
     .tab-close, .tool { flex: none; height: 34px; min-width: 34px; display: grid; place-items: center; border: 0; border-radius: 6px; color: #596171; background: transparent; }
     .tab-close { margin-right: 3px; }
     .tab-close:hover, .tool:hover { background: #d8deea; color: #252a35; }
-    #new-tab { margin-bottom: 5px; margin-left: 4px; flex: none; }
+    #new-tab { flex: none; align-self: flex-end; width: 34px; height: 30px; margin: 0 4px 7px 4px; padding: 0; font-size: 19px; }
     .tools { flex: none; display: flex; align-items: center; gap: 2px; padding-bottom: 5px; }
     .tool { font-size: 21px; line-height: 1; }
     .tool.text { width: auto; padding: 0 10px; font-size: 12px; font-weight: 600; }
