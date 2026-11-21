@@ -38,6 +38,19 @@
 
 校验和逐一下载核对。安装包未签名、未公证：macOS 首次打开需右键 →「打开」，Windows 可能出现 SmartScreen 提示，已在发行说明中注明。
 
+## 安装包修复重发（同日）
+
+用户实测发现 macOS 连接管理器把「钥匙串无该条目」当作凭据库错误（`errSecItemNotFound` 未映射为「无凭据」），首次添加的地址直接显示凭据库不可用并禁用浏览器登录。[PR #139](https://github.com/workhold/doca/pull/139)（合入 main 为 `7fe2e6f1`）把 ItemNotFound 映射为无凭据；`cargo test --locked` 17 项通过。桌面发布工作流[按 main 重跑](https://github.com/workhold/doca/actions/runs/44912895344)后同版本覆盖安装包（2026-11-21 14:24 UTC+8 前后），仅桌面 Rust 依赖行为变化，镜像不重建。重发后校验和：
+
+| 附件 | 大小 | SHA-256 |
+| --- | --- | --- |
+| `Doca_0.2.37_universal.dmg` | 32.07 MB | `51638fd56d8d26f5d36598e2fac122dcbeb7943986683c61e7a93a12fa80aef7` |
+| `Doca_0.2.37_x64-setup.exe` | 17.82 MB→18.68 MB | `f889bceacbd48e9c1367354e632e12977db065c0cea75e915ea466ad8370ee17` |
+| `Doca_0.2.37_x64_en-US.msi` | 25.62 MB→26.87 MB | `c8b8929dcf4f7751e46d39312f73e04b700082d74a8c220a5da1c0cdb99e8967` |
+
+下表「首次发布」一栏保留旧校验和作为历史记录；已下载旧包的用户按发行说明重新获取。
+
+
 ## 证据与限制
 
 发行过程记录保留在会话内；附件校验和来自 Release API 下载，未逐一解包比对构建产物。桌面安装包由 CI 构建，尚未在真实 Windows 机器或外置 HTTPS 服务上执行；[006](../../specs/006-desktop-client/validation.md) 与 [007](../../specs/007-desktop-workspace-tabs/validation.md) 的验证记录已补充该范围与限制。镜像验收来自工作流自身的 QA 脚本，本机未复跑。没有用户生产数据、真实外部 provider 调用或生产部署；制品发布不代表运行中的实例已经升级。
