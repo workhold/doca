@@ -28,11 +28,11 @@ url = "2"
 sha2 = "0.10"
 aes-gcm = "0.10"
 rand = "0.8"
+base64 = "0.22"
+keyring = { version = "=3.6.3", features = ["apple-native", "windows-native"], default-features = false }
+open = "5"
+hex = "0.4"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 security-framework = "3.7"
-base64 = "0.22"
-keyring = { version = "=3.6.3", features = ["apple-native", "windows-native", "sync-secret-service"], default-features = false }
-open = "5"
-hex = "0.4"
 
