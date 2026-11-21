@@ -69,3 +69,7 @@ The current desktop contract is [docs/desktop-client.md](../../docs/desktop-clie
 ## 2026-11-21 application icon alignment
 
 The desktop application previously used a plain blue placeholder icon. `apps/desktop/src-tauri/icons/icon.svg` is now byte-identical to `apps/web/public/favicon.svg`; the desktop icon set is generated from a 1024-pixel render at `icons/icon-source.png`. The macOS app bundle was rebuilt with `tauri build --bundles app --no-sign --ci`, its bundled `Contents/Resources/icon.icns` was extracted through `iconutil` and included a 1024-pixel representation; the rendered 512-pixel image showed the Web blue book mark. This verifies the packaged source for the application icon; macOS Dock caching and signed distribution were not separately verified.
+
+## 2026-11-21 release installers run
+
+The v0.2.37 desktop-release workflow produced the tabbed-workspace installers for release: universal macOS `Doca_0.2.37_universal.dmg`, Windows NSIS `Doca_0.2.37_x64-setup.exe` and `Doca_0.2.37_x64_en-US.msi`, attached to the GitHub release with checksums (run and hashes in [docs/verification/release-0.2.37.md](../../docs/verification/release-0.2.37.md)). Windows tab behavior now ships but has not been executed on Windows hardware; signing/notarization remain release follow-ups.
