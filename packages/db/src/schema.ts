@@ -710,6 +710,22 @@ export interface Schema extends KnowledgeBookTables, BrowserClipperSchema, Group
     user_id: string;
     expires_at: string;
   };
+  desktop_auth_flows: {
+    id: string;
+    challenge: string;
+    code_hash: string | null;
+    user_id: string | null;
+    browser_session_id: string | null;
+    expires_at: string;
+    created_at: string;
+  };
+  desktop_sessions: {
+    id: string;
+    user_id: string;
+    device_name: string;
+    created_at: string;
+    revoked_at: string | null;
+  };
   plugin_webview_auth: {
     id: string;
     kind: string;

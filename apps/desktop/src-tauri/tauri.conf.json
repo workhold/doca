@@ -1,0 +1,55 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Doca",
+  "version": "0.2.37",
+  "identifier": "com.smartdoca.desktop",
+  "build": {
+    "beforeDevCommand": "pnpm exec vite --host 127.0.0.1 --port 1420 --strictPort",
+    "devUrl": "http://127.0.0.1:1420",
+    "beforeBuildCommand": "pnpm -w exec vite build --config apps/web/vite.config.ts && pnpm exec vite build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Doca · 工作空间",
+        "width": 460,
+        "height": 660,
+        "resizable": true
+      }
+    ],
+    "security": {
+      "capabilities": [
+        "main"
+      ]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "resources": {
+      "../../web/dist": "web"
+    },
+    "icon": [
+      "icons/icon.icns",
+      "icons/icon.ico",
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.png"
+    ],
+    "macOS": {
+      "minimumSystemVersion": "14.0"
+    }
+  },
+  "plugins": {
+    "deep-link": {
+      "desktop": {
+        "schemes": [
+          "doca"
+        ]
+      }
+    }
+  }
+}

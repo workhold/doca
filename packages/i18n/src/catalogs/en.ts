@@ -1,9 +1,11 @@
 import { browserClipperEn } from "./browser-clipper.js";
+import { desktopEn } from "./desktop.js";
 import { handoverEn } from "./resource-handover.js";
 import { groupsEn } from "./groups.js";
 /** English copy is the source catalog. Every other locale must provide these keys. */
 export const en = {
   ...browserClipperEn,
+  ...desktopEn,
   ...handoverEn,
   ...groupsEn,
   "mcp.executions": "Execution history",
@@ -1638,7 +1640,7 @@ export const en = {
     "This draft has an invalid format. Its stored record has been preserved.",
   "aiUpload.title": "Upload limits",
   "aiUpload.help":
-    "Set attachment and folder count, individual file size and total size. Zero means unlimited; user overrides take precedence.",
+    "Set attachment and folder count, individual file size and total size. The individual file size also limits Files uploads. Zero means unlimited; user overrides take precedence.",
   "aiUpload.scope": "Applies to",
   "aiUpload.global": "Global",
   "aiUpload.inherit": "Use global settings",
@@ -1735,6 +1737,7 @@ export const en = {
   "sharingUi.perLink": "Counted separately for each link",
   "sharingUi.custom": "Custom",
   "sharingUi.customLimit": "Custom member limit",
+  "sharingUi.noPublicAddress": "This local workspace has no shareable public address",
   "sharingUi.linkAccess": "Link access",
   "sharingUi.copied": "Copied",
   "sharingUi.copyLink": "Copy link",
@@ -1869,10 +1872,10 @@ export const en = {
   "chat.referenceLimit": "You can reference up to 20 items per message",
   "chat.localFileReady": "Ready to upload when you send.",
   "chat.attachmentLimit":
-    "The upload exceeds the current count or size limit. Adjust it in AI administration > Upload limits.",
+    "The upload exceeds the current count or size limit. Adjust it in Administration > Upload limits.",
   "chat.uploadFailed": "Upload failed. Remove the attachment and try again.",
   "chat.folderTooLarge":
-    "This folder exceeds the current upload count or size limit. Adjust it in AI administration > Upload limits.",
+    "This folder exceeds the current upload count or size limit. Adjust it in Administration > Upload limits.",
   "chat.folderUnavailable":
     "The folder was uploaded but is not available for selection",
   "chat.accessChanged":
@@ -3393,6 +3396,7 @@ export const en = {
   "admin.templates": "Templates",
   "admin.ai": "AI",
   "admin.recognition": "File recognition",
+  "admin.uploads": "Upload limits",
   "admin.platform": "Site and services",
   "admin.mail": "Mail",
   "admin.hooks": "Webhooks",

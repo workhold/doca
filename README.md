@@ -73,6 +73,7 @@ Doca 把**在线文档、Markdown、在线表格、幻灯片、无限画布、�
 | **知识管理** | 带文档目录的知识库，以及支持编排、来源溯源和人工审阅的多人共建知识册。 |
 | **个人 AI 助手** | 围绕有权限访问的文档与文件工作，读取 PDF/Office 附件，生成与编辑图片，分析网页材料。需要配置可用的模型和服务。 |
 | **浏览器插件** | Chrome / Edge 网页与选区收录，保留正文、来源和图片；配置保存位置与新建/追加规则，并在侧栏调用 Doca AI 整理网页。 |
+| **桌面客户端** | Windows 与 macOS 桌面应用，连接自己的 Doca 服务：多标签工作空间、多后端管理、系统浏览器登录与独立页面恢复，插件仍运行在服务端。 |
 | **MCP 服务** | 让 Codex 等外部 AI 使用已授权的 Doca 工具和 SKILL；支持个人服务和管理员代用户集成。 |
 | **文件与分享** | 个人文件、共享文件夹、邀请、权限、分享链接、搜索、通知和回收站。支持本地或兼容 S3 的文件存储。 |
 | **账号与语言** | 密码、OIDC、Google、GitHub、微信扫码和 QQ 登录，中英文界面。外部登录需配置对应服务。 |
@@ -92,6 +93,12 @@ Doca 提供 Streamable HTTP MCP 服务，让支持 MCP 的客户端发现已授�
 
 在个人设置中启用 MCP 并创建服务，复制界面生成的接入配置；管理员可在后台管理公司 MCP 服务。token 只在创建或重置时显示，保存在客户端环境变量中即可。详见[MCP 服务与接入](docs/mcp.zh-CN.md)。
 
+### 在桌面使用自己的 Doca
+
+Doca 桌面客户端（Windows、macOS）连接你部署的 Doca 服务：工作空间支持多标签页与多窗口，可同时连接多个后端，退出或移除某个后端只关闭它自己的页面。登录走系统浏览器授权，桌面凭证保存在本机加密文件中；窗口、标签和路由按后端分别保存，下次启动自动恢复。插件仍安装并运行在你的服务端，桌面端通过认证代理加载。
+
+安装包从 [GitHub Releases](https://github.com/workhold/doca/releases) 下载。当前安装包未做签名与公证：macOS 首次打开需右键 →「打开」，Windows 可能出现 SmartScreen 提示。服务端需为 0.2.37 或更高版本。详见[桌面客户端](docs/desktop-client.zh-CN.md)。
+
 ## 常用地址
 
 | 入口 | 地址 |
@@ -106,12 +113,12 @@ Doca 提供 Streamable HTTP MCP 服务，让支持 MCP 的客户端发现已授�
 
 ## Docker 快速开始
 
-需要 Docker Engine、Docker Compose，以及通过反向代理访问的 HTTP(S) 地址。全新 SQLite/本地存储安装只需一个 YAML，无需 Git、源码、seccomp JSON 或外部初始化脚本。已有部署更换版本前，先阅读[发行要求](https://workhold.github.io/doca/#/zh-cn/releases/0.2.36)，保留原项目名、持久卷、数据库、附件和主密钥。
+需要 Docker Engine、Docker Compose，以及通过反向代理访问的 HTTP(S) 地址。全新 SQLite/本地存储安装只需一个 YAML，无需 Git、源码、seccomp JSON 或外部初始化脚本。已有部署更换版本前，先阅读[发行要求](https://workhold.github.io/doca/#/zh-cn/releases/0.2.37)，保留原项目名、持久卷、数据库、附件和主密钥。
 
 ```sh
 # 1. 在固定部署目录下载单文件配置
 mkdir doca && cd doca
-curl -fL https://github.com/workhold/doca/releases/download/v0.2.36/doca-compose-v0.2.36.yaml -o compose.yaml
+curl -fL https://github.com/workhold/doca/releases/download/v0.2.37/doca-compose-v0.2.37.yaml -o compose.yaml
 
 # 2. 用 openssl rand -hex 32 生成主密钥
 # 编辑 compose.yaml，填写 DOCA_ORIGIN 和 DOCA_CREDENTIAL_MASTER_KEY
@@ -152,11 +159,11 @@ pnpm dev
 ## 文档
 
 - [使用指南](https://workhold.github.io/doca/#/zh-cn/getting-started/user-guide)
-- [浏览器助手](docs/browser-assistant.zh-CN.md) · [MCP 服务](docs/mcp.zh-CN.md)
+- [浏览器助手](docs/browser-assistant.zh-CN.md) · [MCP 服务](docs/mcp.zh-CN.md) · [桌面客户端](docs/desktop-client.zh-CN.md)
 - [部署与配置](https://workhold.github.io/doca/#/zh-cn/operations/deployment)
 - [插件开发](https://workhold.github.io/doca/#/zh-cn/plugins/plugin-development)
 - [HTTP API](https://workhold.github.io/doca/#/zh-cn/reference/api)，运行中的应用还提供 `/api/openapi.json`。
-- [发行记录](https://workhold.github.io/doca/#/zh-cn/releases/0.2.36)
+- [发行记录](https://workhold.github.io/doca/#/zh-cn/releases/0.2.37)
 - [文档源码](docs/README.zh-CN.md)
 
 预览文档时，执行 `pnpm docs:dev` 并打开 `http://127.0.0.1:39140/#/zh-cn/`。`pnpm docs:check` 校验双语覆盖和本地链接。GitHub Pages 设置见[文档维护](docs/documentation.zh-CN.md)。

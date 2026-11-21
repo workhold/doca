@@ -10,7 +10,7 @@
 | --- | --- | --- |
 | 富文本 | @smartdoca/slate 0.4.26 | document-editor.tsx |
 | Markdown | @smartdoca/markdown 0.4.4 | markdown-editor.tsx |
-| 表格 | @smartdoca/sheet 0.2.18 | spreadsheet-editor.tsx |
+| 表格 | @smartdoca/sheet 0.2.19 | spreadsheet-editor.tsx |
 | 画布 | @smartdoca/canvas 0.5.16 | canvas-editor.tsx |
 | 幻灯片 | @smartdoca/slides 0.3.0-alpha.5 | presentation-editor.tsx |
 
@@ -212,3 +212,9 @@ Canvas 在非编辑悬停和小手选中整表时显示连接点，编辑单元�
 Sheet 0.2.17 提供 `SpreadsheetEditor.currentUserId?: string | null`。Doca 传入当前登录用户 UUID，原生 `type: 'user'` 原子节点按 `refId` 精确匹配：@ 自己使用胶囊圆角的蓝底白字，其他用户蓝字，所有用户提及去掉下划线。网格、公式栏及单元格草稿采用同一 Canvas 绘制规则，只读也支持；普通链接保留原生样式。整格用户对象继续使用共享的 `UserMention` 渲染器。
 
 切换或清空身份仅重绘现有运行时，身份和展示颜色不写入单元格、撤销、剪贴板、XLSX、协同和历史。自定义运行时可读取可选 `RuntimeFactoryContext.userMentions.currentUserId()` 并实现 `SpreadsheetRuntime.refreshUserMentions()`；这是视图能力，没有新增存储格式或旧 API 适配。用户节点数据、schema 6 和历史读取及既有默认规则不变。model/Yjs/XLSX/preferences 八个 JS 入口与 0.2.15 字节一致。本地验证和发布范围见[变更验证](../specs/004-sheet-self-mentions/validation.md)。
+
+## 表格单元格草稿撤销与重做 — 2026-11-20
+
+Doca 固定正式 npm `@smartdoca/sheet` 0.2.19。原生单元格编辑器持有焦点时，Cmd/Ctrl+Z 撤销草稿，Cmd/Ctrl+Y 或 Cmd/Ctrl+Shift+Z 重做草稿；提交后仍通过既有协同历史撤销、重做表格操作。宿主其他输入框不会接管这些编辑器快捷键。
+
+与 0.2.18 相比，公开声明、CSS 及 model/Yjs/XLSX/preferences 的 ESM/CJS 运行文件逐字节相同，改动限定于表格 UI 运行时。工作簿持久化格式、schema 6、baseline、epoch、checkpoint、宿主保存路径与兼容规则均不变。源码及打包入口 Chrome 回归使用隔离工作簿；回退恢复旧正式包版本和锁文件，并保留后续内容写入。

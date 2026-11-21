@@ -24,6 +24,8 @@
 node_modules/
 .pnpm-store/
 dist/
+/apps/desktop/src-tauri/target/
+/apps/desktop/src-tauri/gen/
 coverage/
 .cache/
 __pycache__/

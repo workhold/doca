@@ -41,6 +41,19 @@ export async function verifyPassword(password: string, encoded: string) {
 }
 export const tokenHash = (token: string) =>
   createHash("sha256").update(token).digest("hex");
+export async function revokeDesktopSessions(
+  db: DB | Transaction<Schema>,
+  userId: string,
+  exceptId?: string,
+) {
+  let query = db
+    .updateTable("desktop_sessions")
+    .set({ revoked_at: new Date().toISOString() })
+    .where("user_id", "=", userId)
+    .where("revoked_at", "is", null);
+  if (exceptId) query = query.where("id", "!=", exceptId);
+  await query.execute();
+}
 export async function recordLogin(
   tx: DB | Transaction<Schema>,
   userId: string,
@@ -206,6 +219,7 @@ export async function resetAdminPassword(
       .where("id", "=", user.id)
       .execute();
     await tx.deleteFrom("sessions").where("user_id", "=", user.id).execute();
+    await revokeDesktopSessions(tx, user.id);
     await securityAudit(tx, null, user.id, "auth.admin_password_reset", {
       source: "local-operator",
     });

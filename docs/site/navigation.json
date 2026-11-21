@@ -75,6 +75,11 @@
         "browser-assistant",
         "Browser assistant",
         "浏览器助手"
+      ],
+      [
+        "desktop-client",
+        "Desktop client",
+        "桌面客户端"
       ]
     ]
   },
@@ -311,6 +316,11 @@
     "en": "Releases",
     "zh": "发行记录",
     "pages": [
+      [
+        "releases/0.2.37",
+        "0.2.37 — Desktop client first release",
+        "0.2.37 — 桌面客户端首发"
+      ],
       [
         "releases/0.2.36",
         "0.2.36 — Spreadsheet corner styling",

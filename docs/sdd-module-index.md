@@ -1,5 +1,7 @@
 # SDD module index
 
+The [desktop client](desktop-client.md) spans the Tauri shell, remote host authentication, bundled Web transport and window session. Feature acceptance and validation live in [`specs/006-desktop-client`](../specs/006-desktop-client/spec.md) and [`specs/007-desktop-workspace-tabs`](../specs/007-desktop-workspace-tabs/spec.md).
+
 [中文](sdd-module-index.zh-CN.md) · [Workflow](sdd.md)
 
 This index connects existing modules to source, current contracts and reusable checks. It does not certify existing functionality or rerun historical acceptance. Check actual exports and lockfile versions before work; consult the [architecture](architecture.md) and applicable release notes for current limits. Add a new SDD when changing a module, and update its authoritative contract in the same PR.

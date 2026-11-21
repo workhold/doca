@@ -2111,10 +2111,6 @@ body.ai-panel-resizing {
 .ai-knowledge-sources label {display:flex;align-items:center;gap:8px;font-size:13px}
 .ai-knowledge-sources p {font-size:12px;color:var(--muted);margin:0}
 
-.ai-upload-settings { display: grid; gap: 16px; max-width: 760px; padding: 20px; }
-.ai-upload-settings > label { display: flex; align-items: center; gap: 12px; }
-.ai-upload-settings .ant-select { min-width: 300px; }
-
 /* Component inputs used by the AI configuration editors. */
 .ai-config-dialog .ant-input-number {
   width: 100%;

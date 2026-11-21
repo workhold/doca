@@ -1,0 +1,122 @@
+name: Release desktop clients
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to attach installers to (for example v0.2.37)"
+        required: true
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: desktop-release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            label: macos
+            target: universal-apple-darwin
+          - os: windows-latest
+            label: windows
+            target: x86_64-pc-windows-msvc
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable pnpm
+        run: corepack enable && corepack prepare pnpm@11.25.0 --activate
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Add Rust targets (macOS universal)
+        if: matrix.label == 'macos'
+        run: |
+          rustup target add aarch64-apple-darwin
+          rustup target add x86_64-apple-darwin
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build desktop bundles
+        working-directory: apps/desktop
+        run: pnpm exec tauri build --ci --no-sign --target ${{ matrix.target }}
+      - name: Create SHA-256 checksums (macOS)
+        if: matrix.label == 'macos'
+        shell: bash
+        run: |
+          cd apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle
+          for file in dmg/*.dmg; do shasum -a 256 "$file" > "$file.sha256"; done
+      - name: Create SHA-256 checksums (Windows)
+        if: matrix.label == 'windows'
+        shell: pwsh
+        run: |
+          $dir = "apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle"
+          Get-ChildItem "$dir/nsis/*.exe", "$dir/msi/*.msi" | ForEach-Object {
+            $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
+            "$hash  $($_.Name)" | Out-File -FilePath "$($_.FullName).sha256" -Encoding ascii
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.label }}
+          path: |
+            apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg
+            apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg.sha256
+            apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/nsis/*.exe
+            apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/nsis/*.exe.sha256
+            apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/msi/*.msi
+            apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/msi/*.msi.sha256
+          if-no-files-found: error
+  publish:
+    name: Attach installers to the release
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable pnpm
+        run: corepack enable && corepack prepare pnpm@11.25.0 --activate
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: desktop-*
+          path: artifacts/desktop-release
+      - name: Resolve release tag
+        run: |
+          if [ -n "${{ inputs.tag }}" ]; then
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_ENV"
+          else
+            echo "tag=$GITHUB_REF_NAME" >> "$GITHUB_ENV"
+          fi
+      - name: Wait for the official release to exist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for attempt in $(seq 1 30); do
+            if gh release view "$tag" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+              echo "Release $tag exists"
+              exit 0
+            fi
+            echo "Waiting for release $tag (attempt $attempt)"
+            sleep 60
+          done
+          echo "Release $tag was not created in time" >&2
+          exit 1
+      - name: Upload installers and checksums
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          files=$(find artifacts/desktop-release -type f | tr '\n' ' ')
+          test -n "$files"
+          gh release upload "$tag" $files --repo "$GITHUB_REPOSITORY" --clobber
+          gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name'

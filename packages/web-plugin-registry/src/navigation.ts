@@ -138,6 +138,7 @@ for (const [key, zh, en] of [
   ["mcp", "公司 MCP 服务", "Company MCP services"],
   ["file-recognition", "文件识别", "File recognition"],
   ["platform", "站点与服务", "Site settings"],
+  ["uploads", "上传限制", "Upload limits"],
   ["plugins", "插件商店", "Plugins"],
   ["navigation", "导航管理", "Navigation"],
   ["hooks", "Webhook 管理", "Webhooks"],

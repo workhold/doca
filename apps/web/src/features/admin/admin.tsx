@@ -9,6 +9,7 @@ import {
 } from "@web/shared/utils/system-labels.js";
 import { htmlLang } from "@doca/i18n";
 import { AIAdmin } from "@web/features/ai/ai-admin.js";
+import { UploadSettings } from "./upload-settings.js";
 import { RegistrationReviews } from "@web/features/admin/registration-reviews.js";
 import type { AccountOptions } from "@web/features/auth/account-fields.js";
 import { AdminAccountEditor } from "@web/features/account/account-settings.js";
@@ -37,6 +38,7 @@ import {
   LockKeyhole,
   Settings as SettingsIcon,
   ScanText,
+  UploadCloud,
 } from "lucide-react";
 import { api } from "@web/shared/api.js";
 import { Dialog } from "@web/features/documents/dialogs.js";
@@ -136,6 +138,7 @@ const sectionGroups: {
         order: 10,
         Icon: SettingsIcon,
       },
+      { id: "uploads", label: "admin.uploads", order: 15, Icon: UploadCloud },
       { id: "navigation", label: "navigation.title", order: 21, Icon: SettingsIcon },
       { id: "plugins", label: "plugins.title", order: 20, Icon: SettingsIcon },
       { id: "hooks", label: "admin.hooks", order: 30, Icon: Webhook },
@@ -803,6 +806,7 @@ export function Admin({
           {tab === "ai" && <AIAdmin />}
           {tab === "mcp" && <McpSettings admin />}
           {tab === "file-recognition" && <FileRecognitionSettings />}
+          {tab === "uploads" && <UploadSettings />}
           {accountTarget && (
             <AdminAccountEditor
               userId={accountTarget}

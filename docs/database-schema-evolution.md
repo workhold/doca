@@ -1,5 +1,7 @@
 # Database upgrade contract
 
+The desktop feature adds empty `desktop_auth_flows` and `desktop_sessions` tables through current DDL and `schemaEvolution`, without changing the compatibility generation or converting browser/mobile sessions. The remote-only desktop client preserves earlier trial `local-v1` data without opening or migrating it. See [desktop client](desktop-client.md) and [feature validation](../specs/006-desktop-client/validation.md). Application downgrade after desktop credentials have been issued requires a separately agreed preservation and authorization plan.
+
 [简体中文](database-schema-evolution.zh-CN.md)
 
 The approved user-group addition retains this contract and compatibility generation: seven empty group/membership/invitation/ACL tables plus an independent directory policy explicitly initialized to joined groups only (`system/member/revision=1`). User overrides start empty. Historical personal/link grants, invitations, public settings and user directory policies remain unchanged, without conversion or per-member grant materialization. Installed configuration rows are not silently recreated. Update all servers and Web together; downgrade needs separate preservation/recovery review. See [group rules](user-groups.md), [release notes](releases/0.2.28.md) and [SQLite/PostgreSQL 17/18 verification](verification/user-groups-2026-10-30.md).

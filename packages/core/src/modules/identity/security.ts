@@ -112,8 +112,15 @@ export async function requireSecurity(
     .where("user_id", "=", userId)
     .where("expires_at", ">", new Date().toISOString())
     .executeTakeFirst();
+  const desktopSession = session ? null : await db
+    .selectFrom("desktop_sessions")
+    .select("id")
+    .where("id", "=", sessionId)
+    .where("user_id", "=", userId)
+    .where("revoked_at", "is", null)
+    .executeTakeFirst();
   if (
-    !session ||
+    (!session && !desktopSession) ||
     d.sessionId !== sessionId ||
     d.revision !== p.revision ||
     d.fingerprint !== (await credentialFingerprint(db, userId, d.method))

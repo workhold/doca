@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Doca · 工作空间</title>
+  <style>
+    :root { font: 14px/1.4 -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif; color: #252a35; background: #f5f6f8; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    button { font: inherit; cursor: pointer; }
+    button:focus-visible, .skip:focus-visible { outline: 2px solid #465fce; outline-offset: -2px; }
+    button:disabled { opacity: .5; cursor: default; }
+    .skip { position: absolute; z-index: 5; top: -60px; left: 8px; padding: 8px 12px; background: white; color: #2d4cb8; }
+    .skip:focus { top: 6px; }
+    .chrome { height: 48px; display: flex; align-items: stretch; gap: 6px; padding: 5px 7px 0; border-bottom: 1px solid #dce1ea; background: #edf0f5; user-select: none; -webkit-user-select: none; }
+    .tabs { min-width: 0; flex: 1; display: flex; align-items: end; gap: 8px; }
+    .tab-list { flex: 0 1 auto; min-width: 0; display: flex; align-items: end; gap: 4px; overflow-x: auto; scrollbar-width: thin; }
+    .tab { min-width: 130px; max-width: 230px; flex: 0 1 160px; height: 40px; display: flex; align-items: center; border: 1px solid transparent; border-bottom: 0; border-radius: 9px 9px 0 0; color: #596171; background: #e5e9f0; }
+    .tab.active { color: #202634; background: white; border-color: #dce1ea; }
+.tab.dragging { position: relative; z-index: 20; background: white; border-color: #dce1ea; box-shadow: 0 10px 26px #1e293b33; transition: none; will-change: transform; }
+.tab.dragging .tab-select { color: #202634; cursor: grabbing; }
+    .tab-select { flex: 1; min-width: 0; height: 100%; display: flex; align-items: center; gap: 8px; padding: 0 7px 0 11px; text-align: left; border: 0; background: transparent; color: inherit; touch-action: none; }
+    .tab-title { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .tab-icon { width: 16px; height: 16px; flex: none; border-radius: 4px; background: #465fce; color: white; text-align: center; font-size: 11px; font-weight: 700; line-height: 16px; }
+.tab-favicon { width: 16px; height: 16px; flex: none; border-radius: 4px; object-fit: contain; }
+    .tab-close, .tool { flex: none; height: 34px; min-width: 34px; display: grid; place-items: center; border: 0; border-radius: 6px; color: #596171; background: transparent; }
+    .tab-close { margin-right: 3px; }
+    .tab-close:hover, .tool:hover { background: #d8deea; color: #252a35; }
+    #new-tab { margin-bottom: 5px; margin-left: 4px; flex: none; }
+    .tools { flex: none; display: flex; align-items: center; gap: 2px; padding-bottom: 5px; }
+    .tool { font-size: 21px; line-height: 1; }
+    .tool.text { width: auto; padding: 0 10px; font-size: 12px; font-weight: 600; }
+    .tab-menu { position: fixed; z-index: 50; min-width: 190px; padding: 5px; border: 1px solid #d8deea; border-radius: 9px; background: white; box-shadow: 0 10px 28px #1e293b26; }
+    .tab-menu button { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 16px; border: 0; border-radius: 6px; padding: 8px 10px; background: transparent; color: #252a35; text-align: left; font-size: 13px; }
+    .tab-menu button:hover:not(:disabled), .tab-menu button:focus-visible:not(:disabled) { background: #eef2f9; }
+    .tab-menu button:disabled { color: #9aa3b2; cursor: default; }
+    .tab-menu .hint { color: #8a93a3; font-size: 12px; }
+    .content { position: relative; height: calc(100vh - 48px); background: white; }
+    .page { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: white; }
+    .page[hidden] { display: none; }
+    .status { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; color: #68707f; text-align: center; }
+    .status.error { inset: 12px 12px auto auto; display: block; width: min(360px, calc(100% - 24px)); padding: 10px 12px; border: 1px solid #f1b6b4; border-radius: 7px; background: #fff2f1; color: #a52222; text-align: left; box-shadow: 0 4px 16px #1e293b1c; z-index: 2; pointer-events: none; }
+    .status[hidden] { display: none; }
+    @media (max-width: 520px) { .tab { min-width: 108px; flex-basis: 140px; } .tool.text { width: 34px; padding: 0; font-size: 0; } .tool.text::before { content: "⚙"; font-size: 18px; } }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#content">跳转到页面</a>
+  <header class="chrome" aria-label="工作空间标签栏">
+    <div id="tabs" class="tabs">
+      <div id="tab-list" class="tab-list" role="tablist" aria-label="页面标签"></div>
+      <button id="new-tab" class="tool" type="button" title="新建标签页 (⌘/Ctrl+T)" aria-label="新建标签页">+</button>
+    </div>
+    <div class="tools">
+      <button id="new-window" class="tool" type="button" title="新建窗口 (⌘/Ctrl+N)" aria-label="新建窗口">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="8.5" width="13" height="12" rx="2.2" />
+          <path d="M8 4.5h10.8A2.2 2.2 0 0 1 21 6.7v9.3" />
+        </svg>
+      </button>
+      <button id="backend" class="tool text" type="button" title="切换后端" aria-label="切换后端">切换后端</button>
+    </div>
+  </header>
+  <main id="content" class="content" tabindex="-1">
+    <div id="status" class="status" role="status">正在恢复工作空间…</div>
+  </main>
+  <script>
+    (() => {
+      const windowId = location.pathname.split("/").pop();
+      const tabs = document.getElementById("tab-list");
+      const content = document.getElementById("content");
+      const status = document.getElementById("status");
+      const frames = new Map();
+      const favicons = new Map();
+      const pendingUpdates = new Map();
+      const TAB_GAP = 4;
+      let current = null;
+      let busy = false;
+      let menu = null;
+      let dragSession = null;
+      let suppressTabClick = false;
+      let suppressUpdates = false;
+
+      function refresh() {
+        return request(`/_doca/session?window=${encodeURIComponent(windowId)}`)
+          .then(result => render(result.window))
+          .catch(error => showError(`无法恢复工作空间：${error.message}`));
+      }
+      const updates = new EventSource("/_doca/events");
+      updates.onmessage = () => { if (!busy && !dragSession && !suppressUpdates) void refresh(); };
+      function showError(message) {
+        status.textContent = message;
+        status.classList.add("error");
+        status.hidden = false;
+      }
+      async function request(path, init) {
+        const response = await fetch(path, { credentials: "same-origin", ...init });
+        if (!response.ok) throw new Error(await response.text() || `HTTP ${response.status}`);
+        return response.status === 204 ? null : response.json();
+      }
+      function send(type, data = {}) {
+        return request("/_doca/action", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type, windowId, ...data }),
+        }).then(result => {
+          if (result?.window) render(result.window);
+          return result;
+        });
+      }
+      async function act(type, data = {}) {
+        if (busy) return;
+        busy = true;
+        try { await send(type, data); }
+        catch (error) { showError(`操作未完成：${error.message}`); }
+        finally { busy = false; }
+      }
+      async function closeTabs(tabIds) {
+        for (const id of tabIds) {
+          if (!checkUnsaved(id)) return;
+          try { await send("closeTab", { tabId: id }); }
+          catch (error) {
+            if (!String(error.message).includes("标签页不存在")) {
+              showError(`操作未完成：${error.message}`);
+              return;
+            }
+          }
+        }
+      }
+      function tabById(id) { return current?.tabs.find(tab => tab.id === id); }
+      function pageFavicon(frame) {
+        try {
+          const link = frame.contentDocument.querySelector("link[rel~='icon'], link[rel='shortcut icon']");
+          if (!link?.href) return null;
+          return new URL(link.href, frame.contentWindow.location.href).href;
+        } catch { return null; }
+      }
+      function updateTabIcon(tabId) {
+        const item = tabs.querySelector(`.tab-select[data-tab-id="${tabId}"]`);
+        if (!item) return;
+        const href = favicons.get(tabId);
+        let icon = item.querySelector(".tab-favicon, .tab-icon");
+        if (!href) {
+          if (icon?.classList.contains("tab-favicon")) {
+            const fallback = document.createElement("span");
+            fallback.className = "tab-icon";
+            fallback.setAttribute("aria-hidden", "true");
+            fallback.textContent = "D";
+            icon.replaceWith(fallback);
+          }
+          return;
+        }
+        if (icon?.classList.contains("tab-favicon")) {
+          if (icon.getAttribute("src") !== href) icon.src = href;
+          return;
+        }
+        const image = document.createElement("img");
+        image.className = "tab-favicon";
+        image.alt = "";
+        if (icon) icon.replaceWith(image);
+        else item.prepend(image);
+        image.src = href;
+      }
+      function queueUpdate(tabId) {
+        clearTimeout(pendingUpdates.get(tabId));
+        pendingUpdates.set(tabId, setTimeout(async () => {
+          pendingUpdates.delete(tabId);
+          const frame = frames.get(tabId);
+          if (!frame || !tabById(tabId)) return;
+          if (busy) { queueUpdate(tabId); return; }
+          try {
+            const hash = frame.contentWindow.location.hash || "#/home";
+            const title = (frame.contentDocument.title || "Doca").slice(0, 200);
+            const favicon = pageFavicon(frame);
+            if (favicon !== (favicons.get(tabId) ?? null)) {
+              if (favicon) favicons.set(tabId, favicon); else favicons.delete(tabId);
+              updateTabIcon(tabId);
+            }
+            if (hash === tabById(tabId).hash && title === tabById(tabId).title) return;
+            await act("updateTab", { tabId, hash, title });
+          } catch { /* An external page is never saved as a Doca route. */ }
+        }, 250));
+      }
+      function attachFrame(tab, frame) {
+        const observe = () => {
+          try {
+            const child = frame.contentWindow;
+            child.addEventListener("hashchange", () => queueUpdate(tab.id));
+            child.addEventListener("keydown", handleShortcut);
+            const originalOpen = child.open.bind(child);
+            child.open = (url, target, features) => {
+              try {
+                const next = new URL(url, child.location.href);
+                if (next.origin === location.origin && next.pathname === "/" && next.hash.startsWith("#/")) {
+                  void act("openTab", { hash: next.hash });
+                  return null;
+                }
+              } catch { /* Delegate invalid or external links to the WebView. */ }
+              return originalOpen(url, target, features);
+            };
+            child.document.addEventListener("click", event => {
+              const anchor = event.target?.closest?.("a[href]");
+              if (!anchor || !(anchor.target === "_blank" || event.metaKey || event.ctrlKey)) return;
+              try {
+                const next = new URL(anchor.href, child.location.href);
+                if (next.origin === location.origin && next.pathname === "/" && next.hash.startsWith("#/")) {
+                  event.preventDefault();
+                  void act("openTab", { hash: next.hash });
+                }
+              } catch { /* Leave external links alone. */ }
+            }, true);
+            const titleNode = frame.contentDocument.querySelector("title");
+            if (titleNode) new MutationObserver(() => queueUpdate(tab.id)).observe(titleNode, { childList: true, characterData: true, subtree: true });
+            queueUpdate(tab.id);
+          } catch { /* A non-Doca navigation cannot update the saved route. */ }
+        };
+        frame.addEventListener("load", observe);
+      }
+      function ensureFrame(tab) {
+        let frame = frames.get(tab.id);
+        if (frame) return frame;
+        frame = document.createElement("iframe");
+        frame.className = "page";
+        frame.title = tab.title || "Doca 页面";
+        frame.src = "/" + tab.hash;
+        frame.hidden = true;
+        content.append(frame);
+        frames.set(tab.id, frame);
+        attachFrame(tab, frame);
+        return frame;
+      }
+      function checkUnsaved(tabId) {
+        const frame = frames.get(tabId);
+        if (!frame) return true;
+        try {
+          const event = new Event("beforeunload", { cancelable: true });
+          frame.contentWindow.dispatchEvent(event);
+          if (event.defaultPrevented)
+            return confirm("此页面可能还有未保存的更改。确定关闭标签页？");
+        } catch { /* The browser still controls an inaccessible page. */ }
+        return true;
+      }
+
+      // ----- Dragging: the dragged tab follows the pointer; at most one
+      // neighbour visually slides aside so the gap tracks the pointer. -----
+      function tabItems() { return [...tabs.querySelectorAll(".tab")]; }
+      function beginDragWatch(event, tabId) {
+        if (event.button !== 0 || dragSession) return;
+        dragSession = { tabId, element: event.currentTarget, pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, active: false };
+      }
+      function insertIndexOf(pointerListX) {
+        // Chrome swaps the moment the pointer passes a tab's midpoint; both
+        // directions are animated, so no hysteresis is needed.
+        let index = 0;
+        for (const item of tabItems()) {
+          if (item.classList.contains("dragging")) continue;
+          if (pointerListX > item.offsetLeft + item.offsetWidth / 2) index++;
+        }
+        return index;
+      }
+      function resetNudge(session) {
+        if (session.nudged) {
+          // Animate back into place; the 150ms transition is already on the
+          // element from the previous nudge.
+          session.nudged.style.transform = "translateX(0)";
+          session.nudged = null;
+        }
+      }
+      function nudgeNeighbour(session, previous, insertion) {
+        const dragged = session.dragged;
+        const draggedWidth = dragged.offsetWidth + TAB_GAP;
+        const others = tabItems().filter(item => item !== dragged);
+        // Dragging right: the tab just after the old slot slides left into the
+        // freed gap. Dragging left: the tab at the insertion slot slides right.
+        const target = insertion > previous ? others[previous] : others[insertion];
+        if (!target) return;
+        const direction = insertion > previous ? -1 : 1;
+        if (session.nudged === target) return;
+        resetNudge(session);
+        target.style.transition = "transform 150ms ease";
+        target.style.transform = `translateX(${direction * draggedWidth}px)`;
+        session.nudged = target;
+      }
+      function dragMove(event) {
+        const session = dragSession;
+        if (!session || event.pointerId !== session.pointerId) return;
+        session.pointerX = event.clientX;
+        if (!session.active) {
+          if (Math.hypot(event.clientX - session.startX, event.clientY - session.startY) < 5) return;
+          const dragged = session.element.closest(".tab");
+          try { session.element.setPointerCapture(session.pointerId); } catch { /* The pointer already left. */ }
+          const rect = dragged.getBoundingClientRect();
+          session.active = true;
+          session.dragged = dragged;
+          session.baseLeft = rect.left;
+          session.baseTop = rect.top;
+          session.grabX = event.clientX - rect.left;
+          session.grabY = event.clientY - rect.top;
+          session.index = insertIndexOf(event.clientX - tabs.getBoundingClientRect().left);
+          dragged.classList.add("dragging");
+        }
+        const dragged = session.dragged;
+        session.frame = requestAnimationFrame(() => {
+          session.frame = null;
+          if (dragSession !== session) return;
+          // Horizontal follow only: the tab stays visually attached to the
+          // strip instead of flying over the page content.
+          dragged.style.transform = `translateX(${session.pointerX - session.grabX - session.baseLeft}px)`;
+        });
+        const insertion = insertIndexOf(event.clientX - tabs.getBoundingClientRect().left);
+        if (insertion !== session.index) {
+          const previous = session.index;
+          session.index = insertion;
+          nudgeNeighbour(session, previous, insertion);
+        }
+      }
+      function dragEnd(event) {
+        const session = dragSession;
+        if (!session || event.pointerId !== session.pointerId) return;
+        dragSession = null;
+        if (!session.active) return;
+        if (session.frame) cancelAnimationFrame(session.frame);
+        const dragged = session.dragged;
+        resetNudge(session);
+        suppressTabClick = true;
+        // Snap the dragged tab into its projected slot, then commit the new
+        // order. The commit bypasses the busy guard so an in-flight title
+        // update can never swallow a finished drag.
+        const others = tabItems().filter(item => item !== dragged);
+        const slotLeft = session.index >= others.length
+          ? (others.length
+            ? others[others.length - 1].offsetLeft + others[others.length - 1].offsetWidth + TAB_GAP
+            : 0)
+          : others[session.index].offsetLeft;
+        dragged.style.transition = "transform 130ms ease";
+        dragged.style.transform = `translateX(${slotLeft - dragged.offsetLeft}px)`;
+        suppressUpdates = true;
+        setTimeout(() => {
+          dragged.style.transition = "";
+          send("reorderTab", { tabId: session.tabId, index: session.index })
+            .then(() => { suppressTabClick = false; })
+            .catch(error => showError(`操作未完成：${error.message}`))
+            .finally(() => { suppressUpdates = false; });
+        }, 140);
+      }
+      window.addEventListener("pointermove", dragMove);
+      window.addEventListener("pointerup", dragEnd);
+      window.addEventListener("pointercancel", dragEnd);
+
+      function closeMenu() {
+        menu?.remove();
+        menu = null;
+      }
+      function menuItem(label, { hint = "", disabled = false, run }) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.setAttribute("role", "menuitem");
+        button.disabled = disabled;
+        const name = document.createElement("span");
+        name.textContent = label;
+        button.append(name);
+        if (hint) {
+          const note = document.createElement("span");
+          note.className = "hint";
+          note.textContent = hint;
+          button.append(note);
+        }
+        button.addEventListener("click", () => { closeMenu(); void run(); });
+        return button;
+      }
+      function openTabMenu(event, tab) {
+        event.preventDefault();
+        // Stop the bubble before the document-level closer dismisses the menu
+        // we are about to open for this same right-click.
+        event.stopPropagation();
+        document.getSelection()?.removeAllRanges();
+        closeMenu();
+        const index = current.tabs.findIndex(item => item.id === tab.id);
+        menu = document.createElement("div");
+        menu.className = "tab-menu";
+        menu.setAttribute("role", "menu");
+        menu.setAttribute("aria-label", `标签页操作：${tab.title || "新标签页"}`);
+        menu.append(
+          menuItem("复制标签页", { hint: "同一网址", run: () => act("openTab", { hash: tab.hash }) }),
+          menuItem("新窗口打开", { run: () => act("newWindow", { hash: tab.hash }) }),
+          menuItem("关闭", { run: () => closeTabs([tab.id]) }),
+          menuItem("关闭左侧标签页", { disabled: index <= 0, run: () => closeTabs(current.tabs.slice(0, index).map(item => item.id)) }),
+          menuItem("关闭右侧标签页", { disabled: index < 0 || index >= current.tabs.length - 1, run: () => closeTabs(current.tabs.slice(index + 1).map(item => item.id)) }),
+          menuItem("关闭全部标签页", { run: () => closeTabs(current.tabs.map(item => item.id)) }),
+        );
+        document.body.append(menu);
+        const bounds = menu.getBoundingClientRect();
+        menu.style.left = `${Math.min(event.clientX, window.innerWidth - bounds.width - 8)}px`;
+        menu.style.top = `${Math.min(event.clientY, window.innerHeight - bounds.height - 8)}px`;
+        const first = [...menu.querySelectorAll("button")].find(button => !button.disabled);
+        first?.focus();
+      }
+      document.addEventListener("click", event => { if (menu && !menu.contains(event.target)) closeMenu(); });
+      document.addEventListener("contextmenu", event => { if (menu && !menu.contains(event.target)) closeMenu(); });
+      window.addEventListener("blur", closeMenu);
+      window.addEventListener("resize", closeMenu);
+      document.addEventListener("keydown", event => { if (event.key === "Escape" && menu) { closeMenu(); event.stopPropagation(); } }, true);
+      function render(windowState) {
+        const focusedTabId = document.activeElement?.dataset?.tabId;
+        const focusedPage = document.activeElement?.classList?.contains("page");
+        current = windowState;
+        status.hidden = true;
+        status.classList.remove("error");
+        tabs.replaceChildren();
+        const ids = new Set(windowState.tabs.map(tab => tab.id));
+        for (const [id, frame] of frames) {
+          if (!ids.has(id)) { frame.remove(); frames.delete(id); clearTimeout(pendingUpdates.get(id)); favicons.delete(id); }
+        }
+        for (const tab of windowState.tabs) {
+          const item = document.createElement("div");
+          item.className = "tab" + (tab.id === windowState.activeTab ? " active" : "");
+          const select = document.createElement("button");
+          select.type = "button";
+          select.className = "tab-select";
+          select.role = "tab";
+          select.dataset.tabId = tab.id;
+          select.setAttribute("aria-selected", String(tab.id === windowState.activeTab));
+          select.setAttribute("aria-controls", `page-${tab.id}`);
+          select.title = tab.title;
+          const icon = favicons.get(tab.id);
+          select.innerHTML = icon
+            ? '<img class="tab-favicon" alt="" /><span class="tab-title"></span>'
+            : '<span class="tab-icon" aria-hidden="true">D</span><span class="tab-title"></span>';
+          if (icon) select.querySelector(".tab-favicon").src = icon;
+          select.querySelector(".tab-title").textContent = tab.title || "新标签页";
+          select.addEventListener("click", () => {
+            if (suppressTabClick) { suppressTabClick = false; return; }
+            act("selectTab", { tabId: tab.id });
+          });
+          select.addEventListener("pointerdown", event => beginDragWatch(event, tab.id));
+          select.addEventListener("contextmenu", event => openTabMenu(event, tab));
+          const close = document.createElement("button");
+          close.type = "button";
+          close.className = "tab-close";
+          close.dataset.tabId = tab.id;
+          close.textContent = "×";
+          close.setAttribute("aria-label", `关闭 ${tab.title || "新标签页"}`);
+          close.addEventListener("click", () => { if (checkUnsaved(tab.id)) act("closeTab", { tabId: tab.id }); });
+          item.append(select, close);
+          tabs.append(item);
+          if (tab.id === windowState.activeTab) ensureFrame(tab);
+        }
+        for (const [id, frame] of frames) {
+          frame.id = `page-${id}`;
+          frame.hidden = id !== windowState.activeTab;
+          frame.title = tabById(id)?.title || "Doca 页面";
+        }
+        const active = tabById(windowState.activeTab);
+        document.title = active ? active.title : "Doca · 工作空间";
+        if (focusedTabId) {
+          const sameTab = [...tabs.querySelectorAll(".tab-select")].find(button => button.dataset.tabId === focusedTabId);
+          const activeTab = [...tabs.querySelectorAll(".tab-select")].find(button => button.dataset.tabId === windowState.activeTab);
+          (sameTab || activeTab)?.focus();
+        } else if (focusedPage) frames.get(windowState.activeTab)?.focus();
+      }
+      document.getElementById("new-tab").addEventListener("click", () => act("newTab"));
+      document.getElementById("new-window").addEventListener("click", () => act("newWindow"));
+      document.getElementById("backend").addEventListener("click", async () => {
+        try { await request("/_doca/manager", { method: "POST" }); }
+        catch (error) { showError(`无法打开连接管理器：${error.message}`); }
+      });
+      function handleShortcut(event) {
+        if (!(event.metaKey || event.ctrlKey) || event.altKey) return;
+        const key = event.key.toLowerCase();
+        if (key === "t") { event.preventDefault(); act("newTab"); }
+        else if (key === "n") { event.preventDefault(); act("newWindow"); }
+        else if (key === "w" && current) {
+          event.preventDefault();
+          if (checkUnsaved(current.activeTab)) act("closeTab", { tabId: current.activeTab });
+        } else if (key === "tab" && current) {
+          event.preventDefault();
+          const index = current.tabs.findIndex(tab => tab.id === current.activeTab);
+          const next = current.tabs[(index + (event.shiftKey ? -1 : 1) + current.tabs.length) % current.tabs.length];
+          if (next) act("selectTab", { tabId: next.id });
+        }
+      }
+      document.addEventListener("keydown", handleShortcut);
+      void refresh();
+    })();
+</script>
+</body>
+</html>

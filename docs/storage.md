@@ -1,5 +1,7 @@
 # File storage and uploads
 
+The Tauri desktop client uses its selected remote host's storage. Any earlier trial `local-v1` profile is preserved without opening or migrating it. See [desktop client](desktop-client.md).
+
 [中文](storage.zh-CN.md)
 
 This module stores avatars, library covers, document images, and attachments. The editor and the admin pages share the upload API. Document bodies store a stable asset id. A resource adapter resolves an authorized URL. Short-lived CDN signatures are not stored in the document.

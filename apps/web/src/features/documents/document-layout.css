@@ -311,6 +311,34 @@ html[data-editor-shell="mobile"] .sk-table-block th svg {
 .global-header-tools > a.todo-icon {
   height: 34px;
 }
+.global-header-tools > .desktop-backend-switch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: auto;
+  min-width: max-content;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 8px;
+  background: var(--surface, #fff);
+  color: var(--text, #1f2329);
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.global-header-tools > .desktop-backend-switch:hover {
+  background: var(--surface-soft, #f4f6fa);
+}
+.global-header-tools > .desktop-backend-switch:focus-visible {
+  outline: 2px solid var(--brand, #3867ff);
+  outline-offset: 2px;
+}
+.global-header-tools > .desktop-backend-switch:disabled {
+  cursor: wait;
+  opacity: .6;
+}
 .global-header-tools > details > summary > .user-avatar {
   pointer-events: none;
 }
