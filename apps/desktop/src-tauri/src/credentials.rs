@@ -18,6 +18,7 @@ use std::{
     collections::HashMap,
     fs,
     path::{Path, PathBuf},
+    sync::Mutex as SyncMutex,
 };
 
 const VERSION: u8 = 1;
@@ -146,6 +147,11 @@ fn write_tokens(directory: &Path, tokens: &Tokens) -> Result<(), String> {
     Ok(())
 }
 
+/// Keychain queries are serialized: concurrent first-touch searches in
+/// parallel test runs have been observed to fail with transient
+/// "default keychain could not be found" errors.
+static KEYCHAIN_LOCK: SyncMutex<()> = SyncMutex::new(());
+
 fn keychain_token(id: &str) -> Result<Option<String>, String> {
     match crate::settings::vault(id)?.get_password() {
         Ok(token) => Ok(Some(token)),
@@ -177,6 +183,9 @@ fn keychain_exists(id: &str) -> Result<bool, String> {
     // errSecItemNotFound means "no credential yet" (freshly added endpoint or a
     // removed legacy entry), not a broken keychain; only real failures surface.
     const ERR_SEC_ITEM_NOT_FOUND: i32 = -25300;
+    let _guard = KEYCHAIN_LOCK
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
     match ItemSearchOptions::new()
         .class(ItemClass::generic_password())
         .service("com.smartdoca.desktop")
@@ -265,6 +274,14 @@ mod tests {
         delete_token(&directory.0, "endpoint-a").unwrap();
         assert_eq!(get_token(&directory.0, "endpoint-a").unwrap(), None);
         assert!(has_token(&directory.0, "endpoint-b").unwrap());
+        match has_token(&directory.0, "endpoint-a") {
+            // The keychain stays untouched by the file round trip; a sandbox
+            // without a default keychain may reject the lookup, which the
+            // endpoint card surfaces as a credential error.
+            Ok(false) => {}
+            Err(message) if message.contains("凭据库") => {}
+            other => panic!("unexpected has_token after delete: {other:?}"),
+        }
     }
 
     #[test]
