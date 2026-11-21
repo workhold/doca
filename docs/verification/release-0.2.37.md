@@ -54,3 +54,17 @@
 ## 证据与限制
 
 发行过程记录保留在会话内；附件校验和来自 Release API 下载，未逐一解包比对构建产物。桌面安装包由 CI 构建，尚未在真实 Windows 机器或外置 HTTPS 服务上执行；[006](../../specs/006-desktop-client/validation.md) 与 [007](../../specs/007-desktop-workspace-tabs/validation.md) 的验证记录已补充该范围与限制。镜像验收来自工作流自身的 QA 脚本，本机未复跑。没有用户生产数据、真实外部 provider 调用或生产部署；制品发布不代表运行中的实例已经升级。
+
+## 安装包第二次修复重发（同日）：下载白屏
+
+用户实测下载文件时工作空间整窗白屏：webview 直接导航到无法渲染的附件响应。[PR #141](https://github.com/workhold/doca/pull/141)（合入 main 为 `5a9058b3`）为工作空间窗口挂上 `on_download`：普通下载保存到系统下载目录（服务端建议文件名、自动去重）并在访达/资源管理器中定位；远端源的插件资源改为后台带桌面凭证下载，失败清理半截文件；webview 始终停留在当前页面。`cargo test --locked` 18 项通过（新增 origin 匹配与仿冒域名拒绝用例），`cargo fmt` 通过。
+
+桌面发布工作流[再次按 main 重跑](https://github.com/workhold/doca/actions/runs/44915875714)后于 14:58 覆盖安装包。重发后校验和：
+
+| 附件 | 大小 | SHA-256 |
+| --- | --- | --- |
+| `Doca_0.2.37_universal.dmg` | 32.12 MB | `6f1baee563d0dff06043822217038c34061a8ab34a48b5203f7a4c959c988b53` |
+| `Doca_0.2.37_x64-setup.exe` | 18.71 MB | `2ed1eb399b81ae7b0ca46f96dff183f630be81f81f8f0ee635f4bb6f3cf0f858` |
+| `Doca_0.2.37_x64_en-US.msi` | 26.89 MB | `dfc58da2c09f0ef6d26e9098b6173adfc9143ea0b4436b0491b0c8e078437515` |
+
+以当前附件校验和为准；本记录保留的两次历史校验和仅作过程记录。下载行为仅在 CI 构建层面验证，未在真实 Windows 机器执行。
