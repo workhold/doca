@@ -316,7 +316,7 @@ async fn download_endpoint_file(
     Ok(written > 0)
 }
 
-fn reveal_in_file_manager(path: &Path) {
+pub(crate) fn reveal_in_file_manager(path: &Path) {
     #[cfg(target_os = "macos")]
     let _ = std::process::Command::new("open")
         .arg("-R")
@@ -657,6 +657,9 @@ async fn handle_action(
         )
     };
     match action {
+        // DownloadFile executes directly inside the proxy task and never
+        // reaches this dispatcher.
+        proxy::Action::DownloadFile { .. } => Ok(serde_json::json!({})),
         proxy::Action::Snapshot { window_id } => {
             window_snapshot(&state, &endpoint_id, &account_id, &window_id)
         }

@@ -73,6 +73,9 @@ pub enum Action {
         tab_id: String,
         index: usize,
     },
+    DownloadFile {
+        url: String,
+    },
 }
 
 pub enum Control {
@@ -168,6 +171,11 @@ async fn tab_shell(
 }
 
 async fn execute_action(config: &ProxyConfig, action: Action) -> Result<serde_json::Value, String> {
+    if let Action::DownloadFile { url } = &action {
+        return download_endpoint_file(config, url)
+            .await
+            .map(|name| serde_json::json!({ "saved": name }));
+    }
     let (reply, response) = oneshot::channel();
     config
         .control
@@ -526,6 +534,228 @@ pub async fn start(
         format!("{origin}/_doca_gate/{capability}"),
         server,
     ))
+}
+
+fn sanitized_api_path(url: &str) -> Option<String> {
+    if !url.starts_with("/api/v1/") || url.contains("..") || url.contains("://") {
+        return None;
+    }
+    Some(url.to_string())
+}
+
+fn filename_from_disposition(value: Option<&reqwest::header::HeaderValue>) -> Option<String> {
+    let raw = value?.to_str().ok()?.to_string();
+    // Prefer RFC 5987 filename*=UTF-8''<percent-encoded>, then plain filename.
+    if let Some(start) = raw.find("filename*=") {
+        let tail = &raw[start + "filename*=".len()..];
+        let encoded = tail
+            .split_once("\u{27}")
+            .and_then(|(_, rest)| rest.split_once("\u{27}"))
+            .map(|(_, value)| value)
+            .unwrap_or(tail)
+            .trim_end_matches(';')
+            .trim()
+            .to_string();
+        if let Ok(decoded) = percent_decode_utf8(&encoded) {
+            let name = decoded.trim().to_string();
+            if !name.is_empty() {
+                return Some(name);
+            }
+        }
+    }
+    let plain = raw
+        .split(';')
+        .map(str::trim)
+        .find_map(|part| part.strip_prefix("filename="))
+        .map(|name| name.trim_matches('"').trim().to_string());
+    plain.filter(|name| !name.is_empty())
+}
+
+fn percent_decode_utf8(value: &str) -> Result<String, String> {
+    let bytes = value.as_bytes();
+    let mut out = Vec::with_capacity(bytes.len());
+    let mut index = 0;
+    while index < bytes.len() {
+        if bytes[index] == b'%' {
+            let hex = bytes.get(index + 1..index + 3).ok_or("截断的百分号编码")?;
+            let high = char::from(hex[0]).to_digit(16).ok_or("非法百分号编码")?;
+            let low = char::from(hex[1]).to_digit(16).ok_or("非法百分号编码")?;
+            out.push(((high << 4) | low) as u8);
+            index += 3;
+        } else {
+            out.push(bytes[index]);
+            index += 1;
+        }
+    }
+    String::from_utf8(out).map_err(|_| "文件名编码无效".to_string())
+}
+
+async fn download_endpoint_file(config: &ProxyConfig, url: &str) -> Result<String, String> {
+    let folder = dirs::download_dir().ok_or("无法定位系统下载目录")?;
+    download_endpoint_file_into(config, url, &folder).await
+}
+
+async fn download_endpoint_file_into(
+    config: &ProxyConfig,
+    url: &str,
+    folder: &std::path::Path,
+) -> Result<String, String> {
+    let path = sanitized_api_path(url).ok_or("下载地址不在允许的接口范围内")?;
+    let response = config
+        .client
+        .get(format!("{}{}", config.target, path))
+        .bearer_auth(&config.bearer)
+        .send()
+        .await
+        .map_err(|e| format!("下载失败：{e}"))?;
+    if !response.status().is_success() {
+        return Err(format!("下载失败：{}", response.status()));
+    }
+    let filename =
+        filename_from_disposition(response.headers().get(reqwest::header::CONTENT_DISPOSITION))
+            .or_else(|| {
+                url.split("filename=")
+                    .nth(1)
+                    .map(|value| value.split('&').next().unwrap_or(value).to_string())
+                    .filter(|name| !name.is_empty())
+            })
+            .unwrap_or_else(|| "doca-download".to_string());
+    let safe_name: String = filename
+        .chars()
+        .map(|c| {
+            if c == '/' || c == '\\' || c == ':' || c == '\u{0}' {
+                '_'
+            } else {
+                c
+            }
+        })
+        .collect();
+    let mut folder = folder.to_path_buf();
+    folder.push(&safe_name);
+    let mut counter = 1;
+    while folder.exists() {
+        let stem = folder
+            .file_stem()
+            .and_then(|stem| stem.to_str())
+            .unwrap_or("doca-download")
+            .to_string();
+        let extension = folder
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .map(|ext| format!(".{ext}"))
+            .unwrap_or_default();
+        folder.set_file_name(format!("{stem} ({counter}){extension}"));
+        counter += 1;
+    }
+    let mut file = tokio::fs::File::create(&folder)
+        .await
+        .map_err(|e| format!("无法创建下载文件：{e}"))?;
+    use tokio::io::AsyncWriteExt;
+    let mut written: u64 = 0;
+    let mut stream = response.bytes_stream();
+    while let Some(chunk) = stream.next().await {
+        let chunk = chunk.map_err(|e| format!("下载中断：{e}"))?;
+        file.write_all(&chunk)
+            .await
+            .map_err(|e| format!("无法写入下载文件：{e}"))?;
+        written += chunk.len() as u64;
+        if written > 4 * 1024 * 1024 * 1024 {
+            return Err("下载文件超过 4 GB 上限".into());
+        }
+    }
+    file.flush()
+        .await
+        .map_err(|e| format!("无法写入下载文件：{e}"))?;
+    #[cfg(not(test))]
+    crate::reveal_in_file_manager(&folder);
+    Ok(safe_name)
+}
+
+#[cfg(test)]
+mod download_tests {
+    use super::{
+        download_endpoint_file, download_endpoint_file_into, filename_from_disposition,
+        sanitized_api_path, ProxyConfig,
+    };
+    use tokio::sync::mpsc;
+
+    #[test]
+    fn api_path_scope_rejects_traversal_and_foreign_urls() {
+        assert!(sanitized_api_path("/api/v1/files/items/abc/content?download=1").is_some());
+        assert!(sanitized_api_path("/api/v1/plugin-file-bindings/x/content?download=1").is_some());
+        assert!(sanitized_api_path("/api/v1/../secret").is_none());
+        assert!(sanitized_api_path("https://evil.test/api/v1/files").is_none());
+        assert!(sanitized_api_path("/internal/only").is_none());
+    }
+
+    #[tokio::test]
+    async fn endpoint_download_saves_decoded_filename_and_bytes() {
+        use axum::response::IntoResponse;
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let address = listener.local_addr().unwrap().to_string();
+        let app = axum::Router::new().route(
+            "/api/v1/files/items/abc/content",
+            axum::routing::get(|| async {
+                (
+                    [
+                        ("Content-Type", "image/jpeg"),
+                        (
+                            "Content-Disposition",
+                            "attachment; filename*=UTF-8''%E8%90%A5%E4%B8%9A%E6%89%A7%E7%85%A7.jpg",
+                        ),
+                    ],
+                    "jpeg-bytes",
+                )
+                    .into_response()
+            }),
+        );
+        tokio::spawn(async move {
+            axum::serve(listener, app).await.unwrap();
+        });
+        let folder =
+            std::env::temp_dir().join(format!("doca-download-test-{}", std::process::id()));
+        std::fs::create_dir_all(&folder).unwrap();
+        let config = ProxyConfig {
+            origin: "http://127.0.0.1:43111".into(),
+            target: format!("http://{address}"),
+            capability: "test-capability".into(),
+            bearer: "test-token".into(),
+            static_root: folder.clone(),
+            client: reqwest::Client::new(),
+            control: mpsc::unbounded_channel().0,
+            updated: tokio::sync::broadcast::channel(1).0,
+        };
+        let saved = download_endpoint_file_into(
+            &config,
+            "/api/v1/files/items/abc/content?download=1",
+            &folder,
+        )
+        .await
+        .expect("download should succeed");
+        assert_eq!(saved, "营业执照.jpg");
+        let saved_path = folder.join("营业执照.jpg");
+        let bytes = std::fs::read(&saved_path).unwrap();
+        assert_eq!(bytes, b"jpeg-bytes");
+        std::fs::remove_file(&saved_path).ok();
+        std::fs::remove_dir_all(&folder).ok();
+    }
+
+    #[test]
+    fn disposition_filename_prefers_rfc5987_and_decodes() {
+        let header = reqwest::header::HeaderValue::from_static(
+            "attachment; filename*=UTF-8''%E8%90%A5%E4%B8%9A%E6%89%A7%E7%85%A7.jpg",
+        );
+        assert_eq!(
+            filename_from_disposition(Some(&header)).as_deref(),
+            Some("营业执照.jpg")
+        );
+        let plain = reqwest::header::HeaderValue::from_static("attachment; filename=\"a b.png\"");
+        assert_eq!(
+            filename_from_disposition(Some(&plain)).as_deref(),
+            Some("a b.png")
+        );
+        assert_eq!(filename_from_disposition(None), None);
+    }
 }
 
 #[cfg(test)]

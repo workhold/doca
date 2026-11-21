@@ -201,7 +201,20 @@
             };
             child.document.addEventListener("click", event => {
               const anchor = event.target?.closest?.("a[href]");
-              if (!anchor || !(anchor.target === "_blank" || event.metaKey || event.ctrlKey)) return;
+              if (!anchor) return;
+              let next;
+              try { next = new URL(anchor.href, child.location.href); } catch { return; }
+              // Desktop downloads go through the authenticated proxy action so
+              // the frame never navigates to a response it cannot render.
+              const isDownload = anchor.hasAttribute("download")
+                || next.searchParams.get("download") === "1"
+                || /\/content(?:$|[?#])/.test(next.pathname);
+              if (isDownload && next.origin === location.origin) {
+                event.preventDefault();
+                void act("downloadFile", { url: next.pathname + next.search });
+                return;
+              }
+              if (!(anchor.target === "_blank" || event.metaKey || event.ctrlKey)) return;
               try {
                 const next = new URL(anchor.href, child.location.href);
                 if (next.origin === location.origin && next.pathname === "/" && next.hash.startsWith("#/")) {
