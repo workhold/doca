@@ -197,9 +197,12 @@ fn build_workspace_window(
     }
     let app_for_downloads = app.clone();
     let endpoint_for_downloads = endpoint_id.to_string();
-    let download_paths: Arc<SyncMutex<HashMap<String, PathBuf>>> =
+    // Native webview downloads (loopback origin, including blob exports) are
+    // staged in a temp directory; a save panel runs in parallel and the
+    // Finished handler moves the staged file to the chosen path.
+    let pending_native: Arc<SyncMutex<HashMap<String, PendingNativeDownload>>> =
         Arc::new(SyncMutex::new(HashMap::new()));
-    let paths_for_events = download_paths.clone();
+    let pending_for_finish = pending_native.clone();
     builder = builder.on_download(move |_webview, event| match event {
         DownloadEvent::Requested { url, destination } => {
             // Workspace downloads usually stay on the loopback proxy, where the
@@ -210,38 +213,78 @@ fn build_workspace_window(
             if remote_origin_for_endpoint(&app_for_downloads, &endpoint_for_downloads)
                 .is_some_and(|origin| is_endpoint_url(&origin, &url))
             {
-                let destination = destination.clone();
                 let url = url.clone();
                 let app = app_for_downloads.clone();
                 let endpoint_id = endpoint_for_downloads.clone();
                 tauri::async_runtime::spawn(async move {
-                    let saved =
-                        download_endpoint_file(&app, &endpoint_id, &url, &destination).await;
-                    if !matches!(saved, Ok(true)) {
-                        let _ = std::fs::remove_file(&destination);
-                    } else {
-                        reveal_in_file_manager(&destination);
+                    let request = url_request_path(&url);
+                    if let Err(error) = download_endpoint_file(&app, &endpoint_id, &request).await {
+                        eprintln!("doca-desktop: 下载未完成：{error}");
                     }
                 });
                 return false;
             }
-            if let Ok(mut known) = paths_for_events.lock() {
-                known.insert(url.to_string(), destination.clone());
+            let suggested = destination
+                .file_name()
+                .and_then(|name| name.to_str())
+                .map(safe_file_component)
+                .unwrap_or_else(|| "doca-download".to_string());
+            let staging_dir = std::env::temp_dir().join("doca-download-stage");
+            if std::fs::create_dir_all(&staging_dir).is_ok() {
+                let staging =
+                    staging_dir.join(format!("{}-{}", Uuid::new_v4().simple(), suggested));
+                let (decided, decision) = tokio::sync::oneshot::channel();
+                if let Ok(mut pending) = pending_native.lock() {
+                    pending.insert(
+                        url.to_string(),
+                        PendingNativeDownload {
+                            staging: staging.clone(),
+                            decision,
+                        },
+                    );
+                }
+                let dialog_app = app_for_downloads.clone();
+                tauri::async_runtime::spawn(async move {
+                    let _ = decided.send(choose_save_path(&dialog_app, &suggested).await);
+                });
+                *destination = staging;
             }
             true
         }
         DownloadEvent::Finished { url, success, .. } => {
             // macOS never reports the saved path in this event, so the Requested
-            // handler records the destination for the reveal step.
-            if let Ok(mut known) = paths_for_events.lock() {
-                let recorded = known.remove(url.as_str());
-                if success {
-                    match recorded {
-                        Some(path) => reveal_in_file_manager(&path),
-                        None => {}
+            // handler records the staged destination for this step.
+            let pending_download = pending_for_finish
+                .lock()
+                .ok()
+                .and_then(|mut pending| pending.remove(url.as_str()));
+            let Some(pending_download) = pending_download else {
+                return true;
+            };
+            if !success {
+                let _ = std::fs::remove_file(&pending_download.staging);
+                return true;
+            }
+            tauri::async_runtime::spawn(async move {
+                match pending_download.decision.await {
+                    Ok(Some(target)) => {
+                        if let Some(parent) = target.parent() {
+                            let _ = std::fs::create_dir_all(parent);
+                        }
+                        match move_staged_download(&pending_download.staging, &target) {
+                            Ok(()) => reveal_in_file_manager(&target),
+                            Err(error) => {
+                                let _ = std::fs::remove_file(&pending_download.staging);
+                                eprintln!("doca-desktop: 下载未保存：{error}");
+                            }
+                        }
+                    }
+                    _ => {
+                        // Cancelled panel or closed channel: keep nothing.
+                        let _ = std::fs::remove_file(&pending_download.staging);
                     }
                 }
-            }
+            });
             true
         }
         // DownloadEvent is non-exhaustive; future events download natively.
@@ -269,28 +312,108 @@ fn is_endpoint_url(origin: &str, url: &Url) -> bool {
     url.origin().ascii_serialization().trim_end_matches('/') == origin.trim_end_matches('/')
 }
 
+/// A native webview download staged in the temp directory, together with the
+/// pending save-panel decision for its final location.
+struct PendingNativeDownload {
+    staging: PathBuf,
+    decision: tokio::sync::oneshot::Receiver<Option<PathBuf>>,
+}
+
+fn safe_file_component(name: &str) -> String {
+    name.chars()
+        .map(|c| {
+            if c == '/' || c == '\\' || c == ':' || c == '\u{0}' {
+                '_'
+            } else {
+                c
+            }
+        })
+        .collect()
+}
+
+/// Rebuild the request path (with query) from a download URL so both the
+/// webview-download and shell-action flows share one fetch routine.
+fn url_request_path(url: &Url) -> String {
+    let mut request = url.path().to_string();
+    if let Some(query) = url.query() {
+        request.push('?');
+        request.push_str(query);
+    }
+    request
+}
+
+/// Ask the user where to save a download; starts in the system downloads
+/// directory with the suggested file name. `None` means the panel was
+/// cancelled. Must not run on the main thread, hence spawn_blocking.
+///
+/// The panel is parented to a visible workspace window: without an explicit
+/// parent it attaches as a sheet to the first AppKit window, which in this
+/// app is the hidden connection manager, so the sheet would never be visible
+/// and the download would hang.
+async fn choose_save_path(app: &tauri::AppHandle, suggested: &str) -> Option<PathBuf> {
+    let app = app.clone();
+    let suggested = suggested.to_string();
+    tauri::async_runtime::spawn_blocking(move || {
+        use tauri_plugin_dialog::DialogExt;
+        let mut dialog = {
+            let parent = app
+                .webview_windows()
+                .values()
+                .find(|window| window.label().starts_with("workspace-"))
+                .cloned();
+            match parent {
+                Some(window) => window.dialog().file(),
+                None => app.dialog().file(),
+            }
+        };
+        dialog = dialog.set_file_name(suggested);
+        if let Some(downloads) = dirs::download_dir() {
+            dialog = dialog.set_directory(downloads);
+        }
+        dialog
+            .blocking_save_file()
+            .and_then(|path| path.into_path().ok())
+    })
+    .await
+    .ok()
+    .flatten()
+}
+
+/// Move a finished staging file to the save-panel target, copying across
+/// volumes when a plain rename is not possible.
+fn move_staged_download(staging: &Path, target: &Path) -> Result<(), String> {
+    if std::fs::rename(staging, target).is_ok() {
+        return Ok(());
+    }
+    std::fs::copy(staging, target)
+        .map_err(|e| format!("无法保存下载文件：{e}"))
+        .and_then(|_| std::fs::remove_file(staging).map_err(|e| format!("无法清理临时文件：{e}")))
+}
+
+/// Fetch an endpoint resource with the desktop bearer, ask where to save it
+/// and stream the body to the chosen path. Returns the saved file name, or
+/// `None` when the save panel was cancelled (nothing is written).
 async fn download_endpoint_file(
     app: &tauri::AppHandle,
     endpoint_id: &str,
-    url: &Url,
-    destination: &Path,
-) -> Result<bool, String> {
+    request_path: &str,
+) -> Result<Option<String>, String> {
     let state = app.state::<AppState>();
     let directory = state.directory.clone();
-    let connected = state
+    let origin = state
         .settings
         .lock()
         .await
         .endpoints
         .iter()
-        .any(|entry| entry.id == endpoint_id);
-    if !connected {
-        return Err("当前工作空间地址不存在".into());
-    }
+        .find(|entry| entry.id == endpoint_id)
+        .map(|entry| entry.origin.clone())
+        .ok_or("当前工作空间地址不存在")?;
     let token =
         credentials::get_token(&directory, endpoint_id)?.ok_or("尚未登录，无法下载该文件")?;
+    let request = format!("{}{}", origin.trim_end_matches('/'), request_path);
     let response = remote_client()?
-        .get(url.clone())
+        .get(&request)
         .bearer_auth(token)
         .send()
         .await
@@ -298,27 +421,53 @@ async fn download_endpoint_file(
     if !response.status().is_success() {
         return Err(format!("下载失败：{}", response.status()));
     }
+    let suggested = crate::proxy::filename_from_disposition(
+        response.headers().get(reqwest::header::CONTENT_DISPOSITION),
+    )
+    .unwrap_or_else(|| {
+        request_path
+            .trim_end_matches('/')
+            .rsplit('/')
+            .next()
+            .filter(|segment| !segment.is_empty())
+            .map(safe_file_component)
+            .unwrap_or_else(|| "doca-download".to_string())
+    });
+    let Some(target) = choose_save_path(app, &suggested).await else {
+        return Ok(None);
+    };
     use futures_util::StreamExt;
-    let mut file = tokio::fs::File::create(destination)
+    let mut file = tokio::fs::File::create(&target)
         .await
         .map_err(|e| format!("无法创建下载文件：{e}"))?;
     use tokio::io::AsyncWriteExt;
     let mut written: u64 = 0;
     let mut stream = response.bytes_stream();
-    while let Some(chunk) = stream.next().await {
-        let chunk = chunk.map_err(|e| format!("下载中断：{e}"))?;
-        file.write_all(&chunk)
+    let outcome = async {
+        while let Some(chunk) = stream.next().await {
+            let chunk = chunk.map_err(|e| format!("下载中断：{e}"))?;
+            file.write_all(&chunk)
+                .await
+                .map_err(|e| format!("无法写入下载文件：{e}"))?;
+            written += chunk.len() as u64;
+            if written > 4 * 1024 * 1024 * 1024 {
+                return Err("下载文件超过 4 GB 上限".into());
+            }
+        }
+        file.flush()
             .await
             .map_err(|e| format!("无法写入下载文件：{e}"))?;
-        written += chunk.len() as u64;
-        if written > 4 * 1024 * 1024 * 1024 {
-            return Err("下载文件超过 4 GB 上限".into());
-        }
+        Ok(())
     }
-    file.flush()
-        .await
-        .map_err(|e| format!("无法写入下载文件：{e}"))?;
-    Ok(written > 0)
+    .await;
+    if let Err(error) = outcome {
+        let _ = std::fs::remove_file(&target);
+        return Err(error);
+    }
+    reveal_in_file_manager(&target);
+    Ok(target
+        .file_name()
+        .map(|name| name.to_string_lossy().to_string()))
 }
 
 pub(crate) fn reveal_in_file_manager(path: &Path) {
@@ -496,13 +645,16 @@ async fn sign_out(
         .find(|item| item.id == id)
         .ok_or("地址不存在")?;
     revoke_remote(&state.directory, &id, &entry.origin).await?;
+    // Close the workspace windows before clearing their session records:
+    // close_scope_windows resolves window ids from those records, so clearing
+    // first would leave the revoked webviews open to show the site login page.
+    close_scope_windows(&app, &state, &id, entry.account_id.as_deref());
     mutate_sessions(&state, |sessions| {
         if let Some(account_id) = entry.account_id.as_deref() {
             sessions.clear_account(&id, account_id);
         }
         Ok(())
     })?;
-    close_scope_windows(&app, &state, &id, entry.account_id.as_deref());
     stop_endpoint_proxies(&state, &id, None).await;
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.show();
@@ -917,11 +1069,13 @@ async fn handle_session_end(app: tauri::AppHandle, generation: Uuid) {
         return;
     };
     let vault_result = credentials::delete_token(&state.directory, &endpoint_id);
+    // Same ordering requirement as sign_out: close the windows while their
+    // session records still exist, then clear the records.
+    close_scope_windows(&app, &state, &endpoint_id, Some(&account_id));
     let result = mutate_sessions(&state, |sessions| {
         sessions.clear_account(&endpoint_id, &account_id);
         Ok(())
     });
-    close_scope_windows(&app, &state, &endpoint_id, Some(&account_id));
     stop_endpoint_proxies(&state, &endpoint_id, Some(&account_id)).await;
     if let Some(manager) = app.get_webview_window("main") {
         let _ = manager.show();
@@ -1133,6 +1287,7 @@ async fn open_profile_inner(
         proxy::start(entry.origin.clone(), bearer, static_root, control_sender).await?;
     let generation = Uuid::new_v4();
     let control_app = app.clone();
+    let control_endpoint = id.clone();
     let controller = tokio::spawn(async move {
         while let Some(message) = control_receiver.recv().await {
             match message {
@@ -1145,6 +1300,13 @@ async fn open_profile_inner(
                 }
                 proxy::Control::Action(action, reply) => {
                     let _ = reply.send(handle_action(&control_app, generation, action).await);
+                }
+                proxy::Control::SaveFile { path, reply } => {
+                    let app = control_app.clone();
+                    let endpoint = control_endpoint.clone();
+                    tokio::spawn(async move {
+                        let _ = reply.send(download_endpoint_file(&app, &endpoint, &path).await);
+                    });
                 }
                 proxy::Control::Logout | proxy::Control::Expired => {
                     let end_app = control_app.clone();
@@ -1205,6 +1367,7 @@ pub fn run() {
             }
         }))
         .plugin(tauri_plugin_deep_link::init())
+        .plugin(tauri_plugin_dialog::init())
         .on_window_event(|window, event| {
             let WindowEvent::CloseRequested { api, .. } = event else {
                 return;
@@ -1276,6 +1439,9 @@ pub fn run() {
                 .into());
             }
             std::fs::create_dir_all(&directory)?;
+            // Staging files for native downloads whose panel never completed
+            // (quit, crash); the directory is recreated per download.
+            let _ = std::fs::remove_dir_all(std::env::temp_dir().join("doca-download-stage"));
             #[cfg(unix)]
             {
                 use std::os::unix::fs::PermissionsExt;
