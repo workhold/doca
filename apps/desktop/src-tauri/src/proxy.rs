@@ -81,6 +81,10 @@ pub enum Action {
 pub enum Control {
     ShowManager,
     Action(Action, oneshot::Sender<Result<serde_json::Value, String>>),
+    SaveFile {
+        path: String,
+        reply: oneshot::Sender<Result<Option<String>, String>>,
+    },
     Logout,
     Expired,
 }
@@ -172,9 +176,18 @@ async fn tab_shell(
 
 async fn execute_action(config: &ProxyConfig, action: Action) -> Result<serde_json::Value, String> {
     if let Action::DownloadFile { url } = &action {
-        return download_endpoint_file(config, url)
+        // Keep the /api/v1 scope check at the shell trust boundary; the app
+        // side fetches with the endpoint credential and asks where to save.
+        let path = sanitized_api_path(url).ok_or("下载地址不在允许的接口范围内")?;
+        let (reply, receiver) = oneshot::channel();
+        config
+            .control
+            .send(Control::SaveFile { path, reply })
+            .map_err(|_| "桌面工作空间不可用".to_string())?;
+        let saved = receiver
             .await
-            .map(|name| serde_json::json!({ "saved": name }));
+            .map_err(|_| "桌面工作空间已关闭".to_string())??;
+        return Ok(serde_json::json!({ "saved": saved }));
     }
     let (reply, response) = oneshot::channel();
     config
@@ -543,7 +556,9 @@ fn sanitized_api_path(url: &str) -> Option<String> {
     Some(url.to_string())
 }
 
-fn filename_from_disposition(value: Option<&reqwest::header::HeaderValue>) -> Option<String> {
+pub(crate) fn filename_from_disposition(
+    value: Option<&reqwest::header::HeaderValue>,
+) -> Option<String> {
     let raw = value?.to_str().ok()?.to_string();
     // Prefer RFC 5987 filename*=UTF-8''<percent-encoded>, then plain filename.
     if let Some(start) = raw.find("filename*=") {
@@ -590,11 +605,7 @@ fn percent_decode_utf8(value: &str) -> Result<String, String> {
     String::from_utf8(out).map_err(|_| "文件名编码无效".to_string())
 }
 
-async fn download_endpoint_file(config: &ProxyConfig, url: &str) -> Result<String, String> {
-    let folder = dirs::download_dir().ok_or("无法定位系统下载目录")?;
-    download_endpoint_file_into(config, url, &folder).await
-}
-
+#[cfg(test)]
 async fn download_endpoint_file_into(
     config: &ProxyConfig,
     url: &str,
@@ -674,8 +685,8 @@ async fn download_endpoint_file_into(
 #[cfg(test)]
 mod download_tests {
     use super::{
-        download_endpoint_file, download_endpoint_file_into, filename_from_disposition,
-        sanitized_api_path, ProxyConfig,
+        download_endpoint_file_into, execute_action, filename_from_disposition, sanitized_api_path,
+        Action, Control, ProxyConfig,
     };
     use tokio::sync::mpsc;
 
@@ -686,6 +697,59 @@ mod download_tests {
         assert!(sanitized_api_path("/api/v1/../secret").is_none());
         assert!(sanitized_api_path("https://evil.test/api/v1/files").is_none());
         assert!(sanitized_api_path("/internal/only").is_none());
+    }
+
+    fn action_config(control: &mpsc::UnboundedSender<Control>) -> ProxyConfig {
+        let folder =
+            std::env::temp_dir().join(format!("doca-download-test-{}", std::process::id()));
+        std::fs::create_dir_all(&folder).unwrap();
+        ProxyConfig {
+            origin: "http://127.0.0.1:43111".into(),
+            target: "http://127.0.0.1:1".into(),
+            capability: "test-capability".into(),
+            bearer: "test-token".into(),
+            static_root: folder,
+            client: reqwest::Client::new(),
+            control: control.clone(),
+            updated: tokio::sync::broadcast::channel(1).0,
+        }
+    }
+
+    #[tokio::test]
+    async fn download_action_round_trips_through_the_control_channel() {
+        let (control, mut receiver) = mpsc::unbounded_channel();
+        let config = action_config(&control);
+        let action = Action::DownloadFile {
+            url: "/api/v1/files/items/abc/content?download=1".into(),
+        };
+        let responder = tokio::spawn(async move {
+            match receiver.recv().await {
+                Some(Control::SaveFile { path, reply }) => {
+                    assert!(path.starts_with("/api/v1/files/"));
+                    let _ = reply.send(Ok(Some("saved.txt".into())));
+                }
+                _ => panic!("unexpected control message"),
+            }
+        });
+        let result = execute_action(&config, action)
+            .await
+            .expect("action resolves");
+        assert_eq!(result["saved"], "saved.txt");
+        responder.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn download_action_rejects_out_of_scope_paths_without_control() {
+        let (control, mut receiver) = mpsc::unbounded_channel();
+        let config = action_config(&control);
+        let action = Action::DownloadFile {
+            url: "/internal/only".into(),
+        };
+        let error = execute_action(&config, action)
+            .await
+            .expect_err("out-of-scope path must fail");
+        assert_eq!(error, "下载地址不在允许的接口范围内");
+        assert!(receiver.try_recv().is_err());
     }
 
     #[tokio::test]

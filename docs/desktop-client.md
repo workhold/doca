@@ -26,6 +26,8 @@ The signed-in workspace shows **Switch backend** in its tab strip, and settings 
 
 A normal relaunch restores all saved windows and pages for that host; windows closed individually are not restored. When a host has no saved windows, the app opens a new home tab. Business plugins stay installed and executed on your server and load through the authenticated proxy; see [plugins in the desktop client](#plugins-in-the-desktop-client).
 
+Downloading a file, attachment or export opens the system save dialog with the server-suggested file name, starting in the system downloads folder. The download is written to the chosen location and revealed in the file manager afterwards; cancelling the dialog discards it and nothing is written. Host resources are fetched with the desktop credential in the background, so the workspace page never navigates to a raw file response.
+
 ## Connection and authentication
 
 Add a named HTTPS service origin; HTTP is accepted only for a loopback development host. The system browser opens the selected host's `/#/desktop-connect` page, where its existing login methods apply. Approval yields a short-lived, single-use code through `doca://auth/complete`. The desktop client checks the origin, state and PKCE verifier, stores its distinct desktop bearer in an app-local encrypted credential file (one entry per endpoint under an owner-only random key), and opens that host. Entries created by earlier builds stay in the OS Keychain as a read-only fallback and are converted into the file on first use; explicit sign-out, expiry, or endpoint removal deletes the file entry and any retained Keychain entry. A host without the desktop routes must be upgraded.
