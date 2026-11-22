@@ -20,7 +20,7 @@ For the published Docker image, copy `docker.env.example`. For source developmen
 
 ## What should I do if startup rejects the database baseline?
 
-Stop and read the [database upgrade contract](database-schema-evolution.md) and matching [release requirements](releases/0.2.24.md). Supported generations receive approved structural reconciliation; unsupported generations, semantic changes and review-required differences stop startup before persistent changes. Preserve the old deployment, database, files, and secrets for rollback. Do not delete tables, reset the volume, or change the baseline marker to force startup.
+Stop and read the [database upgrade contract](database-schema-evolution.md) and matching [release requirements](releases/0.2.38.md). Supported generations receive approved structural reconciliation; unsupported generations, semantic changes and review-required differences stop startup before persistent changes. Preserve the old deployment, database, files, and secrets for rollback. Do not delete tables, reset the volume, or change the baseline marker to force startup.
 
 ## How do I inspect startup problems?
 
@@ -46,3 +46,7 @@ An ordinary `docker compose restart` preserves the persistent volume. Configurat
 Plugin packages must satisfy the current SDK and storage contract. Restart every instance manually after installation changes. Plugins using encrypted credentials need the same persistent master key on every replica. AI, SSO, search, and cloud-storage availability also depends on real credentials and network connectivity; source tests do not establish live-service acceptance. See [plugin deployment](plugin-deployment.md).
 
 Use the actual configured host in the health command above. A 421 indicates a Host mismatch, including when probing loopback. No proxy is trusted by default; shared proxy IP limits require a narrowly configured `DOCA_TRUST_PROXY`.
+
+## Where do I get the desktop client?
+
+Download the Windows and macOS installers from [GitHub Releases](https://github.com/workhold/doca/releases). The build is unsigned and not notarized: on macOS, right-click the app and choose **Open** the first time, and Windows may show a SmartScreen prompt. Your server must run 0.2.37 or newer. See the [desktop client guide](desktop-client.md).

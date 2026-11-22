@@ -34,6 +34,8 @@
 
 通过[浏览器助手](browser-assistant.zh-CN.md)下载 Chrome / Edge 扩展，收录网页或在侧栏整理当前页面；普通收录无需模型。希望在外部 AI 客户端中使用 Doca 文档与文件工具时，在个人设置启用并配置 [MCP 服务](mcp.zh-CN.md)。两者的连接授权和当前资源权限分别校验。
 
+[桌面客户端](desktop-client.zh-CN.md)把同样的工作空间带到 Windows 和 macOS：通过系统浏览器登录自己的 Doca 服务，在多标签工作空间窗口中工作，可同时保持多个后端连接，重新打开时会恢复上次的窗口和标签。插件和数据仍在你自己的服务端。
+
 ## 账号与管理
 
 在账号页修改显示名、头像和密码。修改密码会退出该账号的全部会话。站点管理员配置注册、身份源、AI 模型、搜索、插件和 Webhook，相关任务见[身份认证](authentication.zh-CN.md)与[插件部署](plugin-deployment.zh-CN.md)。

@@ -19,6 +19,7 @@ This page was checked against current source for host **0.2.25** and plugin SDK 
 | Personal AI assistant | Sessions, tools, approvals, and raw usage records are implemented; requires available models and credentials | [User guide](user-guide.md) |
 | Browser extension | Unpacked Chrome / Edge installation, page and selection capture, destination profiles, and shared AI sidebar; AI requires site model configuration | [Browser assistant](browser-assistant.md) |
 | MCP services | External clients use authorized tools and SKILLs through personal services or company integrations with an explicit target user; resource permissions still apply | [MCP services](mcp.md) |
+| Desktop client | Windows and macOS apps connect to your own host through system-browser authorization; multi-tab workspace windows, several backends at once, per-backend page restoration; the host must run 0.2.37 or newer | [Desktop client](desktop-client.md) |
 | Knowledge books and source subscriptions | Core: source subscriptions, immutable knowledge books, editable workflows, provenance, and human feedback; old curation and Q&A robots removed | [Knowledge books](knowledge-books.md) |
 | Local accounts and external login | Passwords, contact verification codes, recovery, registration review, OIDC/OAuth, and social adapters are implemented; external services need real credentials | [Authentication](authentication.md) |
 | Webhooks | Asynchronous delivery, retries, and records are implemented; requires a configured receiver | [Webhooks](webhooks.md) |
