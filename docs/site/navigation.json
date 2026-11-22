@@ -317,6 +317,11 @@
     "zh": "发行记录",
     "pages": [
       [
+        "releases/0.2.38",
+        "0.2.38 — Upload limits banner and desktop tree drag",
+        "0.2.38 — 上传限制报错与桌面文档树拖拽"
+      ],
+      [
         "releases/0.2.37",
         "0.2.37 — Desktop client first release",
         "0.2.37 — 桌面客户端首发"

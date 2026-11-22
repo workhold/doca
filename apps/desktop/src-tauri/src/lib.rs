@@ -170,6 +170,11 @@ fn build_workspace_window(
         WebviewUrl::External(url),
     )
     .title(window_title)
+    // The native drag-drop handler claims NSView dragging callbacks and never
+    // forwards them to WKWebView, which breaks in-page HTML5 drag and drop
+    // (document tree reordering). Nothing listens to native DragDropEvents, and
+    // without the handler OS file drops reach the page as HTML5 drop events.
+    .disable_drag_drop_handler()
     .inner_size(1280.0, 820.0);
     let profile_id = format!("{endpoint_id}:{account_id}");
     #[cfg(target_os = "macos")]

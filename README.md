@@ -63,7 +63,7 @@ Doca 把**在线文档、Markdown、在线表格、幻灯片、无限画布、�
   </tr>
 </table>
 
-<p align="center"><sub>五种编辑器截图更新于 2026-10-17，基于 Doca 0.1.31 的真实界面，使用隔离本地部署中的示例内容。</sub></p>
+<p align="center"><sub>编辑器截图更新于 2026-11-22，基于 Doca 0.2.37 的真实界面，使用隔离本地部署中的示例内容。</sub></p>
 
 ## 主要功能
 
@@ -76,7 +76,7 @@ Doca 把**在线文档、Markdown、在线表格、幻灯片、无限画布、�
 | **桌面客户端** | Windows 与 macOS 桌面应用，连接自己的 Doca 服务：多标签工作空间、多后端管理、系统浏览器登录与独立页面恢复，插件仍运行在服务端。 |
 | **MCP 服务** | 让 Codex 等外部 AI 使用已授权的 Doca 工具和 SKILL；支持个人服务和管理员代用户集成。 |
 | **文件与分享** | 个人文件、共享文件夹、邀请、权限、分享链接、搜索、通知和回收站。支持本地或兼容 S3 的文件存储。 |
-| **账号与语言** | 密码、OIDC、Google、GitHub、微信扫码和 QQ 登录，中英文界面。外部登录需配置对应服务。 |
+| **账号与语言** | 密码、手机验证码、OIDC、Google、GitHub、微信扫码和 QQ 登录，中英文界面。外部登录和短信需配置对应服务。 |
 | **私有化部署与扩展** | Docker 部署，单机 SQLite，多副本共享 PostgreSQL、Redis 和文件存储。业务插件通过公开 `@smartdoca/plugin-sdk` 扩展。 |
 
 一次部署只有一套账号系统。默认镜像不安装随手记、邮箱、日历、会员或内容审核插件。模板和素材需要单独安装提供者，详见[功能与边界](https://workhold.github.io/doca/#/zh-cn/getting-started/features)。
@@ -113,12 +113,12 @@ Doca 桌面客户端（Windows、macOS）连接你部署的 Doca 服务：工作
 
 ## Docker 快速开始
 
-需要 Docker Engine、Docker Compose，以及通过反向代理访问的 HTTP(S) 地址。全新 SQLite/本地存储安装只需一个 YAML，无需 Git、源码、seccomp JSON 或外部初始化脚本。已有部署更换版本前，先阅读[发行要求](https://workhold.github.io/doca/#/zh-cn/releases/0.2.37)，保留原项目名、持久卷、数据库、附件和主密钥。
+需要 Docker Engine、Docker Compose，以及通过反向代理访问的 HTTP(S) 地址。全新 SQLite/本地存储安装只需一个 YAML，无需 Git、源码、seccomp JSON 或外部初始化脚本。已有部署更换版本前，先阅读[发行要求](https://workhold.github.io/doca/#/zh-cn/releases/0.2.38)，保留原项目名、持久卷、数据库、附件和主密钥。
 
 ```sh
 # 1. 在固定部署目录下载单文件配置
 mkdir doca && cd doca
-curl -fL https://github.com/workhold/doca/releases/download/v0.2.37/doca-compose-v0.2.37.yaml -o compose.yaml
+curl -fL https://github.com/workhold/doca/releases/download/v0.2.38/doca-compose-v0.2.38.yaml -o compose.yaml
 
 # 2. 用 openssl rand -hex 32 生成主密钥
 # 编辑 compose.yaml，填写 DOCA_ORIGIN 和 DOCA_CREDENTIAL_MASTER_KEY
@@ -163,7 +163,7 @@ pnpm dev
 - [部署与配置](https://workhold.github.io/doca/#/zh-cn/operations/deployment)
 - [插件开发](https://workhold.github.io/doca/#/zh-cn/plugins/plugin-development)
 - [HTTP API](https://workhold.github.io/doca/#/zh-cn/reference/api)，运行中的应用还提供 `/api/openapi.json`。
-- [发行记录](https://workhold.github.io/doca/#/zh-cn/releases/0.2.37)
+- [发行记录](https://workhold.github.io/doca/#/zh-cn/releases/0.2.38)
 - [文档源码](docs/README.zh-CN.md)
 
 预览文档时，执行 `pnpm docs:dev` 并打开 `http://127.0.0.1:39140/#/zh-cn/`。`pnpm docs:check` 校验双语覆盖和本地链接。GitHub Pages 设置见[文档维护](docs/documentation.zh-CN.md)。

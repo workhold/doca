@@ -34,6 +34,8 @@ The personal AI assistant can use authorized documents and files. Attached refer
 
 Download the Chrome / Edge extension through [Browser assistant](browser-assistant.md) to capture webpages or organize the current page in a sidebar; ordinary capture needs no model. To use Doca document and file tools from an external AI client, enable and configure [MCP services](mcp.md) in personal settings. Connection grants and current resource permissions are checked separately.
 
+The [desktop client](desktop-client.md) brings the same workspace to Windows and macOS: sign in to your own Doca service through the system browser, work in multi-tab workspace windows, keep several backends connected at once, and find your windows and tabs restored on the next launch. Plugins and data stay on your server.
+
 ## Account and administration
 
 Change your display name, avatar, and password from your account page. A password change signs out all sessions for that account. Site administrators configure registration, identity providers, AI models, search, plugins, and webhooks. Use [authentication](authentication.md) and [plugin deployment](plugin-deployment.md) for those tasks.

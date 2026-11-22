@@ -27,6 +27,8 @@
 
 <p align="center"><a href="README.md">简体中文</a> · English</p>
 
+Doca puts **online documents, Markdown, spreadsheets, slides, infinite canvas, knowledge management, and team collaboration** in one place. Capture personal notes, build team knowledge, and connect your own AI models to help with the work.
+
 ![Doca workspace with recent documents, a team knowledge library, and the AI assistant entry](docs/images/workspace.jpg)
 
 <p align="center"><sub>Pick up where you left off. Documents, team knowledge, and your AI assistant in one workspace.</sub></p>
@@ -61,7 +63,7 @@ Rich text for plans and meeting notes, with a library tree, formatting tools, pe
   </tr>
 </table>
 
-<p align="center"><sub>Five editor screenshots updated on 2026-10-17, captured from Doca 0.1.31 with sample content in an isolated local deployment.</sub></p>
+<p align="center"><sub>Editor screenshots updated on 2026-11-22, captured from Doca 0.2.37 with sample content in an isolated local deployment.</sub></p>
 
 ## What you can do
 
@@ -74,7 +76,7 @@ Rich text for plans and meeting notes, with a library tree, formatting tools, pe
 | **Desktop client** | Windows and macOS desktop apps for your own Doca service: a multi-tab workspace, multiple backends, system-browser sign-in and per-backend page restoration. Plugins keep running on your server. |
 | **MCP services** | Connect external AI clients such as Codex to authorized Doca tools and SKILLs, using personal services or company integrations acting as a named user. |
 | **Files and sharing** | Personal files, shared folders, invitations, permission controls, share links, search, notifications, and trash. Local or S3-compatible file storage. |
-| **Accounts and languages** | Password, OIDC, Google, GitHub, WeChat QR, and QQ sign-in; Chinese and English interfaces. External login requires service configuration. |
+| **Accounts and languages** | Password, phone verification code, OIDC, Google, GitHub, WeChat QR, and QQ sign-in; Chinese and English interfaces. External login and SMS require service configuration. |
 | **Self-hosting and extensions** | Docker deployment; SQLite for one server, or shared PostgreSQL, Redis, and file storage for multiple replicas. Business plugins use the public `@smartdoca/plugin-sdk`. |
 
 One deployment has one account system. The default image installs no quick-notes, mail, calendar, membership, or moderation plugins. Templates and materials need a separately installed provider. See [capabilities and limits](https://workhold.github.io/doca/#/en/getting-started/features).
