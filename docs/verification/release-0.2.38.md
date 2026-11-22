@@ -21,7 +21,22 @@
 
 ## 发布
 
-GitHub（main 合入、tag `v0.2.38` 触发 Release 与桌面安装包工作流）与 Docker Hub（`smartdoca/doca:0.2.38` + `latest`，双架构镜像工作流手动触发）结果待发布后补充。
+[PR #147](https://github.com/workhold/doca/pull/147) 合入 main 为 `88ab278f`（CI：build、records、PostgreSQL 17/18 升级回归全部通过），tag `v0.2.38` 触发三个工作流，全部成功：
+
+- [官方 Release 工作流](https://github.com/workhold/doca/actions/runs/45017275399)（1m02s）发布 [v0.2.38](https://github.com/workhold/doca/releases/tag/v0.2.38)：部署 Compose、部署包、Web 资产（19.23 MB）与插件 SDK 0.2.0 及校验和。
+- [桌面发布工作流](https://github.com/workhold/doca/actions/runs/45017275357)（9m51s）附上安装包与 SHA-256：
+
+  | 附件 | 大小 | SHA-256 |
+  | --- | --- | --- |
+  | `Doca_0.2.38_universal.dmg` | 32.14 MB | `b2c87f0937cd584b90645d4de40c5e63d37a153cd0f04ee36fed81e17f936bb1` |
+  | `Doca_0.2.38_x64-setup.exe` | 18.71 MB | `db51da38d6699090d98f91e725686ff92768ee6e568c1289b07dfe1b1ed8f60a` |
+  | `Doca_0.2.38_x64_en-US.msi` | 26.91 MB | `09ef336cd185d996db01b33cbcfa0a1f71267b7d7a762ed93d46a054e6b50e90` |
+
+- [镜像工作流](https://github.com/workhold/doca/actions/runs/45017287080)（7m39s，workflow_dispatch 按 main）双架构各自完成原图验证、登录/退出/撤销、插件隔离、PDF/Canvas/Office 渲染与运行时文件审计后发布。`smartdoca/doca:0.2.38` 与 `latest` 同一 OCI 索引 digest，linux/amd64（`f421722d…`）+ linux/arm64（`208d72fa…`）：
+
+  `sha256:d20bed2b624609979aadbd3f96b39848b5424542339f2c903bb2a6c1809399b5`
+
+  （digest 取自 Docker Hub tag API 与 registry manifest 查询，未做本机拉取比对。）
 
 ## 证据与限制
 
