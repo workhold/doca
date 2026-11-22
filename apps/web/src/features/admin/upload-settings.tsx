@@ -34,7 +34,7 @@ export function UploadSettings() {
     const timer = setTimeout(
       () =>
         void api<{ items: typeof users }>(
-          `/admin/users?q=${encodeURIComponent(query)}`,
+          "/admin/users" + (query.trim() ? `?q=${encodeURIComponent(query.trim())}` : ""),
           "GET",
           undefined,
           controller.signal,
