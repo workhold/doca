@@ -1197,12 +1197,32 @@ async fn open_profile_inner(
                 .map(|proxy| proxy.gate_url.clone())
                 .unwrap_or_default();
             drop(proxies);
-            let windows = {
+            let mut windows = {
                 let stored = state.sessions.lock().map_err(|_| "桌面会话状态不可用")?;
                 stored.windows_for(&id, &account_id)
-            };
-            let windows = windows.filter(|windows| !windows.is_empty());
-            for window in windows.iter().flatten() {
+            }
+            .unwrap_or_default();
+            if windows.is_empty() {
+                // Every recorded window was closed earlier: reopening the
+                // backend must still open a window instead of leaving the
+                // app with none (the manager is hidden below).
+                windows.push(session::Window::home());
+                mutate_sessions(state, |sessions| {
+                    if !sessions
+                        .workspaces
+                        .iter()
+                        .any(|scope| scope.endpoint_id == id && scope.account_id == account_id)
+                    {
+                        sessions.workspaces.push(session::Workspace {
+                            endpoint_id: id.clone(),
+                            account_id: account_id.clone(),
+                            windows: windows.clone(),
+                        });
+                    }
+                    Ok(())
+                })?;
+            }
+            for window in windows.iter() {
                 let label = format!("workspace-{}", window.id);
                 if app.get_webview_window(&label).is_none() {
                     let window_title = format!("{} · {}", entry.name, entry.origin);
@@ -1216,11 +1236,7 @@ async fn open_profile_inner(
                     )?;
                 }
             }
-            let scope_ids: Vec<String> = windows
-                .iter()
-                .flatten()
-                .map(|window| window.id.clone())
-                .collect();
+            let scope_ids: Vec<String> = windows.iter().map(|window| window.id.clone()).collect();
             if let Some((_, window)) = app.webview_windows().into_iter().find(|(label, _)| {
                 label
                     .strip_prefix("workspace-")
@@ -1399,6 +1415,18 @@ pub fn run() {
                     .any(|scope| scope.windows.iter().any(|item| item.id == window_id))
             });
             if !recorded {
+                return;
+            }
+            if !app
+                .webview_windows()
+                .keys()
+                .any(|name| name.starts_with("workspace-") && name != label)
+            {
+                // Closing the last workspace window quits the app; the
+                // recorded windows stay in the session file and are all
+                // restored on the next launch instead of being discarded.
+                api.prevent_close();
+                app.exit(0);
                 return;
             }
             if let Err(error) = mutate_sessions(&state, |sessions| {
