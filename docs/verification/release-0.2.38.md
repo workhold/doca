@@ -57,3 +57,13 @@
 - **退出登录**：管理器点击「退出登录」后，工作空间窗口全部关闭（修复前保持打开），仅剩管理器且端点显示「未登录」，无登录页残留。
 - **重新登录**：「浏览器登录」+ approve 后重新打开唯一工作空间窗口，直接显示已登录首页（「你好，Drag Demo」），无旧登录页窗口。
 - **限制**：面板「取消」路径未做 UI 端到端（预览重开自动化不稳定）；面板内切换目录（Cmd+Shift+G）未能自动化驱动，保存集成以默认目录验证、目录选择属 rfd/NSSavePanel 原生能力；Windows 桌面未实测（对话框插件在 Windows 为标准路径）；blob 导出（原生下载暂存路径）未实测。
+
+[PR #149](https://github.com/workhold/doca/pull/149) 合入 main 为 `9bc2de09`（CI：build、records 通过；本轮无数据库改动，PostgreSQL 升级回归按仓库规则未触发），[桌面发布工作流](https://github.com/workhold/doca/actions/runs/45030899534)（9m42s，workflow_dispatch 按 main、tag `v0.2.38`）于 22:15 覆盖安装包。当前生效校验和：
+
+| 附件 | SHA-256 |
+| --- | --- |
+| `Doca_0.2.38_universal.dmg` | `c7a26cc6e6a00aa76d9eb5538dd8ff278424361d1111250787130459ae311426` |
+| `Doca_0.2.38_x64-setup.exe` | `e487bf9ca74a2aa38fc102300563a07f56ca203a17090d66617d6ac85d903ea1` |
+| `Doca_0.2.38_x64_en-US.msi` | `02fc22326f24867ab40b86793ad2713e7bf1c94adb9497c4c6dde1c881a9e664` |
+
+首次发布的校验和（本文件「发布」一节）仅作历史记录，以下载附件自带的 `.sha256` 为准；镜像不重建。
