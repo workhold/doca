@@ -1500,6 +1500,8 @@ export const en = {
   "fileManager.noRecognizable": "No files to recognize in this location",
   "fileManager.recognizeFailed": "Could not submit recognition task",
   "fileManager.uploadComplete": "Upload complete",
+  "fileManager.downloadSelected": "Download ZIP",
+  "fileManager.downloadTooLarge": "The selected files exceed the ZIP size or entry limit.",
   "fileManager.uploadFailed": "Upload failed",
   "fileManager.infoFailed": "Could not read file information",
   "fileManager.destinationFailed": "Could not create destination folder",
@@ -1582,7 +1584,7 @@ export const en = {
   "fileManager.confirmUpload": "Confirm upload",
   "fileManager.reviewUpload": "Review upload contents",
   "fileManager.uploadFilterHelp":
-    "Filter by extension before uploading to the current folder.",
+    "Filter files by extension before uploading.",
   "fileManager.fileTypes": "File types",
   "fileManager.selectedUploads": "Items selected for upload",
   "fileManager.chooseUploads": "Select items to upload",

@@ -1,0 +1,47 @@
+name: Desktop checks
+
+on:
+  pull_request:
+    paths:
+      - "apps/desktop/**"
+      - "apps/web/**"
+      - "packages/**"
+      - "patches/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/desktop-check.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  desktop:
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Enable pnpm
+        run: corepack enable && corepack prepare pnpm@11.25.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build desktop frontend resources
+        run: |
+          pnpm exec vite build --config apps/web/vite.config.ts
+          pnpm --dir apps/desktop build
+      - name: Test desktop with the lockfile
+        working-directory: apps/desktop/src-tauri
+        run: cargo test --locked --lib

@@ -41,23 +41,11 @@ import {
   type ResolvedNavigation,
   type NavigationSlot,
 } from "@smartdoca/web-plugin-registry";
-import { api } from "@web/shared/api.js";
+import { fetchNavigationLayout } from "@web/shared/navigation-layout.js";
+import { desktopTabActive, desktopTabVisibilityEvent } from "@web/shared/desktop-tab-visibility.js";
 import { useI18n } from "@web/shared/i18n.js";
 import { useNotificationUnread } from "@web/shared/notification-unread.js";
 import "./navigation.css";
-let pending: Promise<ResolvedNavigation> | undefined;
-function fetchLayout() {
-  if (!pending)
-    pending = api<ResolvedNavigation>("/navigation").finally(() => {
-      pending = undefined;
-    });
-  return pending;
-}
-export async function navigateToDefaultHome() {
-  const data = await fetchLayout();
-  const entry = data.entries.find((e) => e.id === data.layout.home?.web);
-  location.hash = entry?.webPath ?? "/home";
-}
 export function useNavigationLayout() {
   const [data, setData] = useState<ResolvedNavigation>(() =>
     resolveNavigation(
@@ -69,7 +57,8 @@ export function useNavigationLayout() {
   useEffect(() => {
     let active = true;
     const refresh = () => {
-      void fetchLayout()
+      if (!desktopTabActive()) return;
+      void fetchNavigationLayout()
         .then((value) => {
           if (active) setData(value);
         })
@@ -78,11 +67,13 @@ export function useNavigationLayout() {
     refresh();
     const timer = setInterval(refresh, 30000);
     window.addEventListener("focus", refresh);
+    window.addEventListener(desktopTabVisibilityEvent, refresh);
     window.addEventListener("doca-navigation", refresh);
     return () => {
       active = false;
       clearInterval(timer);
       window.removeEventListener("focus", refresh);
+      window.removeEventListener(desktopTabVisibilityEvent, refresh);
       window.removeEventListener("doca-navigation", refresh);
     };
   }, []);

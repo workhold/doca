@@ -898,19 +898,20 @@
 .files-drop-overlay {
   position: absolute;
   z-index: 4;
-  inset: 9px;
+  inset: auto 9px 9px auto;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  flex-wrap: wrap;
   gap: 7px;
+  max-width: calc(100% - 18px);
+  padding: 8px 12px;
   border: 2px dashed #82a8f2;
   border-radius: 10px;
   color: #4576dc;
-  background: rgba(244, 248, 255, .94);
+  background: #f4f8ff;
   pointer-events: none;
 }
-.files-drop-overlay span { color: #8a9fc8; font-size: 11px; }
+.files-drop-overlay span { color: #465a7f; font-size: 12px; }
 .files-grid .file-entry-rename { text-align: center; }
 .files-context-menu {
   position: fixed;

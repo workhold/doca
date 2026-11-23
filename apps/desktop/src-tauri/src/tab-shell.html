@@ -182,6 +182,13 @@
           } catch { /* An external page is never saved as a Doca route. */ }
         }, 250));
       }
+      // Only hand schemes to the OS that the system can open safely, and only
+      // for truly outside URLs; same-origin anchors keep WebView behaviour so
+      // broken markup cannot launch handlers or hijack in-page targets.
+      function openExternalable(next) {
+        return next.origin !== location.origin
+          && ["http:", "https:", "mailto:", "tel:"].includes(next.protocol);
+      }
       function attachFrame(tab, frame) {
         const observe = () => {
           try {
@@ -194,6 +201,11 @@
                 const next = new URL(url, child.location.href);
                 if (next.origin === location.origin && next.pathname === "/" && next.hash.startsWith("#/")) {
                   void act("openTab", { hash: next.hash });
+                  return null;
+                }
+                if (openExternalable(next)) {
+                  // The WebView cannot host popups; hand outside URLs to the OS.
+                  void act("openExternal", { url: next.href });
                   return null;
                 }
               } catch { /* Delegate invalid or external links to the WebView. */ }
@@ -209,7 +221,7 @@
               const isDownload = anchor.hasAttribute("download")
                 || next.searchParams.get("download") === "1"
                 || /\/content(?:$|[?#])/.test(next.pathname);
-              if (isDownload && next.origin === location.origin) {
+              if (isDownload && next.protocol === location.protocol && next.origin === location.origin) {
                 event.preventDefault();
                 void act("downloadFile", { url: next.pathname + next.search });
                 return;
@@ -220,6 +232,13 @@
                 if (next.origin === location.origin && next.pathname === "/" && next.hash.startsWith("#/")) {
                   event.preventDefault();
                   void act("openTab", { hash: next.hash });
+                  return;
+                }
+                if (openExternalable(next)) {
+                  // Same as window.open: outside URLs open in the system browser
+                  // because the WebView cannot host new windows.
+                  event.preventDefault();
+                  void act("openExternal", { url: next.href });
                 }
               } catch { /* Leave external links alone. */ }
             }, true);
@@ -235,6 +254,7 @@
         if (frame) return frame;
         frame = document.createElement("iframe");
         frame.className = "page";
+        frame.setAttribute("data-doca-workspace-tab", "");
         frame.title = tab.title || "Doca 页面";
         frame.src = "/" + tab.hash;
         frame.hidden = true;
@@ -461,7 +481,13 @@
         }
         for (const [id, frame] of frames) {
           frame.id = `page-${id}`;
-          frame.hidden = id !== windowState.activeTab;
+          const hidden = id !== windowState.activeTab;
+          if (frame.hidden !== hidden) {
+            frame.hidden = hidden;
+            try {
+              frame.contentWindow.dispatchEvent(new Event("doca-desktop-tab-visibility"));
+            } catch { /* An external page owns its own lifecycle. */ }
+          }
           frame.title = tabById(id)?.title || "Doca 页面";
         }
         const active = tabById(windowState.activeTab);

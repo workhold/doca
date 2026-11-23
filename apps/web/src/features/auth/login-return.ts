@@ -20,3 +20,14 @@ export function takeLoginDocument(): string | null {
     return null;
   }
 }
+
+export const shareTokenFromHash = (value: string) =>
+  /^#\/s\/([A-Za-z0-9_-]{43})$/.exec(value)?.[1] ?? null;
+export const rememberedShareToken = () => {
+  const current = shareTokenFromHash(location.hash);
+  if (current) {
+    try { sessionStorage.setItem("doca.pending-share-token", current); } catch {}
+    return current;
+  }
+  try { return sessionStorage.getItem("doca.pending-share-token"); } catch { return null; }
+};

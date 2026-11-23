@@ -73,16 +73,19 @@ const { t } = useI18n();
         // still need the Vite rewrite; this assignment covers runtime checks.
         const prismModule = await import("prismjs");
         (globalThis as { Prism?: unknown }).Prism = prismModule.default ?? prismModule;
-        const [{ FileViewer }, core, worker] = await Promise.all([
+        const [{ FileViewer }, core, worker, legacyWorker] = await Promise.all([
           import("@open-file-viewer/react"),
           import("@open-file-viewer/core"),
           import("pdfjs-dist/build/pdf.worker.min.mjs?url"),
+          import("pdfjs-dist/legacy/build/pdf.worker.min.mjs?url"),
         ]);
         if (cancelled) return;
         setViewer({
           FileViewer: FileViewer as Viewer["FileViewer"],
           plugins: [
-            core.imagePlugin(), core.textPlugin(), core.pdfPlugin({ workerSrc: worker.default }), core.officePlugin(),
+            core.imagePlugin(), core.textPlugin(),
+            core.pdfPlugin({ workerSrc: worker.default, legacyWorkerSrc: legacyWorker.default }),
+            core.officePlugin(),
             core.videoPlugin(), core.audioPlugin(), core.archivePlugin(), core.emailPlugin(),
           ],
         });

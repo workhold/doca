@@ -14,6 +14,7 @@ use axum::{
 };
 use futures_util::{SinkExt, StreamExt};
 use serde::Deserialize;
+use sha2::{Digest, Sha256};
 use std::{
     convert::Infallible,
     path::{Path as FsPath, PathBuf},
@@ -74,6 +75,9 @@ pub enum Action {
         index: usize,
     },
     DownloadFile {
+        url: String,
+    },
+    OpenExternal {
         url: String,
     },
 }
@@ -188,6 +192,17 @@ async fn execute_action(config: &ProxyConfig, action: Action) -> Result<serde_js
             .await
             .map_err(|_| "桌面工作空间已关闭".to_string())??;
         return Ok(serde_json::json!({ "saved": saved }));
+    }
+    if let Action::OpenExternal { url } = &action {
+        // Webviews cannot host popups, so the shell routes outside links here.
+        // Restrict schemes: LaunchServices would otherwise be reachable for
+        // arbitrary protocols from page markup.
+        let parsed = url::Url::parse(url).map_err(|_| "无效的外部链接".to_string())?;
+        if !matches!(parsed.scheme(), "http" | "https" | "mailto" | "tel") {
+            return Err("不支持的外部链接类型".to_string());
+        }
+        open::that(parsed.as_str()).map_err(|error| format!("无法打开系统浏览器：{error}"))?;
+        return Ok(serde_json::json!({ "opened": true }));
     }
     let (reply, response) = oneshot::channel();
     config
@@ -491,11 +506,40 @@ async fn relay(socket: WebSocket, config: Arc<ProxyConfig>, uri: Uri) {
     }
 }
 
+// Workspace proxies keep one stable loopback port per endpoint+account so the
+// WebView origin survives relaunch and client-side localStorage/IndexedDB
+// (locale, AI pending queue, offline replica) persist like on the web. The
+// window sits below the macOS ephemeral-port range to avoid OS allocations.
+// When every candidate is taken -- for example a second app instance sharing
+// the profile -- the proxy falls back to an ephemeral port and that launch
+// behaves like before (client-side storage starts empty).
+const PROXY_PORT_BASE: u16 = 42152;
+const PROXY_PORT_SPAN: u16 = 100;
+
+fn proxy_port_base(port_key: &str) -> u16 {
+    let digest = Sha256::digest(port_key.as_bytes());
+    let seed = u16::from_be_bytes([digest[0], digest[1]]);
+    PROXY_PORT_BASE + (seed % PROXY_PORT_SPAN)
+}
+
+async fn bind_workspace_listener(port_key: &str) -> std::io::Result<tokio::net::TcpListener> {
+    let base = proxy_port_base(port_key);
+    for offset in 0..PROXY_PORT_SPAN {
+        let candidate = PROXY_PORT_BASE + (base - PROXY_PORT_BASE + offset) % PROXY_PORT_SPAN;
+        if let Ok(listener) = tokio::net::TcpListener::bind(("127.0.0.1", candidate)).await {
+            return Ok(listener);
+        }
+    }
+    eprintln!("doca-desktop: 稳定代理端口被占用，本次启动回退随机端口，客户端本地偏好将不保留");
+    tokio::net::TcpListener::bind("127.0.0.1:0").await
+}
+
 pub async fn start(
     target: String,
     bearer: String,
     static_root: PathBuf,
     control: mpsc::UnboundedSender<Control>,
+    port_key: &str,
 ) -> Result<(String, String, tokio::task::JoinHandle<()>), String> {
     let static_root = tokio::fs::canonicalize(static_root)
         .await
@@ -503,9 +547,9 @@ pub async fn start(
     if !static_root.join("index.html").is_file() {
         return Err("内置前端缺少入口文件".into());
     }
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+    let listener = bind_workspace_listener(port_key)
         .await
-        .map_err(|e| e.to_string())?;
+        .map_err(|error| error.to_string())?;
     let origin = format!(
         "http://{}",
         listener.local_addr().map_err(|e| e.to_string())?
@@ -1171,5 +1215,59 @@ mod tests {
         );
         server.abort();
         tokio::fs::remove_dir_all(directory).await.unwrap();
+    }
+}
+
+#[cfg(test)]
+mod stable_port_tests {
+    use super::*;
+
+    #[test]
+    fn port_base_is_stable_and_inside_the_window() {
+        let first = proxy_port_base("92e5724a-b77d-4cea-83bf-7c34ed6d7b3f:account-1");
+        assert_eq!(
+            first,
+            proxy_port_base("92e5724a-b77d-4cea-83bf-7c34ed6d7b3f:account-1")
+        );
+        assert!((PROXY_PORT_BASE..PROXY_PORT_BASE + PROXY_PORT_SPAN).contains(&first));
+    }
+
+    #[test]
+    fn port_base_spreads_across_the_window() {
+        let bases: std::collections::HashSet<u16> = (0..32)
+            .map(|index| proxy_port_base(&format!("endpoint-{index}:account")))
+            .collect();
+        assert!(
+            bases.len() > 8,
+            "hash collapsed into {} buckets",
+            bases.len()
+        );
+    }
+
+    #[tokio::test]
+    async fn bind_reuses_the_deterministic_port_for_the_same_key() {
+        let first = bind_workspace_listener("endpoint-a:account-1")
+            .await
+            .unwrap();
+        let first_port = first.local_addr().unwrap().port();
+        drop(first);
+        let second = bind_workspace_listener("endpoint-a:account-1")
+            .await
+            .unwrap();
+        assert_eq!(second.local_addr().unwrap().port(), first_port);
+    }
+
+    #[tokio::test]
+    async fn bind_falls_forward_when_the_port_is_taken() {
+        let held = bind_workspace_listener("endpoint-b:account-1")
+            .await
+            .unwrap();
+        let held_port = held.local_addr().unwrap().port();
+        let next = bind_workspace_listener("endpoint-b:account-1")
+            .await
+            .unwrap();
+        assert_ne!(next.local_addr().unwrap().port(), held_port);
+        assert!((PROXY_PORT_BASE..PROXY_PORT_BASE + PROXY_PORT_SPAN)
+            .contains(&next.local_addr().unwrap().port()));
     }
 }

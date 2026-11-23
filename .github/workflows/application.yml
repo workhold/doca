@@ -1,0 +1,46 @@
+name: Application checks
+
+on:
+  pull_request:
+    paths:
+      - "apps/**"
+      - "packages/**"
+      - "plugins/**"
+      - "tests/**"
+      - "scripts/**"
+      - "patches/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "tsconfig.json"
+      - "vitest.config.ts"
+      - ".github/workflows/application.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: application-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  application:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Enable pnpm
+        run: corepack enable && corepack prepare pnpm@11.25.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Type check
+        run: pnpm typecheck
+      - name: Build application
+        run: pnpm build
+      - name: Smoke-test SQLite startup, desktop authentication, and Web assets
+        run: pnpm exec vitest run tests/cloud.test.ts tests/desktop-auth.test.ts tests/static-compression.test.ts tests/web-plugin-registry.test.ts --maxWorkers=2
