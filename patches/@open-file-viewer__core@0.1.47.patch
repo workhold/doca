@@ -1,0 +1,138 @@
+diff --git a/dist/index.cjs b/dist/index.cjs
+index 5d00d2891c9e086cc2c2b03849c8c3f818af3a05..a58da9d6dc8d0c1262fec51d6524c4aaa5eaac1a 100644
+--- a/dist/index.cjs
++++ b/dist/index.cjs
+@@ -6313,11 +6313,13 @@ async function renderPdfDocumentPreview(options) {
+     while (state.renderPromise) {
+       await state.renderPromise;
+     }
+-    if (state.rendered) return;
++    if (pageStates[pageIdx] !== state || state.rendered) return;
+     state.rendered = true;
++    const isRendering = () => pageStates[pageIdx] === state && state.rendered;
+     const renderPromise = (async () => {
+       try {
+         const page = await pdfDocument.getPage(pageIdx + 1);
++        if (!isRendering()) return;
+         const meta = pagesMeta[pageIdx];
+         const scale = resolvePdfPageScale(
+           meta,
+@@ -6351,13 +6353,18 @@ async function renderPdfDocumentPreview(options) {
+         state.renderTask = renderTask;
+         await renderTask.promise;
+         state.renderTask = null;
+-        const textContent = await page.getTextContent();
++        if (!isRendering()) return;
++        const textItems = await readPdfTextItems(page).catch((error) => {
++          if (isRendering()) console.warn(`Failed to read PDF text for page ${pageIdx + 1}:`, error);
++          return [];
++        });
++        if (!isRendering()) return;
+         const textLayer = document.createElement("div");
+         textLayer.className = "ofv-pdf-text-layer";
+         textLayer.style.width = `${cssWidth}px`;
+         textLayer.style.height = `${cssHeight}px`;
+         state.wrapper.appendChild(textLayer);
+-        for (const item of textContent.items) {
++        for (const item of textItems) {
+           if (!("str" in item)) continue;
+           const str = item.str;
+           if (!str.trim()) continue;
+@@ -6390,6 +6397,7 @@ async function renderPdfDocumentPreview(options) {
+           );
+         }
+       } catch (err) {
++        if (!isRendering()) return;
+         console.error(`Failed to render PDF page ${pageIdx + 1}:`, err);
+         state.rendered = false;
+         state.wrapper.replaceChildren(
+@@ -6687,6 +6695,20 @@ function normalizePdfOptions(options) {
+   }
+   return options;
+ }
++// Read PDF.js text chunks through the standard reader API.
++async function readPdfTextItems(page) {
++  const reader = page.streamTextContent().getReader();
++  const items = [];
++  try {
++    while (true) {
++      const { done, value } = await reader.read();
++      if (done) return items;
++      items.push(...value.items);
++    }
++  } finally {
++    reader.releaseLock();
++  }
++}
+ async function loadPdfData(url) {
+   const response = await fetch(url);
+   if (!response.ok) {
+diff --git a/dist/index.js b/dist/index.js
+index 30a3908d917df6b0ad34bcb18ee1dab51c5179db..6693c9319cff2e038915449e41a178f99354f017 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -6199,11 +6199,13 @@ async function renderPdfDocumentPreview(options) {
+     while (state.renderPromise) {
+       await state.renderPromise;
+     }
+-    if (state.rendered) return;
++    if (pageStates[pageIdx] !== state || state.rendered) return;
+     state.rendered = true;
++    const isRendering = () => pageStates[pageIdx] === state && state.rendered;
+     const renderPromise = (async () => {
+       try {
+         const page = await pdfDocument.getPage(pageIdx + 1);
++        if (!isRendering()) return;
+         const meta = pagesMeta[pageIdx];
+         const scale = resolvePdfPageScale(
+           meta,
+@@ -6237,13 +6239,18 @@ async function renderPdfDocumentPreview(options) {
+         state.renderTask = renderTask;
+         await renderTask.promise;
+         state.renderTask = null;
+-        const textContent = await page.getTextContent();
++        if (!isRendering()) return;
++        const textItems = await readPdfTextItems(page).catch((error) => {
++          if (isRendering()) console.warn(`Failed to read PDF text for page ${pageIdx + 1}:`, error);
++          return [];
++        });
++        if (!isRendering()) return;
+         const textLayer = document.createElement("div");
+         textLayer.className = "ofv-pdf-text-layer";
+         textLayer.style.width = `${cssWidth}px`;
+         textLayer.style.height = `${cssHeight}px`;
+         state.wrapper.appendChild(textLayer);
+-        for (const item of textContent.items) {
++        for (const item of textItems) {
+           if (!("str" in item)) continue;
+           const str = item.str;
+           if (!str.trim()) continue;
+@@ -6276,6 +6283,7 @@ async function renderPdfDocumentPreview(options) {
+           );
+         }
+       } catch (err) {
++        if (!isRendering()) return;
+         console.error(`Failed to render PDF page ${pageIdx + 1}:`, err);
+         state.rendered = false;
+         state.wrapper.replaceChildren(
+@@ -6573,6 +6581,20 @@ function normalizePdfOptions(options) {
+   }
+   return options;
+ }
++// Read PDF.js text chunks through the standard reader API.
++async function readPdfTextItems(page) {
++  const reader = page.streamTextContent().getReader();
++  const items = [];
++  try {
++    while (true) {
++      const { done, value } = await reader.read();
++      if (done) return items;
++      items.push(...value.items);
++    }
++  } finally {
++    reader.releaseLock();
++  }
++}
+ async function loadPdfData(url) {
+   const response = await fetch(url);
+   if (!response.ok) {

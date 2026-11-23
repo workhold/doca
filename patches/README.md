@@ -1,6 +1,8 @@
 # Dependency patches
 
-The only active patch is `@mastra/memory@1.29.0`, registered in `pnpm-workspace.yaml` and the lockfile. It makes reflection read and validate the record actually committed by observation, preserving the observation cursor, token totals and observed message IDs. It changes neither stored rows nor schema and adds no adapter for another SDK version. `tests/ai-history.test.ts` checks real SDK reflection, retained messages and reopening without observing the same turns again.
+The `@mastra/memory@1.29.0` patch makes reflection read and validate the record actually committed by observation, preserving the observation cursor, token totals and observed message IDs. `tests/ai-history.test.ts` checks real SDK reflection, retained messages and reopening without observing the same turns again.
+
+The `@open-file-viewer/core@0.1.47` patch reads PDF.js text chunks with `ReadableStream.getReader()`. A text read error leaves the rendered page visible, and a canceled render leaves the page ready to draw when the reader returns to it. The browser regression builds the Doca preview and checks a scanned page and selectable text with stream async iteration disabled. [PDF preview regression](../scripts/qa-file-pdf-preview.mts)
 
 The editor fixes now ship upstream: Slate 0.4.25 contains the DOCX fixes and Markdown 0.4.4 contains the KaTeX/lazy-PDF fixes. Doca installs their official npm artifacts without editor patch bindings. The obsolete editor patch files were removed after verifying the official artifacts and DOCX/PDF regressions; preceding releases and their matching patches remain recoverable from Git history. Local copies are retained under `artifacts/verification/npm-direct-2026-10-23/retired-editor-patches/`.
 

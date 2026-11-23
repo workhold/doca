@@ -71,3 +71,4 @@ overrides:
   '@leafer/web-core': 2.1.0
 patchedDependencies:
   '@mastra/memory@1.29.0': patches/@mastra__memory@1.29.0.patch
+  '@open-file-viewer/core@0.1.47': patches/@open-file-viewer__core@0.1.47.patch
