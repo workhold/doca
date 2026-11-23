@@ -10,7 +10,7 @@ This is the integration source document for all five editors; subpackages consum
 | --- | --- | --- |
 | Rich text | @smartdoca/slate 0.4.26 | document-editor.tsx |
 | Markdown | @smartdoca/markdown 0.4.4 | markdown-editor.tsx |
-| Spreadsheet | @smartdoca/sheet 0.2.19 | spreadsheet-editor.tsx |
+| Spreadsheet | @smartdoca/sheet 0.2.20 | spreadsheet-editor.tsx |
 | Canvas | @smartdoca/canvas 0.5.16 | canvas-editor.tsx |
 | Slides | @smartdoca/slides 0.3.0-alpha.5 | presentation-editor.tsx |
 
@@ -232,3 +232,9 @@ Identity changes or clearing only repaint the existing runtime. The identity and
 Doca pins the official npm `@smartdoca/sheet` 0.2.19. While its native cell editor owns focus, Cmd/Ctrl+Z undoes the text draft and Cmd/Ctrl+Y or Cmd/Ctrl+Shift+Z redoes it. After the draft is committed, sheet undo and redo continue through the existing collaborative history. Other host inputs do not acquire these editor shortcuts.
 
 Relative to 0.2.18, the public declarations, CSS and model/Yjs/XLSX/preferences ESM/CJS runtimes are byte-identical; the change is confined to the Sheet UI runtime. No persisted workbook format, schema 6, baseline, epoch, checkpoint, host save path or compatibility rule changes. The source and packed-entry Chrome regressions use an isolated workbook. Rollback restores the previous package pin and lockfile while preserving later content writes.
+
+## Spreadsheet auto-height measurement guard — 2026-11-23
+
+Doca pins the official npm `@smartdoca/sheet` 0.2.20. A single degenerate rich-text cell — an ordered-list bullet paragraph whose document skeleton yields no pages — crashed the pinned engine's auto-height measurement. The sheet column-width command measures the anchor column before its width mutation, so one such cell silently cancelled the user's column resize (reported on the first column of a live workbook), and the same crash broke the first paint and the auto-height bookkeeping of other columns' resizes. The package guards the single measurement entry (`SpreadsheetSkeleton.calculateAutoHeightForCell`): a failed measurement falls back to each caller's own default, so the resize applies and rendering continues. An unhandled rejection correlated with a local command is reported once per message as a warning toast, with the full stack in the console.
+
+Only the failure path changes: no public API, declaration export set, CSS, schema, baseline, epoch, checkpoint or host save channel changes. The model/Yjs/XLSX/preferences runtime JavaScript and index.css are byte-identical to 0.2.19. Retain the previous package pin and lockfile for rollback.

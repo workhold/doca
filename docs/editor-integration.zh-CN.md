@@ -10,7 +10,7 @@
 | --- | --- | --- |
 | 富文本 | @smartdoca/slate 0.4.26 | document-editor.tsx |
 | Markdown | @smartdoca/markdown 0.4.4 | markdown-editor.tsx |
-| 表格 | @smartdoca/sheet 0.2.19 | spreadsheet-editor.tsx |
+| 表格 | @smartdoca/sheet 0.2.20 | spreadsheet-editor.tsx |
 | 画布 | @smartdoca/canvas 0.5.16 | canvas-editor.tsx |
 | 幻灯片 | @smartdoca/slides 0.3.0-alpha.5 | presentation-editor.tsx |
 
@@ -218,3 +218,9 @@ Sheet 0.2.17 提供 `SpreadsheetEditor.currentUserId?: string | null`。Doca 传
 Doca 固定正式 npm `@smartdoca/sheet` 0.2.19。原生单元格编辑器持有焦点时，Cmd/Ctrl+Z 撤销草稿，Cmd/Ctrl+Y 或 Cmd/Ctrl+Shift+Z 重做草稿；提交后仍通过既有协同历史撤销、重做表格操作。宿主其他输入框不会接管这些编辑器快捷键。
 
 与 0.2.18 相比，公开声明、CSS 及 model/Yjs/XLSX/preferences 的 ESM/CJS 运行文件逐字节相同，改动限定于表格 UI 运行时。工作簿持久化格式、schema 6、baseline、epoch、checkpoint、宿主保存路径与兼容规则均不变。源码及打包入口 Chrome 回归使用隔离工作簿；回退恢复旧正式包版本和锁文件，并保留后续内容写入。
+
+## 表格自动行高测量防护 — 2026-11-23
+
+Doca 固定正式 npm `@smartdoca/sheet` 0.2.20。单个退化富文本单元格（带有序列表 bullet、文档骨架产出空 pages）会让固定引擎的自动行高测量抛错；列宽命令在写入宽度之前先测量锚点列，一个坏单元格即静默取消用户的列宽调整（线上工作簿报告在第一列），同源崩溃还破坏首屏渲染和其他列调宽的自动行高记账。包内现在在唯一测量入口（`SpreadsheetSkeleton.calculateAutoHeightForCell`）加防护：测量失败回退到调用方各自的默认值，列宽照常生效、渲染继续；与本地命令关联的未处理拒绝按消息去重上报一次警告 toast，完整堆栈输出到控制台。
+
+仅失败路径行为变化：公开 API、声明导出集合、CSS、schema、baseline、epoch、checkpoint 与宿主保存通道不变。model/Yjs/XLSX/preferences 运行文件与 index.css 与 0.2.19 逐字节一致。回退恢复旧包版本和锁文件。
