@@ -1051,6 +1051,9 @@ async fn handle_action(
             })?;
             window_snapshot(&state, &endpoint_id, &account_id, &window_id)
         }
+        // OpenExternal executes directly inside the proxy task and never
+        // reaches this dispatcher, same as DownloadFile.
+        proxy::Action::OpenExternal { .. } => Ok(serde_json::json!({})),
     }
 }
 
@@ -1299,8 +1302,14 @@ async fn open_profile_inner(
         Ok(())
     })?;
     let (control_sender, mut control_receiver) = tokio::sync::mpsc::unbounded_channel();
-    let (_origin, gate_url, server) =
-        proxy::start(entry.origin.clone(), bearer, static_root, control_sender).await?;
+    let (_origin, gate_url, server) = proxy::start(
+        entry.origin.clone(),
+        bearer,
+        static_root,
+        control_sender,
+        &format!("{id}:{account_id}"),
+    )
+    .await?;
     let generation = Uuid::new_v4();
     let control_app = app.clone();
     let control_endpoint = id.clone();

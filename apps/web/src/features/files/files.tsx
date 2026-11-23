@@ -592,6 +592,7 @@ export function FilesExplorer({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [downloading, setDownloading] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const folderInput = useRef<HTMLInputElement>(null);
   const [pendingUpload, setPendingUpload] = useState<UploadEntry[] | null>(
@@ -720,6 +721,9 @@ export function FilesExplorer({
     }
     return [...fromCurrent, ...extra];
   }, [allValues, columnPages, selectedIds]);
+  const selectedFiles = selectedValues.flatMap((item) =>
+    item.kind === "file" ? [item.value] : [],
+  );
   const uploadExtensions = useMemo(
     () => [
       ...new Set(
@@ -757,7 +761,8 @@ export function FilesExplorer({
     const requestedKey = `${next.type}:${next.id}`;
     const current = () => sequence === loadSequence.current && currentLocationRef.current === requestedKey;
     const keepColumns = view === "columns" && columnPagesRef.current.length > 0;
-    if (!keepColumns) setLoading(true);
+    // Keep the current folder visible while refreshing upload and parsing status.
+    if (loadedPage?.key !== requestedKey && !keepColumns) setLoading(true);
     setError("");
     try {
       const params = new URLSearchParams({
@@ -1188,6 +1193,27 @@ export function FilesExplorer({
     if (input.current) input.current.value = "";
     if (folderInput.current) folderInput.current.value = "";
     setPendingUpload(null);
+  }
+  async function downloadSelectedFiles() {
+    if (downloading || selectedFiles.length < 2) return;
+    setContextMenu(null);
+    setError("");
+    setDownloading(true);
+    try {
+      const [{ downloadArchive }, { downloadResult }] = await Promise.all([
+        import("./download-archive.js"),
+        import("@web/features/documents/file-transfer.js"),
+      ]);
+      const blob = await downloadArchive(selectedFiles, {
+        failed: t("doc.downloadFailed"),
+        tooLarge: t("fileManager.downloadTooLarge"),
+      });
+      downloadResult({ blob, filename: "Doca.zip" });
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : t("doc.downloadFailed"));
+    } finally {
+      setDownloading(false);
+    }
   }
   async function showInfo(target: Selectable) {
     setContextMenu(null);
@@ -1991,7 +2017,9 @@ export function FilesExplorer({
           if (!canAcceptDrop(value) || draggingIds.has(value.value.id)) return;
           event.preventDefault();
           event.stopPropagation();
-          event.dataTransfer.dropEffect = isExternalFileDrag(event.dataTransfer)
+          const external = isExternalFileDrag(event.dataTransfer);
+          if (external) setDragActive(true);
+          event.dataTransfer.dropEffect = external
             ? "copy"
             : event.altKey
               ? "copy"
@@ -1999,7 +2027,7 @@ export function FilesExplorer({
           setDropTargetId(value.value.id);
         }}
         onDragLeave={(event) => {
-          if (event.currentTarget.contains(event.relatedTarget as Node)) return;
+          if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) return;
           if (dropTargetId === value.value.id) setDropTargetId(null);
         }}
         onDrop={(event) => {
@@ -2311,6 +2339,12 @@ export function FilesExplorer({
             {t("fileManager.trash")}
             {selectedValues.length > 0 && <small>{selectedValues.length}</small>}
           </button>
+          {(selectedFiles.length > 1 || downloading) && (
+            <button type="button" onClick={() => void downloadSelectedFiles()} disabled={downloading}>
+              <Download size={16} />
+              {downloading ? t("doc.downloading") : t("fileManager.downloadSelected")}
+            </button>
+          )}
           <div
             className="files-view-switch"
             role="group"
@@ -2485,7 +2519,7 @@ export function FilesExplorer({
           }}
           onDrop={(event) => handleCanvasDrop(event, location)}
         >
-          {dragActive && !draggingIds.size && (
+          {dragActive && !draggingIds.size && !dropTargetId && (
             <div className="files-drop-overlay">
               <Upload size={22} />
               <strong>{t("fileManager.drop")}</strong>
@@ -2631,6 +2665,12 @@ export function FilesExplorer({
                 )}
                 {t("fileManager.showInfo")}
               </button>
+              {selectedFiles.length > 1 && (
+                <button type="button" onClick={() => void downloadSelectedFiles()} disabled={downloading}>
+                  <Download size={14} />
+                  {t("fileManager.downloadSelected")}
+                </button>
+              )}
               {contextMenu.target.kind === "file" && (
                 <>
                   <a href={fileUrl(contextMenu.target.value.id, true)}>
@@ -3167,6 +3207,9 @@ export function FilesExplorer({
             <header>
               <div>
                 <strong>{t("fileManager.reviewUpload")}</strong>
+                {uploadDestination && (
+                  <span>{t("fileManager.destinationPath", { path: fileLocationLabel(uploadDestination, t) })}</span>
+                )}
                 <span>{t("fileManager.uploadFilterHelp")}</span>
               </div>
               <button

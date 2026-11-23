@@ -27,6 +27,7 @@ import { Select } from "@web/shared/components/select.js";
 import { Dialog } from "@web/features/documents/dialogs.js";
 import { ServiceCredentials } from "@web/features/admin/service-credentials.js";
 import { ProviderIcon } from "@web/features/auth/provider-icon.js";
+import { startExternalAuthentication } from "./external-login.js";
 import "@web/features/auth/authentication.css";
 
 type Provider = {
@@ -456,55 +457,6 @@ const names: Record<string, string> = {
   );
 }
 
-async function start(id: string, intent: "login" | "link" | "replace") {
-  const result = await api<{ url: string }>(
-    `/auth/providers/${id}/start`,
-    "POST",
-    { intent },
-  );
-  location.assign(result.url);
-}
-export function ExternalLoginOptions() {
-const { t, locale } = useI18n();
-
-  const [items, setItems] = useState<Provider[]>([]),
-    [error, setError] = useState(""),
-    [busy, setBusy] = useState(false);
-  useEffect(() => {
-    void api<{ items: Provider[] }>("/auth/providers")
-      .then((r) => setItems(r.items))
-      .catch(() => setError(t("authAdmin.loadFailed")));
-  }, []);
-  return (
-    <>
-      {items.length > 0 && (
-        <div className="external-login">
-          <span>{t("authAdmin.alternative")}</span>
-          <div>
-            {items.map((p) => (
-              <button
-                type="button"
-                key={p.id}
-                disabled={busy}
-                onClick={() => {
-                  setBusy(true);
-                  void start(p.id, "login").catch((e) => {
-                    setError(e.message);
-                    setBusy(false);
-                  });
-                }}
-              >
-                <ProviderIcon type={p.type} />
-                {p.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-      {error && <Feedback message={error} tone="error" />}
-    </>
-  );
-}
 export function AuthCompletion({
   done,
 }: {
@@ -669,7 +621,7 @@ const { t, locale } = useI18n();
             type="button"
             disabled={busy}
             onClick={() =>
-              void act(() => start(b.provider_id, "replace"), t("authAdmin.redirecting"))
+              void act(() => startExternalAuthentication(b.provider_id, "replace"), t("authAdmin.redirecting"))
             }
           >{t("authAdmin.replaceLink")}</button>
           <button type="button" disabled={busy} onClick={() => setUnlink(b)}>
@@ -691,7 +643,7 @@ const { t, locale } = useI18n();
             </div>
             <button
               disabled={busy}
-              onClick={() => void act(() => start(p.id, "link"), t("authAdmin.redirecting"))}
+              onClick={() => void act(() => startExternalAuthentication(p.id, "link"), t("authAdmin.redirecting"))}
             >
               <Plus size={14} />{t("library.relations.bind")}</button>
           </div>

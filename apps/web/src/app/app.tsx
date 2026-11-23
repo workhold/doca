@@ -4,11 +4,11 @@ import { BrowserClipperSettings } from "@web/features/browser-clipper/browser-cl
 import { McpSettings } from "@web/features/mcp/mcp-settings.js";
 import { ResourceAccessTag } from "@web/features/documents/resource-access-tag.js";
 import { TitleInput } from "@web/features/documents/title-input.js";
-import { PluginSlot } from "@web/plugins/extensions.js";
+import { PluginExtensionHost, PluginSlot } from "@web/plugins/extensions.js";
 import { PluginPageHeader } from "@web/plugins/page-header.js";
 import { extensionViews } from "@web/plugins/extension-ui.js";
 import { MobilePluginPage } from "@web/plugins/mobile-page.js";
-import { NavigationArea, MoreNavigation, LeftNavigation, navigateToDefaultHome, useNavigationLayout } from "@web/plugins/navigation.js";
+import { NavigationArea, MoreNavigation, LeftNavigation, useNavigationLayout } from "@web/plugins/navigation.js";
 import { isAdminNavigationPath } from "@smartdoca/web-plugin-registry";
 import { WorkspaceHome } from "@web/features/workspace/home.js";
 import { DesktopBackendSwitch } from "@web/features/workspace/desktop-backend-switch.js";
@@ -25,7 +25,7 @@ import "@web/features/account/account-menu.css";
 import { AccountMenu } from "@web/features/account/account-menu.js";
 import { LocaleSwitch } from "@web/features/account/locale-switch.js";
 import { AccountLogin } from "@web/features/auth/account-login.js";
-import { rememberLoginDocument, takeLoginDocument } from "@web/features/auth/login-return.js";
+import { rememberedShareToken, shareTokenFromHash, rememberLoginDocument, takeLoginDocument } from "@web/features/auth/login-return.js";
 import { AccountOnboarding } from "@web/features/auth/account-fields.js";
 import { Feedback } from "@web/shared/components/feedback.js";
 import { BackLink } from "@web/shared/components/back-link.js";
@@ -54,8 +54,10 @@ import { Select } from "@web/shared/components/select.js";
 import { useCommentPages } from "@web/features/comments/use-comment-pages.js";
 import { realtime } from "@web/features/documents/realtime.js";
 import { UserBadge } from "@web/shared/components/user-badge.js";
-import { setCurrentUserId } from "@web/shared/components/user-mention.js";
+import { setCurrentUserId, UserMentionLinkStyles } from "@web/shared/components/user-mention.js";
 import { lazy, Suspense, useEffect, useLayoutEffect, useState, useRef, useMemo, useSyncExternalStore } from "react";
+import { desktopTabActive, desktopTabVisibilityEvent } from "@web/shared/desktop-tab-visibility.js";
+import { navigateToDefaultHome } from "@web/shared/navigation-layout.js";
 import { loadBootstrap } from "@web/shared/bootstrap.js";
 import { SiteLogo } from "@web/shared/components/site-logo.js";
 import { documentFavicon } from "@web/shared/utils/document-favicon.js";
@@ -84,7 +86,6 @@ import { DocumentTree } from "@web/features/documents/tree.js";
 import { Dashboard, GlobalSearch } from "@web/features/workspace/dashboard.js";
 import { Avatar, Profile, PersonalSettings } from "@web/features/account/profile.js";
 import { CoverDialog, ResourceActionDialog } from "@web/features/documents/uploads.js";
-import "@web/styles/globals.css";
 import type { FileLocation } from "@web/features/files/files.js";
 import { MobileTicketRedeem, postMobileEditor } from "@web/features/mobile/ticket-redeem.js";
 import { SubscribeLibraryHost } from "@web/features/knowledge/subscribe-library.js";
@@ -94,7 +95,6 @@ import {
 } from "@web/plugins/registry.js";
 import "@web/features/files/files.css";
 import "@web/features/workspace/workspace.css";
-import "@web/styles/theme.css";
 import "@web/features/settings/settings-shell.css";
 import "@web/features/documents/document-layout.css";
 import { TemplatePicker } from "@web/features/documents/template-picker.js";
@@ -107,7 +107,6 @@ import {
   useDismissMenus,
 } from "@web/features/documents/document-experience.js";
 import "@web/features/documents/document-experience.css";
-import "@web/styles/platform-polish.css";
 import "@web/features/workspace/workspace-density.css";
 import "@web/features/documents/document-tree.css";
 import { DocumentModeContext, DocumentModeSwitch, useDocumentModeState } from "@web/features/documents/document-mode.js";
@@ -147,16 +146,6 @@ const errorText = (e: unknown, fallback: string) => {
       : "";
   return code ? `${e.message}（${code}）` : e.message;
 };
-const shareTokenFromHash = (value: string) =>
-  /^#\/s\/([A-Za-z0-9_-]{43})$/.exec(value)?.[1] ?? null;
-const rememberedShareToken = () => {
-  const current = shareTokenFromHash(location.hash);
-  if (current) {
-    try { sessionStorage.setItem("doca.pending-share-token", current); } catch {}
-    return current;
-  }
-  try { return sessionStorage.getItem("doca.pending-share-token"); } catch { return null; }
-};
 type ShareInvitation = {
   pending: true;
   id: string;
@@ -165,8 +154,13 @@ type ShareInvitation = {
   role: string;
 };
 export function App() {
-  if(location.hash.startsWith("#/m/plugins/")) return <MobilePluginPage/>;
-  return <WorkspaceApp/>;
+  return (
+    <>
+      <UserMentionLinkStyles />
+      {location.hash.startsWith("#/m/plugins/") ? <MobilePluginPage /> : <WorkspaceApp />}
+      <PluginExtensionHost />
+    </>
+  );
 }
 function WorkspaceApp() {
   const navigationRevision = useSyncExternalStore(webPluginRegistry.navigation.subscribe, webPluginRegistry.navigation.snapshot);
@@ -180,6 +174,7 @@ function WorkspaceApp() {
   pluginNavigationRef.current = pluginNavigationByScope;
   const [startup] = useState(() => readDocumentStartup(location.hash));
   const [bootstrapVerified, setBootstrapVerified] = useState(false);
+  const [discoveringPlugins, setDiscoveringPlugins] = useState(true);
   const detailAccount = useRef(startup?.bootstrap.user?.id);
   const { locale, t, reloadLocale } = useI18n();
   const navigationLayout = useNavigationLayout();
@@ -574,15 +569,17 @@ function WorkspaceApp() {
   useEffect(() => {
     if (!bootstrap?.user) return;
     const beat = () => {
-      if (document.visibilityState === "visible")
+      if (document.visibilityState === "visible" && desktopTabActive())
         void api("/me/heartbeat", "POST").catch(() => {});
     };
     beat();
     const timer = setInterval(beat, 60000);
     document.addEventListener("visibilitychange", beat);
+    window.addEventListener(desktopTabVisibilityEvent, beat);
     return () => {
       clearInterval(timer);
       document.removeEventListener("visibilitychange", beat);
+      window.removeEventListener(desktopTabVisibilityEvent, beat);
     };
   }, [bootstrap?.user?.id]);
   useEffect(() => {
@@ -611,6 +608,15 @@ function WorkspaceApp() {
   const reload = async () => {
     setRefresh((n) => n + 1);
   };
+  useEffect(() => {
+    if (!bootstrapVerified || !bootstrap) return;
+    let active = true;
+    setDiscoveringPlugins(true);
+    void loadWebPlugins(bootstrap)
+      .catch((error) => console.error("Plugin discovery failed", error))
+      .finally(() => { if (active) setDiscoveringPlugins(false); });
+    return () => { active = false; };
+  }, [bootstrap, bootstrapVerified]);
   const signedIn = !!bootstrap?.user;
   useEffect(() => { extensionViews.close(); }, [bootstrap?.user?.id]);
   useEffect(() => {
@@ -644,7 +650,6 @@ function WorkspaceApp() {
           setSiteLogoUrl(b.siteLogoUrl);
           setBootstrapVerified(true);
           setFatal("");
-          void loadWebPlugins(b).catch(e => console.error("Plugin discovery failed", e));
         })
         .catch((e) => {
           if (!active || requestGeneration !== generation) return;
@@ -860,11 +865,20 @@ function WorkspaceApp() {
     activePluginIds.has(matchedPluginRoute.contribution.pluginId)
       ? matchedPluginRoute
       : undefined;
-  const unavailablePluginRoute =
-    !!matchedPluginRoute && !pluginRoute;
   const adminPluginPage = isAdminNavigationPath(
     navigationLayout.entries,
     pluginRoutePath,
+  );
+  const pluginPath = pluginRoutePath.startsWith("/plugins/") || navigationLayout.entries.some(
+    (entry) => entry.pluginId && entry.webPath?.split("?")[0] === pluginRoutePath,
+  );
+  const mayBePluginRoute = pluginPath || adminPluginPage || (
+    !titleKeys[pluginRoutePath.split("/")[1] ?? ""] &&
+    !accountPage && !preferencesPage && !mcpPage && !browserClipperPage
+  );
+  const waitingForPluginRoute = !matchedPluginRoute && discoveringPlugins && mayBePluginRoute;
+  const unavailablePluginRoute = !pluginRoute && (
+    !!matchedPluginRoute || (!discoveringPlugins && (pluginPath || adminPluginPage))
   );
   const renderedPluginRoute = pluginRoute?.contribution.render(
       {
@@ -1082,7 +1096,9 @@ function WorkspaceApp() {
                       <a href="#/admin">{t("admin.title")}</a>
                     </section>
                   ) : (
-                    renderedPluginRoute
+                    waitingForPluginRoute
+                      ? <p className="empty" role="status">{t("plugins.loading")}</p>
+                      : renderedPluginRoute
                   )}
                 </main>
               </div>
@@ -1478,7 +1494,9 @@ function WorkspaceApp() {
         >
           {user && <SubscribeLibraryHost />}
 
-          {!resourceId && user && unavailablePluginRoute ? (
+          {!resourceId && user && waitingForPluginRoute ? (
+            <p className="empty" role="status">{t("plugins.loading")}</p>
+          ) : !resourceId && user && unavailablePluginRoute ? (
             <section className="empty">
               <p>{t("shell.pluginUnavailable")}</p>
               <a href="#/home">{t("shell.homeLink")}</a>
@@ -1998,13 +2016,20 @@ function Notifications() {
     };
   }, []);
   useEffect(() => {
-    void load().catch(() => {});
+    const refresh = () => {
+      if (desktopTabActive()) void load().catch(() => {});
+    };
+    refresh();
     const unsubscribe = realtime.subscribe((m) => {
-      if (m.type === "notifications.changed" || m.type === "connected")
-        void load().catch(() => {});
+      if (m.type === "notifications.changed" || m.type === "connected") refresh();
     });
-    const timer = setInterval(() => { void load().catch(() => {}); }, 30000);
-    return () => { unsubscribe(); clearInterval(timer); };
+    const timer = setInterval(refresh, 30000);
+    window.addEventListener(desktopTabVisibilityEvent, refresh);
+    return () => {
+      unsubscribe();
+      clearInterval(timer);
+      window.removeEventListener(desktopTabVisibilityEvent, refresh);
+    };
   }, []);
   return (
     <div className="notifications" ref={panelRef}>

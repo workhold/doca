@@ -317,7 +317,17 @@
     "zh": "发行记录",
     "pages": [
       [
+        "releases/0.2.40",
+        "0.2.40 — Desktop files and workspace startup",
+        "0.2.40 — 桌面文件操作与工作台启动"
+      ],
+      [
         "releases/0.2.39",
+        "0.2.39 — Spreadsheet column resize guard",
+        "0.2.39 — 表格列宽调整防护"
+      ],
+      [
+        "releases/0.2.38",
         "0.2.38 — Upload limits banner and desktop tree drag",
         "0.2.38 — 上传限制报错与桌面文档树拖拽"
       ],

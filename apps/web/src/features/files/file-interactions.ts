@@ -291,12 +291,17 @@ async function walkDropEntry(
 export async function materializeExternalDrop(
   captured: CapturedExternalDrop,
 ): Promise<DroppedUpload[]> {
+  // Files from the drop event are already readable. Traverse entries only
+  // when needed to preserve a directory tree or recover an entry-only drop.
+  if (captured.files.length === captured.entries.length && !captured.entries.some((entry) => entry.isDirectory)) {
+    return captured.files.filter((item) => item.path !== ".DS_Store");
+  }
   if (captured.entries.length) {
     const out: DroppedUpload[] = [];
     for (const entry of captured.entries) await walkDropEntry(entry, "", out);
     if (out.length) return out;
   }
-  return captured.files.filter((item) => !item.path.endsWith("/.DS_Store"));
+  return captured.files.filter((item) => item.path !== ".DS_Store" && !item.path.endsWith("/.DS_Store"));
 }
 
 export function replaceColumnPage<T extends { location: ColumnLocation; page: unknown }>(
