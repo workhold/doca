@@ -6,7 +6,7 @@
 
 ## 安装与连接
 
-从 [GitHub Releases](https://github.com/workhold/doca/releases) 下载 macOS（dmg）或 Windows（NSIS/MSI）安装包。当前安装包未做签名与公证：macOS 首次打开需右键 →「打开」，Windows 可能出现 SmartScreen 提示。
+从 [Doca 桌面版 0.2.41](https://github.com/workhold/doca/releases/tag/desktop-v0.2.41) 下载 macOS（DMG）或 Windows（NSIS/MSI）安装包。此版本修复 WKWebView 中的 PDF 预览，可继续连接 0.2.40 服务端。当前安装包未做签名与公证：macOS 首次打开需右键 →「打开」，Windows 可能出现 SmartScreen 提示。
 
 ![桌面客户端连接管理器：添加远端服务](images/desktop-manager-add.jpg)
 
