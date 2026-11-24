@@ -7,14 +7,27 @@ export function canDownloadOfflineShell() {
   );
 }
 
-export async function downloadOfflineShell() {
+let preparation: Promise<void> | undefined;
+
+export function downloadOfflineShell() {
+  return (preparation ??= installOfflineShell().finally(() => {
+    preparation = undefined;
+  }));
+}
+
+async function installOfflineShell() {
   const registration = await navigator.serviceWorker.register(
     "/doca-offline-worker.js",
     {
       updateViaCache: "none",
     },
   );
-  if (registration.active) return;
+  if (registration.active) {
+    // The active shell can already start offline while a new build installs.
+    if (!registration.installing && !registration.waiting)
+      void registration.update().catch(() => {});
+    return;
+  }
   const worker = registration.installing ?? registration.waiting;
   if (!worker) throw Error("Offline frontend installation did not start");
   await new Promise<void>((resolve, reject) => {

@@ -3315,6 +3315,7 @@ export const en = {
   "doc.unfavorite": "Remove favorite",
   "doc.mode": "Document mode",
   "doc.mode.edit": "Edit",
+  "doc.mode.clean": "Distraction-free editing",
   "doc.mode.read": "Read",
   "doc.mode.readonly": "You can only read this",
   "doc.filterType": "Document type",

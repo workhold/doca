@@ -6,7 +6,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { createPortal } from "react-dom";
 import { DocumentDownload, downloadResult } from "@web/features/documents/file-transfer.js";
 import { spreadsheetXlsxOptions } from "@web/features/documents/spreadsheet-xlsx.js";
-import { useDocumentReadOnly } from "@web/features/documents/document-mode.js";
+import { useDocumentEditorMode } from "@web/features/documents/document-mode.js";
 import { useSheetZoomPreference } from "@web/features/documents/sheet-zoom-preference.js";
 import { revealSheetComment } from "@web/features/documents/sheet-comment-reveal.js";
 import {
@@ -112,7 +112,9 @@ export default function SheetDocument({
     ? t("editor.sheetZoomUnsupported")
     : zoomStatus === "unavailable" ? t("editor.sheetZoomUnavailable") : "";
   const rank = Math.min(roleRank(detail.resource.role), sync.rank);
-  const reading = useDocumentReadOnly(sync.binding ? rank >= 3 : undefined);
+  const { readOnly: reading, showRemoteSelections } = useDocumentEditorMode(
+    sync.binding ? rank >= 3 : undefined,
+  );
   const editable = !reading && rank >= 3 && !!sync.binding && !sync.blocked;
   const ref = useRef<SpreadsheetEditorHandle>(null),
     [handle, setHandle] = useState<SpreadsheetEditorHandle | null>(null);
@@ -185,7 +187,7 @@ export default function SheetDocument({
   useEffect(() => { if (!editable && session) publish(null); }, [editable, session, publish]);
   const remoteSelections = useMemo(
     () =>
-      sync.connected && editable
+      sync.connected && editable && showRemoteSelections
         ? sync.presence.sessions
             .filter((p) => p.selection?.kind === "cells")
             .map((p) => ({
@@ -196,7 +198,7 @@ export default function SheetDocument({
               selection: { ...p.selection, type: "cells" as const },
             }))
         : [],
-    [sync.presence, sync.connected, editable],
+    [sync.presence, sync.connected, editable, showRemoteSelections],
   );
   const controller = useMemo<RegionController | null>(
     () =>

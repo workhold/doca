@@ -6,7 +6,7 @@ import { AIReferenceButton } from "@web/features/ai/ai-context.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as Y from "yjs";
 import { MessageSquare } from "lucide-react";
-import { useDocumentReadOnly } from "@web/features/documents/document-mode.js";
+import { useDocumentEditorMode } from "@web/features/documents/document-mode.js";
 import { useAttachmentPreview } from "./attachment-preview.js";
 import {
   PresentationWorkspace,
@@ -95,7 +95,9 @@ export default function PresentationDocument({
     [failed, setFailed] = useState(false),
     [annotationsVisible, setAnnotationsVisible] = useState(false);
   const root = useRef<HTMLElement>(null);
-  const reading = useDocumentReadOnly(model ? rank >= 3 : undefined);
+  const { readOnly: reading, showRemoteSelections } = useDocumentEditorMode(
+    model ? rank >= 3 : undefined,
+  );
   const editable =
     !reading && rank >= 3 && !!model && !sync.blocked && !presenting && !failed;
   const ref = useRef<PresentationWorkspaceHandle | null>(null);
@@ -213,7 +215,7 @@ export default function PresentationDocument({
   }, [editable, model, publish]);
   const members = useMemo(
     () =>
-      sync.connected && editable
+      sync.connected && editable && showRemoteSelections
         ? sync.presence.sessions
             .filter((p) => p.selection?.slideId)
             .map((p) => ({
@@ -225,7 +227,7 @@ export default function PresentationDocument({
               selection: { elementIds: p.selection.elementIds, editing: false },
             }))
         : [],
-    [sync.connected, editable, sync.presence],
+    [sync.connected, editable, sync.presence, showRemoteSelections],
   );
   const controller = useMemo<RegionController | null>(
     () =>

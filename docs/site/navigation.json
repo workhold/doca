@@ -317,6 +317,11 @@
     "zh": "发行记录",
     "pages": [
       [
+        "releases/0.2.43",
+        "0.2.43 · Offline editing and distraction-free mode",
+        "0.2.43 · 离线编辑与纯净模式"
+      ],
+      [
         "releases/0.2.42",
         "0.2.42 · Offline documents",
         "0.2.42 · 离线文档"

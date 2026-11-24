@@ -151,12 +151,14 @@ export function RemoteCursors({
   handle,
   runtime,
   editable,
+  visible,
   host,
 }: {
   id: string;
   handle: RefObject<RichTextEditorHandle | null>;
   runtime: YjsDocument;
   editable: boolean;
+  visible: boolean;
   host: RefObject<HTMLElement | null>;
 }) {
   const [marks, setMarks] = useState<
@@ -353,6 +355,7 @@ export function RemoteCursors({
       });
     };
   }, [id, runtime, editable, handle, host]);
+  if (!visible) return null;
   return (
     <div className="remote-cursors" aria-hidden="true">
       {editable &&
