@@ -1,4 +1,6 @@
 import { useI18n } from "@web/shared/i18n.js";
+import { OfflineEditingNotice } from "@web/features/documents/offline-editing-notice.js";
+import { replicaCodecs } from "@web/features/documents/replica-database.js";
 import { useCommentHighlight } from "@web/features/comments/use-comment-highlight.js";
 import { platformAssetId } from "@web/shared/utils/asset-path.js";
 import { useAI } from "@web/features/ai/ai-context.js";
@@ -362,7 +364,7 @@ export default function MarkdownDocument({
         replica = await openReplica(
           user.id,
           id,
-          `${protocol.codec}:schema-${protocol.schemaVersion}`,
+          replicaCodecs.markdown,
         );
         if (disposed) {
           replica.close();
@@ -630,6 +632,7 @@ export default function MarkdownDocument({
       }}
     >
       <section ref={container} className="markdown-document surface-editor">
+        <OfflineEditingNotice active={canEdit && !online} />
         {attachmentPreview.dialog}
         <OutlineDrawer
           container={container}

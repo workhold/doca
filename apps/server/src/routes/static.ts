@@ -52,6 +52,8 @@ export async function registerStaticRoutes(
     if (
       path !== "/" &&
       path !== "/favicon.svg" &&
+      path !== "/doca.webmanifest" &&
+      path !== "/doca-offline-worker.js" &&
       !/^\/assets\/[a-zA-Z0-9_.-]+$/.test(path) &&
       !/^\/cad\/(?:libredwg-web\.wasm|libredwg-parser-worker\.js|mtext-renderer-worker\.js)$/.test(
         path,
@@ -68,6 +70,7 @@ export async function registerStaticRoutes(
       ".mjs": "text/javascript; charset=utf-8",
       ".css": "text/css; charset=utf-8",
       ".svg": "image/svg+xml",
+      ".webmanifest": "application/manifest+json; charset=utf-8",
       ".wasm": "application/wasm",
       ".ttf": "font/ttf",
       ".woff": "font/woff",

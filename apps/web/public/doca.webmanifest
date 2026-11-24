@@ -1,0 +1,11 @@
+{
+  "id": "/",
+  "name": "Doca",
+  "short_name": "Doca",
+  "start_url": "/#/home",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#f4f5f7",
+  "background_color": "#f4f5f7",
+  "icons": [{ "src": "/favicon.svg", "type": "image/svg+xml", "sizes": "any" }]
+}

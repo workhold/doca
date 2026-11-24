@@ -1,4 +1,6 @@
 import { useI18n } from "@web/shared/i18n.js";
+import { OfflineEditingNotice } from "@web/features/documents/offline-editing-notice.js";
+import { replicaCodecs } from "@web/features/documents/replica-database.js";
 import { useAIBridge } from "@web/features/ai/ai-context.js";
 import { captureRichSelection } from "@web/features/comments/rich-selection-anchor.js";
 import { resolveRichAnchor, type RichAnchor } from "@core/modules/documents/codecs/rich-anchor.js";
@@ -515,7 +517,7 @@ function RichDocument({
     void (async () => {
       try {
         if (user) {
-          replica = await openReplica(user.id, id, "slate-kit:3");
+          replica = await openReplica(user.id, id, replicaCodecs.rich_text);
           const cached = await replica.load();
           if (disposed) {
             replica.close();
@@ -741,6 +743,7 @@ function RichDocument({
         }
       }}
     >
+      <OfflineEditingNotice active={editable && localReady && !connected} />
       <DocumentPageWidthMenu
         mode={pageWidth}
         change={setPageWidth}
@@ -901,9 +904,7 @@ function RichDocument({
         <div className="subtle small">
           {blocked
             ? "同步已暂停，未确认的修改仍保留在此浏览器，可先下载恢复文件。"
-            : localReady
-              ? "离线编辑保存在此浏览器，联网后自动同步。离线期间上传、评论和用户搜索不可用。"
-              : "未保存的内容仍保留在此页面，请不要关闭。"}
+            : !localReady && "未保存的内容仍保留在此页面，请不要关闭。"}
           <button
             onClick={() => {
               const blob = new Blob(

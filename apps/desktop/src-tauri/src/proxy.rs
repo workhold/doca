@@ -309,6 +309,9 @@ fn static_file(path: &str) -> Option<&str> {
     if path == "/favicon.svg" {
         return Some("favicon.svg");
     }
+    if path == "/doca.webmanifest" {
+        return Some("doca.webmanifest");
+    }
     if let Some(name) = path.strip_prefix("/assets/") {
         if !name.is_empty()
             && name != "."
@@ -351,6 +354,7 @@ async fn bundled_asset(root: &FsPath, path: &str, method: &Method) -> Response<B
         "js" | "mjs" => "text/javascript; charset=utf-8",
         "css" => "text/css; charset=utf-8",
         "svg" => "image/svg+xml",
+        "webmanifest" => "application/manifest+json; charset=utf-8",
         "wasm" => "application/wasm",
         "ttf" => "font/ttf",
         "woff" => "font/woff",
@@ -1066,6 +1070,7 @@ mod tests {
         tokio::fs::write(directory.join("index.html"), b"bundled desktop frontend")
             .await
             .unwrap();
+        let (control, mut events) = mpsc::unbounded_channel();
         let config = Arc::new(ProxyConfig {
             origin: "http://127.0.0.1:43111".into(),
             target: "http://127.0.0.1:9".into(),
@@ -1073,7 +1078,7 @@ mod tests {
             bearer: "test-token".into(),
             static_root: tokio::fs::canonicalize(&directory).await.unwrap(),
             client: reqwest::Client::new(),
-            control: mpsc::unbounded_channel().0,
+            control,
             updated: broadcast::channel(16).0,
         });
         let request = Request::builder()
@@ -1094,6 +1099,18 @@ mod tests {
         );
 
         let request = Request::builder()
+            .uri("/api/v1/bootstrap")
+            .header(header::HOST, "127.0.0.1:43111")
+            .header(header::COOKIE, "doca_desktop_proxy=test-capability")
+            .body(Body::empty())
+            .unwrap();
+        let response = forward(State(config.clone()), request)
+            .await
+            .into_response();
+        assert_eq!(response.status(), StatusCode::BAD_GATEWAY);
+        assert!(matches!(events.try_recv(), Err(mpsc::error::TryRecvError::Empty)));
+
+        let request = Request::builder()
             .uri("/server-controlled-page")
             .header(header::HOST, "127.0.0.1:43111")
             .header(header::COOKIE, "doca_desktop_proxy=test-capability")
@@ -1107,6 +1124,7 @@ mod tests {
     #[test]
     fn static_paths_do_not_escape_the_bundle() {
         assert_eq!(static_file("/"), Some("index.html"));
+        assert_eq!(static_file("/doca.webmanifest"), Some("doca.webmanifest"));
         assert_eq!(
             static_file("/assets/index-123.js"),
             Some("assets/index-123.js")

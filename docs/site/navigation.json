@@ -317,6 +317,11 @@
     "zh": "发行记录",
     "pages": [
       [
+        "releases/0.2.42",
+        "0.2.42 · Offline documents",
+        "0.2.42 · 离线文档"
+      ],
+      [
         "releases/0.2.40",
         "0.2.40 — Desktop files and workspace startup",
         "0.2.40 — 桌面文件操作与工作台启动"

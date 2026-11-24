@@ -10,6 +10,8 @@ The creation menu provides rich text, Markdown, spreadsheets, slides, and canvas
 
 Images and attachments use host uploads, asset IDs, and authorized downloads. Editing requires editor permission or above, and save confirmation follows database commit. Original checkpoints and unacknowledged edits persist in IndexedDB when browser storage succeeds. Reopening requires an available local replica and application assets; follow [offline limits and recovery](collaboration.md#save-reconnect-and-history) and any storage-error feedback. Tools, find/replace, presence, and comments vary by format; see [editor integration](editor-integration.md).
 
+The offline workspace source adds **Account menu → Offline documents** to the desktop client and browsers with the Doca frontend downloaded. Home shows this list when the backend is unreachable. Open a replica to edit under the last known permission and sync after the connection and access checks recover. See [how to enable offline documents](access-offline-events.md#离线文档入口).
+
 ## Sharing and permissions
 
 The sharing panel manages visibility, invitations, member authorization sources, and links. Changes check a version or revision; refresh after a 409 conflict. Management and ownership operations follow their own authorization rules; see [permissions](permission-inheritance.md).

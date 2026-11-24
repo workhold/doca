@@ -1,4 +1,6 @@
 import { useI18n } from "@web/shared/i18n.js";
+import { OfflineEditingNotice } from "@web/features/documents/offline-editing-notice.js";
+import { replicaCodecs } from "@web/features/documents/replica-database.js";
 import { useCommentHighlight } from "@web/features/comments/use-comment-highlight.js";
 import { AIReferenceButton } from "@web/features/ai/ai-context.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -86,7 +88,7 @@ export default function PresentationDocument({
   const attachmentPreview = useAttachmentPreview();
   const id = detail.resource.id;
   const [highlightedComment, highlightComment] = useCommentHighlight(id, detail.comments);
-  const sync = useSurfaceSync(id, user?.id, "eppt-yjs-v6", factory, changed, 2);
+  const sync = useSurfaceSync(id, user?.id, replicaCodecs.presentation, factory, changed, 2);
   const model = sync.binding?.value;
   const rank = Math.min(roleRank(detail.resource.role), sync.rank);
   const [presenting, setPresenting] = useState(false),
@@ -298,6 +300,7 @@ export default function PresentationDocument({
       ref={root}
       className={`surface-editor presentation-document ${reading ? "is-reading" : ""} ${presenting ? "is-presenting" : ""}`}
     >
+      <OfflineEditingNotice active={!!user && editable && !sync.connected} />
       {attachmentPreview.dialog}
       <Feedback message={sync.error || error} tone="error" />
       {model && (!sync.connected || sync.blocked) && (

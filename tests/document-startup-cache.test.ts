@@ -1,16 +1,14 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import type { Bootstrap, Detail } from "@web/shared/api.js";
+import type { Bootstrap } from "@web/shared/api.js";
 import {
   cacheStartupBootstrap,
-  cacheStartupDocument,
   clearDocumentStartupCache,
-  documentStartupCacheKey,
-  forgetStartupDocument,
-  readDocumentStartup,
+  readStartupSession,
+  startupSessionKey,
 } from "@web/shared/document-startup-cache.js";
 
-const id = "10000000-0000-4000-8000-000000000001";
 const userId = "20000000-0000-4000-8000-000000000001";
+const legacyKey = "doca.document-startup.v1";
 const bootstrap: Bootstrap = {
   siteName: "Isolated cache test",
   registrationEnabled: false,
@@ -19,33 +17,7 @@ const bootstrap: Bootstrap = {
   capabilities: { documents: true },
   plugins: [],
 };
-const detail: Detail = {
-  resource: {
-    id,
-    kind: "document",
-    format: "rich_text",
-    title: "Cached document",
-    owner_id: userId,
-    library_id: null,
-    parent_id: null,
-    version: 1,
-    role: "editor",
-    access_mode: "custom",
-    visibility: "invited",
-    created_at: "2026-10-12",
-    updated_at: "2026-10-12",
-    deleted_at: null,
-  },
-  ownerName: "Cache tester",
-  lastEditorName: null,
-  lastEditedAt: null,
-  comments: [],
-  grants: [],
-  likes: 0,
-  liked: false,
-  favorite: false,
-  pinned: false,
-};
+
 let values: Map<string, string>;
 beforeEach(() => {
   values = new Map();
@@ -60,116 +32,69 @@ afterEach(() => {
   vi.resetModules();
 });
 
-it("restores authorized metadata synchronously for desktop and mobile without requesting the backend", () => {
-  const fetch = vi.fn();
-  vi.stubGlobal("fetch", fetch);
-  cacheStartupBootstrap(bootstrap);
-  cacheStartupDocument(userId, detail, null);
-  for (const hash of [`#/r/${id}`, `#/r/${id}?comment=anything`, `#/m/r/${id}`])
-    expect(readDocumentStartup(hash)?.detail.resource).toEqual(detail.resource);
-  expect(readDocumentStartup("#/home")).toBeNull();
-  expect(fetch).not.toHaveBeenCalled();
-});
-
-it("keeps only display metadata and retains the previous snapshot on quota failure", () => {
+it("records a same-account startup scope and only stores display fields", () => {
   cacheStartupBootstrap({
     ...bootstrap,
     token: "must-not-be-cached",
   } as Bootstrap);
-  cacheStartupDocument(
-    userId,
-    {
-      ...detail,
-      comments: [{ body: "not startup metadata" }] as any,
-      grants: [{ user_id: userId, role: "owner" }],
-    },
-    null,
-  );
-  const raw = values.get(documentStartupCacheKey)!;
-  expect(() =>
-    cacheStartupBootstrap({
-      ...bootstrap,
-      plugins: undefined,
-    } as unknown as Bootstrap),
-  ).not.toThrow();
-  expect(values.get(documentStartupCacheKey)).toBe(raw);
-  expect(raw).not.toContain("must-not-be-cached");
-  expect(readDocumentStartup(`#/r/${id}`)?.detail.comments).toEqual([]);
-  expect(readDocumentStartup(`#/r/${id}`)?.detail.grants).toEqual([]);
+  const first = readStartupSession();
+  expect(first?.bootstrap).toEqual(bootstrap);
+  expect(values.get(startupSessionKey)).not.toContain("must-not-be-cached");
+  cacheStartupBootstrap({ ...bootstrap, siteName: "New name" });
+  expect(readStartupSession()?.scope).toBe(first?.scope);
+  expect(readStartupSession()?.bootstrap.siteName).toBe("New name");
+});
+
+it("ignores and preserves the old metadata key across initialization and logout", () => {
+  const old = JSON.stringify({ version: 1, bootstrap, documents: [] });
+  values.set(legacyKey, old);
+  expect(readStartupSession()).toBeNull();
+  cacheStartupBootstrap(bootstrap);
+  expect(readStartupSession()?.bootstrap.user.id).toBe(userId);
+  clearDocumentStartupCache();
+  expect(values.get(legacyKey)).toBe(old);
+});
+
+it("rotates the directory scope on account change or a subsequent login", () => {
+  cacheStartupBootstrap(bootstrap);
+  const first = readStartupSession();
+  cacheStartupBootstrap({
+    ...bootstrap,
+    user: { ...bootstrap.user!, id: "20000000-0000-4000-8000-000000000002" },
+  });
+  expect(readStartupSession()?.scope).not.toBe(first?.scope);
+  cacheStartupBootstrap(bootstrap);
+  const second = readStartupSession();
+  expect(second?.scope).not.toBe(first?.scope);
+  cacheStartupBootstrap({ ...bootstrap, needsProfile: true });
+  expect(readStartupSession()).toBeNull();
+  cacheStartupBootstrap(bootstrap);
+  expect(readStartupSession()?.scope).not.toBe(second?.scope);
+});
+
+it.each([
+  "not JSON",
+  JSON.stringify({ version: 2, bootstrap, scope: userId }),
+  JSON.stringify({ version: 1, bootstrap }),
+])("preserves and refuses unknown or malformed sessions: %s", (raw) => {
+  values.set(startupSessionKey, raw);
+  expect(readStartupSession()).toBeNull();
+  cacheStartupBootstrap(bootstrap);
+  clearDocumentStartupCache();
+  expect(values.get(startupSessionKey)).toBe(raw);
+});
+
+it("keeps existing session on a failure to write metadata", () => {
+  cacheStartupBootstrap(bootstrap);
+  const raw = values.get(startupSessionKey);
   vi.stubGlobal("localStorage", {
     getItem: (key: string) => values.get(key) ?? null,
     setItem: () => {
       throw new DOMException("quota", "QuotaExceededError");
     },
   });
-  expect(() =>
-    cacheStartupDocument(
-      userId,
-      { ...detail, resource: { ...detail.resource, title: "New title" } },
-      null,
-    ),
-  ).not.toThrow();
-  expect(values.get(documentStartupCacheKey)).toBe(raw);
-});
-
-it("never exposes another account's metadata and never clears durable content during logout", () => {
-  values.set(
-    "isolated-checkpoint-and-outbox",
-    "original bytes and message ids",
-  );
-  cacheStartupBootstrap(bootstrap);
-  cacheStartupDocument(userId, detail, null);
-  cacheStartupBootstrap({
-    ...bootstrap,
-    user: { ...bootstrap.user!, id: "20000000-0000-4000-8000-000000000002" },
-  });
-  expect(readDocumentStartup(`#/r/${id}`)).toBeNull();
-  cacheStartupDocument(userId, detail, null);
-  expect(readDocumentStartup(`#/r/${id}`)).toBeNull();
-  cacheStartupBootstrap(bootstrap);
-  cacheStartupDocument(userId, detail, null);
-  cacheStartupBootstrap({ ...bootstrap, user: null });
-  expect(readDocumentStartup(`#/r/${id}`)).toBeNull();
-  expect(values.get("isolated-checkpoint-and-outbox")).toBe(
-    "original bytes and message ids",
-  );
-});
-
-it.each([
-  "not JSON",
-  JSON.stringify({ version: 2, bootstrap, documents: [] }),
-  JSON.stringify({ version: 1, bootstrap }),
-])("preserves and refuses unknown or malformed stored formats: %s", (raw) => {
-  values.set(documentStartupCacheKey, raw);
-  expect(readDocumentStartup(`#/r/${id}`)).toBeNull();
-  cacheStartupBootstrap(bootstrap);
-  cacheStartupDocument(userId, detail, null);
-  clearDocumentStartupCache();
-  expect(values.get(documentStartupCacheKey)).toBe(raw);
-});
-
-it("bounds metadata storage and forgets revoked resources without removing other documents", () => {
-  cacheStartupBootstrap(bootstrap);
-  for (let n = 0; n < 15; n++)
-    cacheStartupDocument(
-      userId,
-      {
-        ...detail,
-        resource: {
-          ...detail.resource,
-          id: `${id.slice(0, -2)}${String(n).padStart(2, "0")}`,
-        },
-      },
-      null,
-    );
-  const cache = JSON.parse(values.get(documentStartupCacheKey)!);
-  expect(cache.documents).toHaveLength(12);
-  const newest = cache.documents[0].detail.resource.id;
-  forgetStartupDocument(newest);
-  expect(readDocumentStartup(`#/r/${newest}`)).toBeNull();
-  expect(
-    JSON.parse(values.get(documentStartupCacheKey)!).documents,
-  ).toHaveLength(11);
+  cacheStartupBootstrap({ ...bootstrap, siteName: "New title" });
+  expect(values.get(startupSessionKey)).toBe(raw);
 });
 
 it("shares startup HTTP requests and retries a failed connection instead of memoizing failure", async () => {
@@ -198,9 +123,7 @@ it("shares startup HTTP requests and retries a failed connection instead of memo
   expect(fetch).toHaveBeenCalledTimes(3);
 });
 
-it("clears the startup identity on explicit session rejection and successful logout", async () => {
-  cacheStartupBootstrap(bootstrap);
-  cacheStartupDocument(userId, detail, null);
+it("retains the session during a gateway outage and clears it on rejection or logout", async () => {
   const events: string[] = [];
   vi.stubGlobal("window", {
     dispatchEvent: (event: Event) => events.push(event.type),
@@ -209,26 +132,24 @@ it("clears the startup identity on explicit session rejection and successful log
     "fetch",
     vi
       .fn()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ message: "session_expired" }), {
-          status: 401,
-        }),
-      )
+      .mockResolvedValueOnce(new Response("Bad Gateway", { status: 502 }))
+      .mockResolvedValueOnce(new Response(null, { status: 401 }))
       .mockResolvedValueOnce(new Response("{}", { status: 200 })),
   );
   const { api } = await import("@web/shared/api.js");
-  await expect(api("/me")).rejects.toMatchObject({ status: 401 });
-  expect(events).toContain("session-expired");
-  expect(readDocumentStartup(`#/r/${id}`)).toBeNull();
   cacheStartupBootstrap(bootstrap);
-  cacheStartupDocument(userId, detail, null);
+  await expect(api("/bootstrap")).rejects.toMatchObject({ status: 502 });
+  expect(events).toEqual([]);
+  expect(readStartupSession()?.bootstrap).toEqual(bootstrap);
+  await expect(api("/bootstrap")).rejects.toMatchObject({ status: 401 });
+  expect(events).toEqual(["session-expired"]);
+  expect(readStartupSession()).toBeNull();
+  cacheStartupBootstrap(bootstrap);
   await api("/auth/logout", "POST");
-  expect(readDocumentStartup(`#/r/${id}`)).toBeNull();
+  expect(readStartupSession()).toBeNull();
 });
 
-it("refuses a delayed bootstrap response after logout instead of restoring an obsolete cached account", async () => {
-  cacheStartupBootstrap(bootstrap);
-  cacheStartupDocument(userId, detail, null);
+it("refuses a delayed bootstrap response after logout", async () => {
   let respond!: (value: Response) => void;
   vi.stubGlobal(
     "fetch",
@@ -244,5 +165,5 @@ it("refuses a delayed bootstrap response after logout instead of restoring an ob
   logout();
   respond(new Response(JSON.stringify(bootstrap), { status: 200 }));
   await expect(pending).rejects.toMatchObject({ name: "AbortError" });
-  expect(readDocumentStartup(`#/r/${id}`)).toBeNull();
+  expect(readStartupSession()).toBeNull();
 });

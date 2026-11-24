@@ -1,4 +1,6 @@
 import { useI18n } from "@web/shared/i18n.js";
+import { OfflineEditingNotice } from "@web/features/documents/offline-editing-notice.js";
+import { replicaCodecs } from "@web/features/documents/replica-database.js";
 import { useAI } from "@web/features/ai/ai-context.js";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -97,7 +99,7 @@ export default function SheetDocument({
     sync = useSurfaceSync(
       id,
       user?.id,
-      "exlsx-cell-registers",
+      replicaCodecs.spreadsheet,
       factory,
       changed,
       EXLSX_SCHEMA_VERSION,
@@ -256,6 +258,7 @@ export default function SheetDocument({
   );
   return (
     <section className={`surface-editor sheet-document ${reading ? "is-reading" : ""}`}>
+      <OfflineEditingNotice active={!!user && editable && !sync.connected} />
       {documentPicker.picker}
       {attachmentPreview.dialog}
       {slots.live &&

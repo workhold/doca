@@ -1,7 +1,7 @@
 import { NavigationArea } from "@web/plugins/navigation.js";
 import { useEffect, useRef } from "react";
 import { Tooltip } from "antd";
-import { Globe, House, LogOut } from "lucide-react";
+import { Globe, House, LogOut, WifiOff } from "lucide-react";
 import type { Me, User } from "@web/shared/api.js";
 import { Avatar } from "@web/features/account/profile.js";
 import { useI18n } from "@web/shared/i18n.js";
@@ -102,6 +102,10 @@ export function AccountMenu({
               {t("account.workspace")}
             </a>
           )}
+          <a href="#/offline" onClick={close}>
+            <WifiOff size={16} aria-hidden="true" />
+            {t("offline.title")}
+          </a>
           <button
             type="button"
             onClick={() => {

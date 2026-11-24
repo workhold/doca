@@ -6,7 +6,7 @@ The desktop client in `apps/desktop` uses Tauri 2. It packages the Doca Web fron
 
 ## Install and connect
 
-Download the macOS (DMG) or Windows (NSIS/MSI) installer from the [Doca Desktop 0.2.41 release](https://github.com/workhold/doca/releases/tag/desktop-v0.2.41). This desktop release fixes PDF preview in WKWebView and works with the 0.2.40 server. Current builds are unsigned and not notarized: on macOS, right-click the app and choose **Open** the first time; Windows may show a SmartScreen prompt.
+Download the macOS (DMG) or Windows (NSIS/MSI) installer from the [Doca 0.2.42 release](https://github.com/workhold/doca/releases/tag/v0.2.42). Current builds are unsigned and lack notarization. On macOS, right-click the app and choose **Open** the first time. Windows may show a SmartScreen prompt.
 
 ![Desktop client connection manager: add a remote service](images/desktop-manager-add.jpg)
 
@@ -33,6 +33,8 @@ In Files, select two or more files and choose **Download ZIP** to save them toge
 Desktop links that would open an external tab use the system browser. Links to another Doca page on the same origin still open in the workspace tab strip.
 
 The local proxy normally reuses the same origin for a given backend and account. If the preferred port is busy, a different port can expose a different set of WebView preferences and offline data for that launch. Data stored at the original origin stays on disk.
+
+Documents opened online in the new client join **Account menu → Offline documents** once their bodies are cached. If the backend is unreachable, open them from **Recent edits** on home. Edit under the last known permission and sync when the connection returns. First sign-in requires a connection. See [the offline document entry](access-offline-events.md#离线文档入口).
 
 ## Connection and authentication
 

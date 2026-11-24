@@ -1,4 +1,6 @@
 import { mergeUpdates } from "@smartdoca/slate/yjs";
+import { openReplicaDatabase, replicaKey } from "./replica-database.js";
+import { notifyOfflineDocumentsChanged } from "./offline-document-catalog.js";
 export type PendingUpdate = { id: string; update: Uint8Array };
 export type Replica = {
   checkpoint: Uint8Array;
@@ -14,22 +16,15 @@ export async function openReplica(
   resourceId: string,
   codec = "slatetsx-yjs-v1",
 ) {
-  const key = `${userId}:${resourceId}:${codec}`;
-  const db = await new Promise<IDBDatabase>((resolve, reject) => {
-    const request = indexedDB.open("doca-offline-v1", 1);
-    request.onupgradeneeded = () =>
-      request.result.createObjectStore("replicas");
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-    request.onblocked = () => reject(new Error("本地缓存被其他页面占用"));
-  });
-  db.onversionchange = () => db.close();
+  const key = replicaKey(userId, resourceId, codec);
+  const db = await openReplicaDatabase();
   function transaction(change?: (value: Replica) => Replica) {
     return new Promise<Replica>((resolve, reject) => {
       const tx = db.transaction("replicas", change ? "readwrite" : "readonly"),
         store = tx.objectStore("replicas");
       const request = store.get(key);
       let value: Replica;
+      let created = false;
       request.onsuccess = () => {
         try {
           value = request.result ?? {
@@ -39,12 +34,16 @@ export async function openReplica(
           if (change) {
             value = change(value);
             store.put(value, key);
+            created = request.result === undefined && !!value.epochId;
           }
         } catch {
           tx.abort();
         }
       };
-      tx.oncomplete = () => resolve(value!);
+      tx.oncomplete = () => {
+        resolve(value!);
+        if (created) notifyOfflineDocumentsChanged();
+      };
       tx.onabort = tx.onerror = () =>
         reject(tx.error ?? new Error("本地保存失败"));
     });

@@ -6,13 +6,14 @@ import { rememberedShareToken, takeLoginDocument } from "@web/features/auth/logi
 import { loadBootstrap } from "@web/shared/bootstrap.js";
 import { isDesktopWorkspaceTab } from "@web/shared/desktop-tab-visibility.js";
 import {
-  documentStartupCacheKey,
   invalidateStartupIdentity,
   readStartupAccount,
+  startupSessionKey,
 } from "@web/shared/document-startup-cache.js";
 import { FeedbackViewport } from "@web/shared/components/feedback.js";
 import { LocaleProvider, useI18n } from "@web/shared/i18n.js";
 import { navigateToDefaultHome } from "@web/shared/navigation-layout.js";
+import { canDownloadOfflineShell, downloadOfflineShell } from "@web/shared/offline-shell.js";
 import "@web/styles/globals.css";
 import "@web/styles/theme.css";
 import "@web/styles/platform-polish.css";
@@ -25,7 +26,7 @@ function isHome() {
 
 function Entry() {
   const { t, reloadLocale } = useI18n();
-  const [openWorkspace, setOpenWorkspace] = useState(() => !isHome());
+  const [openWorkspace, setOpenWorkspace] = useState(() => !isHome() || !!readStartupAccount());
   const [Workspace, setWorkspace] = useState<typeof import("./app.js").App>();
   const [workspaceError, setWorkspaceError] = useState(false);
   const [bootstrap, setBootstrap] = useState<Awaited<ReturnType<typeof loadBootstrap>>>();
@@ -34,7 +35,7 @@ function Entry() {
     let active = true;
     const openSpecialRoute = () => { if (!isHome()) setOpenWorkspace(true); };
     const sessionChanged = (event: StorageEvent) => {
-      if (event.key !== documentStartupCacheKey || !readStartupAccount()) return;
+      if (event.key !== startupSessionKey || !readStartupAccount()) return;
       invalidateStartupIdentity();
       setOpenWorkspace(true);
     };
@@ -110,10 +111,19 @@ function Entry() {
   );
 }
 
-// Existing session metadata is only a download hint. A live bootstrap gates the home entry.
+// Let the workspace handle connection checks and its local offline entry for a known account.
 if (isDesktopWorkspaceTab() || readStartupAccount())
   void loadWorkspace().catch(() => {});
 if (!isHome()) void loadBootstrap().catch(() => {});
+
+if (canDownloadOfflineShell()) {
+  const standalone = matchMedia("(display-mode: standalone)");
+  const prepare = () => {
+    if (standalone.matches) void downloadOfflineShell().catch(() => {});
+  };
+  standalone.addEventListener("change", prepare);
+  prepare();
+}
 
 createRoot(document.getElementById("root")!).render(
   <LocaleProvider>

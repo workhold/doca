@@ -57,7 +57,7 @@ Connection state moves loading, syncing, ready, and on failure disconnected or e
 - Disconnect keeps the bytes and the id. Reconnect catches up from the remote, then retries unacknowledged increments.
 - Do not treat `encodeStateAsUpdate(doc, vector).length` as dirty. The same state can still return a historical delete set. A length greater than 2 is not a new write.
 - An epoch mismatch pauses the old queue. Export or a separate recovery copy is allowed. Old increments are not forced onto the new document.
-- Current host adapters persist original checkpoints and pending message IDs through `offline-replica.ts`. Offline editing requires an available authorized replica and successful browser storage; it does not provide a fully offline application shell. The cache-first refresh boundary is recorded in the 2026-10-12 increment below.
+- Current host adapters persist original checkpoints and pending message IDs through `offline-replica.ts`. Offline editing requires an authorized replica and successful local storage. The desktop bundle and the downloaded Web frontend can start from the local document list.
 
 Both hosts use `apps/web/src/features/documents/update-outbox.ts`. The queue does not depend on the document type. It keeps the real local transaction increment. A sync-response does not trigger an unconditional upload.
 
@@ -106,7 +106,9 @@ The current host integrates rich text, Markdown, spreadsheets, canvas, and slide
 
 The platform implements epoch, protocol checks, commit receipts, and history recovery metadata. Without Redis, broadcast and presence are one process. With Redis, document updates, server refresh, permission invalidation, notifications, and presence cross instances. The database commit is still the ACK boundary and the source of document truth. After Redis reconnects, the server sends the authoritative state again to active rooms on this instance. Pub/Sub is not a durable log, and a Redis failure does not silently fall back to the local bus.
 
-Still shared work for the component and the platform: a formal selection API, full offline application startup and a unified rollback across formats. The host's current persistent queue does not imply that a component exports its own offline transport. A capability the component does not export is still a target contract.
+Formal selection APIs and unified rollback across formats remain shared work for the component and platform. The host owns offline document startup and its persistent queue. Component capabilities still require verification of the installed package exports.
+
+Offline home lists authorized documents under **Recent edits**. A document joins the directory after a live open in the new client when its matching local replica is available. The desktop serves its bundled frontend. The downloaded Web frontend caches the build assets at the same origin. An editable replica shows an offline editing message while its live collaboration session is disconnected. Reconnect validates access and lineage before sending queued changes through the existing durable ACK path. A closed document resumes synchronization when reopened. See [offline documents and recovery](https://github.com/workhold/doca/blob/main/docs/access-offline-events.md#离线文档入口).
 
 ## Plugin elements increment — 2026-10-02
 

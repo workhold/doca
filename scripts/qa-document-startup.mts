@@ -52,9 +52,42 @@ const web = await createServer({
 await web.listen();
 const address = web.httpServer!.address();
 assert(address && typeof address !== "string");
-const output = resolve(".cache/document-startup-qa");
+const output = resolve("artifacts/verification/document-startup");
 await mkdir(output, { recursive: true });
 const browser = await chromium.launch({ channel: "chrome", headless: true });
+const catalogContains = async ({
+  id,
+  expected,
+}: {
+  id: string;
+  expected: boolean;
+}) => {
+  const session = JSON.parse(
+    localStorage.getItem("doca.offline-session.v1") ?? "null",
+  );
+  if (!session) return !expected;
+  const db = await new Promise<IDBDatabase>((resolve) => {
+    const request = indexedDB.open("doca-offline-catalog-v1", 1);
+    request.onsuccess = () => resolve(request.result);
+  });
+  try {
+    if (!db.objectStoreNames.contains("documents")) return !expected;
+    return await new Promise<boolean>((resolve) => {
+      const request = db
+        .transaction("documents")
+        .objectStore("documents")
+        .get([session.bootstrap.user.id, id]);
+      request.onsuccess = () =>
+        resolve(
+          !!request.result?.document && request.result.scope === session.scope
+            ? expected
+            : !expected,
+        );
+    });
+  } finally {
+    db.close();
+  }
+};
 let diagnosticPage: Awaited<ReturnType<typeof browser.newPage>> | undefined;
 const checks: string[] = [];
 const pass = (value: string) => {
@@ -64,26 +97,6 @@ const pass = (value: string) => {
 try {
   const context = await browser.newContext({
     viewport: { width: 1440, height: 1000 },
-  });
-  await context.addInitScript(() => {
-    const set = Storage.prototype.setItem,
-      remove = Storage.prototype.removeItem;
-    Storage.prototype.setItem = function (key, value) {
-      if (key === "doca.document-startup.v1")
-        console.debug(
-          "CACHEWRITE",
-          location.hash,
-          JSON.parse(value)
-            .documents.map((entry: any) => entry.detail.resource.title)
-            .join(","),
-        );
-      return set.call(this, key, value);
-    };
-    Storage.prototype.removeItem = function (key) {
-      if (key === "doca.document-startup.v1")
-        console.debug("CACHECLEAR", location.hash);
-      return remove.call(this, key);
-    };
   });
   const request = async (path: string, data?: unknown, method = "GET") => {
     const response = await context.request.fetch(origin + "/api/v1" + path, {
@@ -114,7 +127,6 @@ try {
   page.on("console", (message) => {
     if (message.text().includes("Encountered two children with the same key"))
       duplicateKeyWarnings.push(message.text());
-    if (message.text().startsWith("CACHE")) console.log(message.text());
   });
   const errors: string[] = [];
   const updates: any[] = [];
@@ -165,13 +177,10 @@ try {
   await page
     .getByText("已保存到云端", { exact: true })
     .waitFor({ state: "attached" });
-  await page.waitForFunction(
-    (id) =>
-      JSON.parse(
-        localStorage.getItem("doca.document-startup.v1") ?? "null",
-      )?.documents.some((entry: any) => entry.detail.resource.id === id),
-    resource.id,
-  );
+  await page.waitForFunction(catalogContains, {
+    id: resource.id,
+    expected: true,
+  });
   assert.equal(
     bootstrapRequests,
     1,
@@ -252,10 +261,6 @@ try {
   );
 
   const peer = await context.newPage();
-  peer.on("console", (message) => {
-    if (message.text().startsWith("CACHE"))
-      console.log("PEER " + message.text());
-  });
   await peer.goto(`${origin}/#/r/${resource.id}`);
   const peerEditor = peer
     .locator('.document-editor-shell [contenteditable="true"]')
@@ -320,13 +325,10 @@ try {
   const preserved = await replica();
   denied = true;
   await page.evaluate(() => window.dispatchEvent(new Event("online")));
-  await page.waitForFunction(
-    (id) =>
-      !JSON.parse(
-        localStorage.getItem("doca.document-startup.v1") ?? "null",
-      )?.documents.some((entry: any) => entry.detail.resource.id === id),
-    resource.id,
-  );
+  await page.waitForFunction(catalogContains, {
+    id: resource.id,
+    expected: false,
+  });
   await page.locator(".document-editor-shell").waitFor({ state: "detached" });
   assert.deepEqual(await replica(), preserved);
   pass(
@@ -358,24 +360,12 @@ try {
       .getByText(/已保存到云端/)
       .first()
       .waitFor({ state: "attached" });
-    await page.waitForFunction(
-      (id) =>
-        JSON.parse(
-          localStorage.getItem("doca.document-startup.v1") ?? "null",
-        )?.documents.some((entry: any) => entry.detail.resource.id === id),
-      document.id,
-    );
+    await page.waitForFunction(catalogContains, {
+      id: document.id,
+      expected: true,
+    });
     const hasReplica = await page.evaluate(
       async ({ id, userId }) => {
-        const cache = JSON.parse(
-          localStorage.getItem("doca.document-startup.v1") ?? "null",
-        );
-        if (
-          !cache?.documents.some(
-            (entry: any) => entry.detail.resource.id === id,
-          )
-        )
-          return false;
         const db = await new Promise<IDBDatabase>((resolve) => {
           const request = indexedDB.open("doca-offline-v1", 1);
           request.onsuccess = () => resolve(request.result);
@@ -405,22 +395,6 @@ try {
     const cachedTitle = await page
       .locator(".document-name-value")
       .textContent();
-    await writeFile(
-      join(output, `before-${format}.json`),
-      await page.evaluate(
-        () => localStorage.getItem("doca.document-startup.v1") ?? "null",
-      ),
-    );
-    assert(
-      await page.evaluate(
-        (id) =>
-          JSON.parse(
-            localStorage.getItem("doca.document-startup.v1") ?? "null",
-          )?.documents.some((entry: any) => entry.detail.resource.id === id),
-        document.id,
-      ),
-      "Startup metadata vanished before reload",
-    );
     online = false;
     await page.reload();
     await page.locator(selector!).first().waitFor({ timeout: 8000 });
@@ -445,7 +419,7 @@ try {
   await request("/auth/logout", {}, "POST");
   await peer.reload();
   await page.waitForFunction(
-    () => !localStorage.getItem("doca.document-startup.v1"),
+    () => !localStorage.getItem("doca.offline-session.v1"),
   );
   await page.locator(".eppt-canvas-area").waitFor({ state: "detached" });
   assert.deepEqual(await replica(), preserved);
@@ -483,7 +457,7 @@ try {
         return JSON.stringify(
           {
             startup: JSON.parse(
-              localStorage.getItem("doca.document-startup.v1") ?? "null",
+              localStorage.getItem("doca.offline-session.v1") ?? "null",
             ),
             replicas: values.map((value) => ({
               epochId: value.epochId,
