@@ -1,7 +1,7 @@
 # 离线状态、用户分页和纯净编辑验证
 
 **Spec**: [spec.md](spec.md)
-**Result**: partial
+**Result**: passed
 
 2026-11-24 在 macOS 使用 Chrome 158、Node 24.15.0、隔离 SQLite 和测试文档验证。前端使用 `v0.2.42` 源码基线和当前工作区的生产构建。
 
@@ -20,4 +20,9 @@
 
 ## 发布验收
 
-AC-005 待 `v0.2.43` 工作流完成后核验。
+2026-11-25 完成 AC-005 验收。GitHub 标签 `v0.2.43`、GitHub Release、Docker Hub 镜像和桌面安装包均来自合并提交 `753f6f983e6cdd8bb18b28c4fe697a8078b96e7e`。合并前应用、macOS、Windows、PostgreSQL 17/18、文档和 SDD 检查通过。[发布 PR](https://github.com/workhold/doca/pull/161)
+
+- `smartdoca/doca:0.2.43` 和 `smartdoca/doca:latest` 均指向 Linux amd64/arm64 镜像清单 `sha256:b7dfe259b80065ff788fe26c0be2b8e9170052e67db0c506cc190493b65810e6`。已核对 Docker Hub 实际清单、两种架构的镜像摘要和 CI 来源提交。[镜像发布任务](https://github.com/workhold/doca/actions/runs/45430156863)
+- GitHub Release 提供 13 个附件。已下载并校验 Web 资源、部署归档、Compose 文件、插件 SDK 和校验文件。macOS 通用 DMG、Windows x64 EXE 和 MSI 的发布摘要与各自的 SHA-256 校验文件一致。[GitHub Release](https://github.com/workhold/doca/releases/tag/v0.2.43) · [桌面发布任务](https://github.com/workhold/doca/actions/runs/45430154696)
+
+本轮发布日志、浏览器验收和制品核验结果见 `artifacts/verification/release-0.2.43/`。
