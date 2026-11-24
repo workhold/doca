@@ -6,7 +6,7 @@
 
 ## 安装与连接
 
-从 [Doca 桌面版 0.2.41](https://github.com/workhold/doca/releases/tag/desktop-v0.2.41) 下载 macOS（DMG）或 Windows（NSIS/MSI）安装包。此版本修复 WKWebView 中的 PDF 预览，可继续连接 0.2.40 服务端。当前安装包未做签名与公证：macOS 首次打开需右键 →「打开」，Windows 可能出现 SmartScreen 提示。
+从 [Doca 0.2.42](https://github.com/workhold/doca/releases/tag/v0.2.42) 下载 macOS（DMG）或 Windows（NSIS/MSI）安装包。当前安装包未做签名与公证。macOS 首次打开可使用右键 →「打开」，Windows 可能出现 SmartScreen 提示。
 
 ![桌面客户端连接管理器：添加远端服务](images/desktop-manager-add.jpg)
 
@@ -33,6 +33,8 @@
 原本会在新标签页打开的站外链接交给系统浏览器。同源 Doca 页面仍可在工作空间内开新标签。
 
 同一后端和账号通常会复用本地代理地址。如果首选端口被占用，本次启动可能换用其他端口，显示该地址对应的 WebView 偏好和离线数据。原地址下的数据仍保留在磁盘上。
+
+使用新版联网打开的文档在正文缓存完成后会加入**账号菜单 → 离线文档**。后端不可达时，已连接账号可从首页**最近编辑**打开这些文档，按上次权限编辑并在恢复连接后同步。首次登录需在线完成。使用范围见[离线文档入口](access-offline-events.md#离线文档入口)。
 
 ## 连接与认证
 

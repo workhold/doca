@@ -1,0 +1,107 @@
+.offline-workspace {
+  width: min(100% - 32px, 760px);
+  margin: 0 auto;
+  padding-block: clamp(24px, 6vw, 60px);
+}
+
+.offline-workspace-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.offline-workspace-header h1 {
+  margin: 0;
+  font-size: clamp(22px, 4vw, 30px);
+}
+
+.offline-workspace-back,
+.offline-workspace-status,
+.offline-workspace-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.offline-workspace-back {
+  width: fit-content;
+  margin-bottom: 8px;
+  color: var(--brand, #3370ff);
+}
+
+.offline-workspace-status {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fff8e8;
+  color: #704509;
+}
+
+.offline-workspace-status > svg,
+.offline-workspace-list a > svg {
+  flex: none;
+}
+
+.offline-workspace-search {
+  padding-inline: 12px;
+  border: 1px solid var(--line, #e1e4ea);
+  border-radius: 8px;
+  background: white;
+  color: #646a73;
+}
+
+.offline-workspace-search:focus-within {
+  outline: 2px solid var(--brand, #3370ff);
+  outline-offset: 2px;
+}
+
+.offline-workspace-search input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+}
+
+.offline-workspace-search input:focus-visible {
+  outline: 0;
+  box-shadow: none;
+}
+
+.offline-workspace-list {
+  list-style: none;
+  padding: 0;
+  border: 1px solid var(--line, #e1e4ea);
+  border-radius: 10px;
+  background: white;
+}
+
+.offline-workspace-list li + li {
+  border-block-start: 1px solid var(--line, #e1e4ea);
+}
+
+.offline-workspace-list a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: inherit;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.offline-workspace-list a:hover {
+  background: var(--selected, #edf3ff);
+}
+
+.offline-workspace-list small {
+  display: block;
+  color: #646a73;
+}

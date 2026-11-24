@@ -11,6 +11,7 @@ import { MobilePluginPage } from "@web/plugins/mobile-page.js";
 import { NavigationArea, MoreNavigation, LeftNavigation, useNavigationLayout } from "@web/plugins/navigation.js";
 import { isAdminNavigationPath } from "@smartdoca/web-plugin-registry";
 import { WorkspaceHome } from "@web/features/workspace/home.js";
+import { OfflineWorkspace } from "@web/features/workspace/offline-workspace.js";
 import { DesktopBackendSwitch } from "@web/features/workspace/desktop-backend-switch.js";
 
 import { pluginRouteScope } from "./plugin-route-scope.js";
@@ -63,8 +64,9 @@ import { SiteLogo } from "@web/shared/components/site-logo.js";
 import { documentFavicon } from "@web/shared/utils/document-favicon.js";
 import { splitTitleIcon } from "@web/shared/utils/resource-title.js";
 import { loadWebPlugins } from "@web/plugins/load.js";
-import { cacheStartupDocument, clearDocumentStartupCache, documentStartupCacheKey, forgetStartupDocument, invalidateStartupIdentity, readDocumentStartup, readStartupAccount } from "@web/shared/document-startup-cache.js";
-import { Plus, Search, Users, Settings, Bell, ShieldCheck, ThumbsUp, LogOut, FolderOpen, FolderSymlink, ArrowLeft, PanelLeft, LockKeyhole, UserRound, BookOpenCheck } from "lucide-react";
+import { clearDocumentStartupCache, invalidateStartupIdentity, readStartupSession, startupSessionKey } from "@web/shared/document-startup-cache.js";
+import { cacheOfflineDocument, catalogTime, forgetOfflineDocument, readOfflineDocument } from "@web/features/documents/offline-document-catalog.js";
+import { Plus, Search, Users, Settings, Bell, ShieldCheck, ThumbsUp, LogOut, FolderOpen, FolderSymlink, ArrowLeft, PanelLeft, LockKeyhole, UserRound, BookOpenCheck, WifiOff } from "lucide-react";
 import {
   api,
   roleRank,
@@ -125,6 +127,7 @@ const titleKeys: Record<string, MessageKey> = {
   groups: "groups.title",
   "knowledge-books": "books.title",
   home: "workspace.home",
+  offline: "offline.title",
   documents: "home.title",
   discover: "workspace.publicResources",
   collected: "discovery.collected",
@@ -146,6 +149,10 @@ const errorText = (e: unknown, fallback: string) => {
       : "";
   return code ? `${e.message}（${code}）` : e.message;
 };
+function temporarilyUnavailable(error: Error & { status?: number }) {
+  if (error.status !== undefined) return error.status >= 500 || error.status === 408 || error.status === 429;
+  return error.name === "TypeError" || error.name === "TimeoutError";
+}
 type ShareInvitation = {
   pending: true;
   id: string;
@@ -172,10 +179,14 @@ function WorkspaceApp() {
   );
   const pluginNavigationRef = useRef(pluginNavigationByScope);
   pluginNavigationRef.current = pluginNavigationByScope;
-  const [startup] = useState(() => readDocumentStartup(location.hash));
+  const [startup] = useState(() => /^#\/(?:offline(?:\?|$)|(?:m\/)?r\/)/.test(location.hash)
+    ? readStartupSession()?.bootstrap ?? null : null);
   const [bootstrapVerified, setBootstrapVerified] = useState(false);
+  const [serviceUnavailable, setServiceUnavailable] = useState(false);
+  const [unavailableResource, setUnavailableResource] = useState<string>();
+  const retryConnection = useRef(() => {});
   const [discoveringPlugins, setDiscoveringPlugins] = useState(true);
-  const detailAccount = useRef(startup?.bootstrap.user?.id);
+  const detailAccount = useRef<string | undefined>(undefined);
   const { locale, t, reloadLocale } = useI18n();
   const navigationLayout = useNavigationLayout();
   const [navigationCollapsed, setNavigationCollapsed] = useNavigationCollapse("doca.navigation.collapsed");
@@ -184,12 +195,12 @@ function WorkspaceApp() {
   useDismissMenus();
   const [createAnchor, setCreateAnchor] = useState<DOMRect | null>(null);
   const [templateFormat, setTemplateFormat] = useState<Resource["format"] | null>(null);
-  const [bootstrap, setBootstrap] = useState<Bootstrap | null>(startup?.bootstrap ?? null),
+  const [bootstrap, setBootstrap] = useState<Bootstrap | null>(startup),
     [siteLogoUrl, setSiteLogoUrl] = useState<string | null>(null),
     [fatal, setFatal] = useState(""),
     [navigationOpen, setNavigationOpen] = useState(false),
     [me, setMe] = useState<Me | null>(null),
-    [libraryInfo, setLibraryInfo] = useState<Resource | null>(startup?.library ?? null),
+    [libraryInfo, setLibraryInfo] = useState<Resource | null>(null),
     [heldLibraryId, setHeldLibraryId] = useState<string | null>(null),
     [hash, setHash] = useState(location.hash),
     [refresh, setRefresh] = useState(0),
@@ -206,7 +217,7 @@ function WorkspaceApp() {
         ? route
         : "home";
     }),
-    [detail, setDetail] = useState<Detail | null>(startup?.detail ?? null),
+    [detail, setDetail] = useState<Detail | null>(null),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [importProgress, setImportProgress] = useState<ImportProgress | null>(null),
@@ -229,10 +240,6 @@ function WorkspaceApp() {
   }, [modal, detail?.resource.id]);
   const bootstrapRef = useRef(bootstrap);
   bootstrapRef.current = bootstrap;
-  useEffect(() => {
-    if (bootstrapVerified && bootstrap?.user && detail && detailAccount.current === bootstrap.user.id)
-      cacheStartupDocument(bootstrap.user.id, detail, libraryInfo);
-  }, [bootstrapVerified, bootstrap, detail, libraryInfo]);
   useEffect(()=>{const action=(event:Event)=>{if((event as CustomEvent).detail==="doca.search")setModal("search")};window.addEventListener("doca-navigation-action",action);return()=>window.removeEventListener("doca-navigation-action",action)},[]);
   useEffect(() => {
     const token = shareTokenFromHash(hash);
@@ -280,6 +287,7 @@ function WorkspaceApp() {
     resourceId = mobileResourceId ?? /^#\/r\/([a-f0-9-]{36})(?:\?|$)/.exec(hash)?.[1],
     sharedFolderId = /^#\/shared-files\/([a-f0-9-]{36})(?:\?|$)/.exec(hash)?.[1],
     adminPage = hash.split("?")[0] === "#/admin",
+    offlinePage = hash.split("?")[0] === "#/offline",
     accountPage = hash === "#/account",
     preferencesPage = hash === "#/preferences",
     mcpPage = hash === "#/mcp",
@@ -465,8 +473,11 @@ function WorkspaceApp() {
       setMe(null);
       return;
     }
-    void refreshMe().catch((e) => setError(e.message));
-  }, [bootstrap?.user?.id, accountPage]);
+    if (bootstrapVerified && !serviceUnavailable)
+      void refreshMe().catch((e) => {
+        if (!temporarilyUnavailable(e)) setError(e.message);
+      });
+  }, [bootstrap?.user?.id, accountPage, bootstrapVerified, serviceUnavailable]);
   useEffect(() => {
     if (!bootstrap?.user) return;
     return realtime.retain();
@@ -633,6 +644,7 @@ function WorkspaceApp() {
   }, [signedIn]);
   useEffect(() => {
     let active = true, loadingBootstrap = false, generation = 0;
+    let sessionScope = readStartupSession()?.scope;
     let retry: ReturnType<typeof setTimeout> | undefined;
     const load = (refresh = true) => {
       if (loadingBootstrap || !active) return;
@@ -647,13 +659,32 @@ function WorkspaceApp() {
             setLibraryInfo(null);
           }
           setBootstrap(b);
+          sessionScope = readStartupSession()?.scope;
           setSiteLogoUrl(b.siteLogoUrl);
           setBootstrapVerified(true);
+          setServiceUnavailable(false);
           setFatal("");
         })
         .catch((e) => {
           if (!active || requestGeneration !== generation) return;
-          if (!bootstrapRef.current) setFatal(e.message);
+          if (temporarilyUnavailable(e)) {
+            setServiceUnavailable(true);
+            if (!bootstrapRef.current) {
+              const cached = readStartupSession()?.bootstrap;
+              if (cached) {
+                setBootstrap(cached);
+                setFatal("");
+              } else setFatal(e.message);
+            }
+          } else if (e.status === 403 || e.status === 404) {
+            clearDocumentStartupCache();
+            setBootstrapVerified(false);
+            setBootstrap(null);
+            setDetail(null);
+            setLibraryInfo(null);
+            setServiceUnavailable(false);
+            setFatal(e.message);
+          } else if (!bootstrapRef.current) setFatal(e.message);
           retry = setTimeout(() => load(), 3000);
         })
         .finally(() => {
@@ -663,7 +694,9 @@ function WorkspaceApp() {
     };
     const discardSession = () => {
       generation++;
+      sessionScope = readStartupSession()?.scope;
       setBootstrapVerified(false);
+      setServiceUnavailable(false);
       setDetail(null);
       setLibraryInfo(null);
       setBootstrap(b => b ? { ...b, user: null } : null);
@@ -675,9 +708,20 @@ function WorkspaceApp() {
     };
     const reloadBootstrap = () => load();
     const online = () => { load(); setRefresh(n => n + 1); };
+    const offline = () => setServiceUnavailable(true);
+    retryConnection.current = online;
+    let live = false;
+    const stopConnectionMonitor = realtime.subscribe((message) => {
+      if (message.type === "connected") live = true;
+      if (message.type === "disconnected" && live) {
+        live = false;
+        if (message.code !== 4401) load();
+      }
+    });
     const storage = (event: StorageEvent) => {
-      if (event.key !== documentStartupCacheKey) return;
-      if (!event.newValue || readStartupAccount() !== bootstrapRef.current?.user?.id) {
+      if (event.key !== startupSessionKey && event.key !== null) return;
+      const session = readStartupSession();
+      if (!event.newValue || session?.scope !== sessionScope || session?.bootstrap.user.id !== bootstrapRef.current?.user?.id) {
         invalidateStartupIdentity();
         discardSession();
       }
@@ -687,6 +731,7 @@ function WorkspaceApp() {
       setNavigationOpen(false);
       setModal("");
       const path = location.hash.replace(/^#/, "").split("?")[0] || "/home";
+      if (path === "/home" || path === "/offline") load();
       const matchedRoute = webPluginRegistry.resolveRoute(
         path.startsWith("/m/plugins/") ? path.slice(2) : path,
       );
@@ -710,15 +755,18 @@ function WorkspaceApp() {
     window.addEventListener("profile-required", reloadBootstrap);
     window.addEventListener("site-branding-changed", reloadBootstrap);
     window.addEventListener("online", online);
+    window.addEventListener("offline", offline);
     window.addEventListener("storage", storage);
     return () => {
       active = false;
       clearTimeout(retry);
+      stopConnectionMonitor();
       window.removeEventListener("hashchange", changed);
       window.removeEventListener("session-expired", expired);
       window.removeEventListener("profile-required", reloadBootstrap);
       window.removeEventListener("site-branding-changed", reloadBootstrap);
       window.removeEventListener("online", online);
+      window.removeEventListener("offline", offline);
       window.removeEventListener("storage", storage);
     };
   }, []);
@@ -728,20 +776,29 @@ function WorkspaceApp() {
     if (route) setScope(pluginRouteScope(route.contribution.id));
   }, [hash, routesRevision]);
   useEffect(() => {
-    if (!resourceId) setDetail(null);
-    if (!resourceId) return;
+    if (!resourceId) {
+      setDetail(null);
+      setUnavailableResource(undefined);
+      return;
+    }
     if (!bootstrap) return;
     const controller = new AbortController();
     const requestAccount = bootstrap.user?.id;
+    const activeSession = readStartupSession();
+    const session = activeSession?.bootstrap.user.id === requestAccount ? activeSession : null;
+    const checkedAt = catalogTime();
+    let liveResolved = false;
     setLoginResource(null);
-    const stored = readDocumentStartup(hash);
-    const cached = stored?.bootstrap.user?.id === requestAccount ? stored : null;
-    if (detail?.resource.id !== resourceId && cached) {
-      detailAccount.current = requestAccount;
-      setDetail(cached.detail);
-      setLibraryInfo(cached.library);
+    if (detail?.resource.id !== resourceId) {
+      setLoading(true);
+      if (session) void readOfflineDocument(session, resourceId).then((cached) => {
+        if (!cached || controller.signal.aborted || liveResolved) return;
+        detailAccount.current = requestAccount;
+        setDetail(cached.detail);
+        setLibraryInfo(cached.library);
+        setLoading(false);
+      });
     }
-    if (detail?.resource.id !== resourceId && !cached) setLoading(true);
     let retry: ReturnType<typeof setTimeout> | undefined;
     void api<Detail>(
       `/resources/${resourceId}`,
@@ -750,11 +807,14 @@ function WorkspaceApp() {
       AbortSignal.any([controller.signal, AbortSignal.timeout(10000)]),
     )
       .then(async (d) => {
-        if (d.resource.knowledgeBook) { location.hash = `/knowledge-books/${d.resource.id}`; return; }
         if (controller.signal.aborted) return;
+        liveResolved = true;
+        if (d.resource.knowledgeBook) { location.hash = `/knowledge-books/${d.resource.id}`; return; }
+        setUnavailableResource(undefined);
         detailAccount.current = requestAccount;
         setDetail(d);
         setLoading(false);
+        if (session) void cacheOfflineDocument(session, d, null, checkedAt);
         if (targetComment && /^[a-f0-9-]{36}$/.test(targetComment)) {
           try {
             const context = await api<{ items: Detail["comments"] }>(
@@ -783,7 +843,7 @@ function WorkspaceApp() {
                 `/resources/${libId}`,
                 "GET",
                 undefined,
-                controller.signal,
+                AbortSignal.any([controller.signal, AbortSignal.timeout(10000)]),
               )
             ).resource;
           } catch {}
@@ -791,13 +851,17 @@ function WorkspaceApp() {
         if (!controller.signal.aborted) {
           setLibraryInfo(lib);
           setDetail(d);
+          if (session && lib) void cacheOfflineDocument(session, d, lib, checkedAt);
         }
       })
       .catch((e) => {
         if (!controller.signal.aborted && e.name !== "AbortError") {
+          const offline = temporarilyUnavailable(e);
+          setUnavailableResource(offline ? resourceId : undefined);
           if ([401, 403, 404].includes(e.status)) {
+            liveResolved = true;
             setLoginResource(resourceId);
-            forgetStartupDocument(resourceId);
+            if (session) void forgetOfflineDocument(session, resourceId);
             setDetail(null);
           }
           else
@@ -805,9 +869,7 @@ function WorkspaceApp() {
               previous?.resource.id === resourceId ? previous : null,
             );
           if (![401, 403, 404].includes(e.status)) retry = setTimeout(() => setRefresh(n => n + 1), 3000);
-          setError(
-            e.status && e.status >= 500 ? "服务暂时不可用，已保留当前文档" : "",
-          );
+          if (!offline) setError("");
         }
       })
       .finally(() => {
@@ -909,6 +971,18 @@ function WorkspaceApp() {
       </main>
     );
   if (!bootstrap) return <main className="auth">{t("shell.connecting")}</main>;
+  const workspaceOffline = serviceUnavailable || (!!resourceId && unavailableResource === resourceId);
+  if (bootstrap.user && !bootstrap.needsProfile && !mobileShell && (offlinePage || (workspaceOffline && !currentDetail))) {
+    return (
+      <OfflineWorkspace
+        key={bootstrap.user.id}
+        accountId={bootstrap.user.id}
+        offline={workspaceOffline}
+        missingDocument={!!resourceId && !currentDetail}
+        retry={() => retryConnection.current()}
+      />
+    );
+  }
   if (hash.startsWith("#/m/auth")) return <MobileTicketRedeem />;
   if (ticketsPage && !bootstrap.user)
     return (
@@ -1217,7 +1291,15 @@ function WorkspaceApp() {
             <span>{t("common.search")}</span>
             <kbd>⌘ K</kbd>
           </button>}
-          {currentLibraryId && canManageLibrary && (
+          {user && workspaceOffline && (
+            <nav>
+              <a href="#/offline" title={t("offline.title")}>
+                <WifiOff size={17} aria-hidden="true" />
+                <span>{t("offline.title")}</span>
+              </a>
+            </nav>
+          )}
+          {currentLibraryId && canManageLibrary && !workspaceOffline && (
             <nav>
               <a
                 className={librarySettingsPage ? "active" : ""}
@@ -1229,7 +1311,7 @@ function WorkspaceApp() {
 
             </nav>
           )}
-          {user && !currentLibraryId && (
+          {user && !currentLibraryId && !workspaceOffline && (
             <nav>
               <button
                 type="button"
@@ -1248,7 +1330,7 @@ function WorkspaceApp() {
               <LeftNavigation />
             </nav>
           )}
-          {currentLibraryId && <div className="sidebar-tree-heading">
+          {currentLibraryId && !workspaceOffline && <div className="sidebar-tree-heading">
             <button
               onClick={() => { location.hash = "/r/" + currentLibraryId; }}
             >
@@ -1262,7 +1344,7 @@ function WorkspaceApp() {
               <Plus size={17} />
             </button>}
           </div>}
-          {currentLibraryId && <DocumentTree
+          {currentLibraryId && !workspaceOffline && <DocumentTree
             key={(user?.id ?? "anonymous") + ":" + currentLibraryId}
             refresh={refresh}
             userId={user?.id ?? "anonymous"}
@@ -1473,6 +1555,7 @@ function WorkspaceApp() {
               : undefined
           }
         >
+        {resourceId && <div id="editor-offline-slot" role="status" />}
         {resourceId && <div id="editor-toolbar-slot" hidden={documentMode.readOnly} />}
         {user && detail?.resource.kind === "document" && <PluginSlot slot="document.toolbar" scope="document" resource={detail.resource} />}
         {user && libraryInfo && <PluginSlot slot="library.toolbar" scope="library" resource={libraryInfo} />}

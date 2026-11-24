@@ -1,5 +1,7 @@
 import { useCanvasRichExtensions } from "./canvas-rich-extensions.js";
 import { useI18n } from "@web/shared/i18n.js";
+import { OfflineEditingNotice } from "@web/features/documents/offline-editing-notice.js";
+import { replicaCodecs } from "@web/features/documents/replica-database.js";
 import { useCommentHighlight } from "@web/features/comments/use-comment-highlight.js";
 import { useAI } from "@web/features/ai/ai-context.js";
 import { useDocumentReadOnly } from "@web/features/documents/document-mode.js";
@@ -118,7 +120,7 @@ export default function CanvasDocument({
   const aiRef = useRef(ai);
   aiRef.current = ai;
   const id = detail.resource.id,
-    sync = useSurfaceSync(id, user?.id, "aidcanvas-yjs", factory, changed, 1);
+    sync = useSurfaceSync(id, user?.id, replicaCodecs.canvas, factory, changed, 1);
   const viewPreferences = useCanvasBrowserPreference(
     user?.id,
     id,
@@ -347,6 +349,7 @@ export default function CanvasDocument({
         else handle.undo();
       }}
     >
+      <OfflineEditingNotice active={!!user && editable && !sync.connected} />
       {slots.live &&
         createPortal(<span role="status">{sync.status}</span>, slots.live)}
       <DocumentDownload

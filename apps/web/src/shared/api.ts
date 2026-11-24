@@ -175,19 +175,20 @@ export async function api<T>(
     headers: body === undefined ? {} : { "Content-Type": "application/json" },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
-  const data = await response.json();
   if (!response.ok) {
+    const data = await response.json().catch(() => null);
     if (response.headers.get("X-Doca-Profile-Required") === "1")
       window.dispatchEvent(new Event("profile-required"));
     if (response.status === 401) {
       clearDocumentStartupCache();
       window.dispatchEvent(new Event("session-expired"));
     }
-    throw Object.assign(new Error(apiErrorMessage(data.message ?? "请求失败")), {
+    throw Object.assign(new Error(apiErrorMessage(data?.message ?? "请求失败")), {
       status: response.status,
       payload: data,
     });
   }
+  const data = await response.json();
   if (path === "/bootstrap" && lastAccount !== (data.user?.id ?? null)) {
     lastAccount = data.user?.id ?? null;
   }

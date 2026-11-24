@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
+import { offlineShellBuild } from "./offline-shell-build";
 import { prismjsLanguageEsm } from "./prismjs-language-esm";
 
 const cadFiles = [
@@ -72,7 +73,7 @@ function cadPreviewAssets(): Plugin {
 
 export default defineConfig({
   root: fileURLToPath(new URL(".", import.meta.url)),
-  plugins: [react(), prismjsLanguageEsm(), cadPreviewAssets()],
+  plugins: [react(), prismjsLanguageEsm(), cadPreviewAssets(), offlineShellBuild()],
   css: {
     postcss: {
       plugins: [
