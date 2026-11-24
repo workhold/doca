@@ -74,6 +74,24 @@ type Member = {
   loginMethodDetails: LoginMethodLabel[];
   last_login_at?: string | null;
 };
+function fetchUsersPage(
+  q: string,
+  status: string,
+  signal: AbortSignal,
+  cursor?: string,
+) {
+  const search = new URLSearchParams();
+  const query = q.trim();
+  if (query) search.set("q", query);
+  if (status) search.set("status", status);
+  if (cursor !== undefined) search.set("cursor", cursor);
+  return api<{ items: Member[]; nextCursor?: string | null }>(
+    `/admin/users?${search}`,
+    "GET",
+    undefined,
+    signal,
+  );
+}
 type OnlineMember = Pick<
   Member,
   "id" | "display_name" | "public_id" | "login" | "last_login_at"
@@ -226,6 +244,7 @@ export function Admin({
     [q, setQ] = useState(""),
     [statusFilter, setStatusFilter] = useState(""),
     [loading, setLoading] = useState(false),
+    [loadingMore, setLoadingMore] = useState(false),
     [error, setError] = useState(""),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),
@@ -233,6 +252,7 @@ export function Admin({
     [target, setTarget] = useState<Member | null>(null),
     [passwordTarget, setPasswordTarget] = useState<Member | null>(null),
     [refresh, setRefresh] = useState(0);
+  const userListRequest = useRef<AbortController | null>(null);
   const matchedPluginAdminPanel =
     webPluginRegistry.adminPanels.getByConflictKey(tab);
   const pluginAdminPanel =
@@ -315,32 +335,26 @@ export function Admin({
     return () => window.removeEventListener("hashchange", syncRoute);
   }, []);
   useEffect(() => {
+    if (tab !== "users") return;
     const controller = new AbortController();
+    const { signal } = controller;
+    userListRequest.current = controller;
     setLoading(true);
+    setLoadingMore(false);
+    setNextCursor(null);
     const timer = setTimeout(
       () =>
-        void api<{
-          items: Member[];
-          nextCursor?: string | null;
-        }>(
-          "/admin/users?" +
-            new URLSearchParams({
-              ...(q.trim() ? { q: q.trim() } : {}),
-              ...(statusFilter ? { status: statusFilter } : {}),
-            }),
-          "GET",
-          undefined,
-          controller.signal,
-        )
+        void fetchUsersPage(q, statusFilter, signal)
           .then((d) => {
+            if (signal.aborted) return;
             setUsers(d.items);
             setNextCursor(d.nextCursor ?? null);
           })
           .catch((e) => {
-            if (e.name !== "AbortError") setError(e.message);
+            if (!signal.aborted) setError(e.message);
           })
           .finally(() => {
-            if (!controller.signal.aborted) setLoading(false);
+            if (!signal.aborted) setLoading(false);
           }),
       180,
     );
@@ -348,7 +362,23 @@ export function Admin({
       controller.abort();
       clearTimeout(timer);
     };
-  }, [q, refresh, statusFilter]);
+  }, [tab, q, refresh, statusFilter]);
+  async function appendUsers() {
+    const signal = userListRequest.current?.signal;
+    if (!signal || signal.aborted || loading || loadingMore || nextCursor === null)
+      return;
+    setLoadingMore(true);
+    try {
+      const page = await fetchUsersPage(q, statusFilter, signal, nextCursor);
+      if (signal.aborted) return;
+      setUsers((old) => [...old, ...page.items]);
+      setNextCursor(page.nextCursor ?? null);
+    } catch (e) {
+      if (!signal.aborted) setError((e as Error).message);
+    } finally {
+      if (!signal.aborted) setLoadingMore(false);
+    }
+  }
   async function act(fn: () => Promise<unknown>, success: string) {
     setBusy(true);
     setError("");
@@ -773,31 +803,11 @@ export function Admin({
                 {nextCursor !== null && (
                   <button
                     className="load-more"
-                    disabled={loading}
-                    onClick={async () => {
-                      setLoading(true);
-                      try {
-                        const d = await api<{
-                          items: Member[];
-                          nextCursor?: string | null;
-                        }>(
-                          "/admin/users?" +
-                            new URLSearchParams({
-                              cursor: nextCursor,
-                              ...(q.trim() ? { q: q.trim() } : {}),
-                              ...(statusFilter ? { status: statusFilter } : {}),
-                            }),
-                        );
-                        setUsers((old) => [...old, ...d.items]);
-                        setNextCursor(d.nextCursor ?? null);
-                      } catch (e) {
-                        setError((e as Error).message);
-                      } finally {
-                        setLoading(false);
-                      }
-                    }}
+                    disabled={loading || loadingMore}
+                    aria-busy={loadingMore}
+                    onClick={appendUsers}
                   >
-                    {t("users.loadMore")}
+                    {t(loadingMore ? "common.loading" : "users.loadMore")}
                   </button>
                 )}
               </section>

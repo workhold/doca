@@ -60,6 +60,7 @@ import { lazy, Suspense, useEffect, useLayoutEffect, useState, useRef, useMemo, 
 import { desktopTabActive, desktopTabVisibilityEvent } from "@web/shared/desktop-tab-visibility.js";
 import { navigateToDefaultHome } from "@web/shared/navigation-layout.js";
 import { loadBootstrap } from "@web/shared/bootstrap.js";
+import { canDownloadOfflineShell, downloadOfflineShell } from "@web/shared/offline-shell.js";
 import { SiteLogo } from "@web/shared/components/site-logo.js";
 import { documentFavicon } from "@web/shared/utils/document-favicon.js";
 import { splitTitleIcon } from "@web/shared/utils/resource-title.js";
@@ -629,6 +630,13 @@ function WorkspaceApp() {
     return () => { active = false; };
   }, [bootstrap, bootstrapVerified]);
   const signedIn = !!bootstrap?.user;
+  useEffect(() => {
+    if (
+      signedIn && bootstrapVerified && !serviceUnavailable &&
+      navigator.onLine && canDownloadOfflineShell()
+    )
+      void downloadOfflineShell().catch(() => {});
+  }, [signedIn, bootstrapVerified, serviceUnavailable]);
   useEffect(() => { extensionViews.close(); }, [bootstrap?.user?.id]);
   useEffect(() => {
     const shortcut = (e: KeyboardEvent) => {
@@ -662,7 +670,7 @@ function WorkspaceApp() {
           sessionScope = readStartupSession()?.scope;
           setSiteLogoUrl(b.siteLogoUrl);
           setBootstrapVerified(true);
-          setServiceUnavailable(false);
+          setServiceUnavailable(!navigator.onLine);
           setFatal("");
         })
         .catch((e) => {
@@ -715,7 +723,7 @@ function WorkspaceApp() {
       if (message.type === "connected") live = true;
       if (message.type === "disconnected" && live) {
         live = false;
-        if (message.code !== 4401) load();
+        if (message.code !== 4401 && navigator.onLine) load();
       }
     });
     const storage = (event: StorageEvent) => {

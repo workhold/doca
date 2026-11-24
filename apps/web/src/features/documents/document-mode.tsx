@@ -11,13 +11,14 @@ import { Select } from "@web/shared/components/select.js";
 import { useI18n } from "@web/shared/i18n.js";
 import "@web/features/documents/document-mode.css";
 
-export type DocumentMode = "edit" | "read";
+export type DocumentMode = "edit" | "clean" | "read";
 export const resolveDocumentMode = (
   canEdit: boolean,
   requested: DocumentMode,
 ): DocumentMode => (canEdit ? requested : "read");
 type ModeState = {
   canEdit: boolean;
+  mode: DocumentMode;
   readOnly: boolean;
   change: (mode: DocumentMode) => void;
   reportPermission: (allowed: boolean | undefined) => void;
@@ -35,9 +36,10 @@ export function useDocumentModeState(
     allowed: boolean | undefined;
   }>({ key, allowed: undefined });
   const canEdit = permitted && (live.key !== key || live.allowed !== false);
-  const readOnly =
-    resolveDocumentMode(canEdit, choice.key === key ? choice.mode : "edit") ===
-    "read";
+  const mode = resolveDocumentMode(
+    canEdit,
+    choice.key === key ? choice.mode : "edit",
+  );
   const change = useCallback(
     (mode: DocumentMode) => setChoice({ key, mode }),
     [key],
@@ -51,19 +53,22 @@ export function useDocumentModeState(
     [key],
   );
   return useMemo(
-    () => ({ canEdit, readOnly, change, reportPermission }),
-    [canEdit, readOnly, change, reportPermission],
+    () => ({ canEdit, mode, readOnly: mode === "read", change, reportPermission }),
+    [canEdit, mode, change, reportPermission],
   );
 }
 
 /** Editors report live server ACL without conflating it with readiness or mode. */
-export function useDocumentReadOnly(permitted: boolean | undefined) {
+export function useDocumentEditorMode(permitted: boolean | undefined) {
   const mode = useContext(DocumentModeContext);
   const report = mode?.reportPermission;
   useEffect(() => {
     report?.(permitted);
   }, [report, permitted]);
-  return mode?.readOnly ?? false;
+  return {
+    readOnly: mode?.readOnly ?? false,
+    showRemoteSelections: !mode || mode.mode === "edit",
+  };
 }
 
 export function DocumentModeSwitch() {
@@ -82,10 +87,11 @@ export function DocumentModeSwitch() {
       {mode.readOnly ? <Eye size={15} /> : <Pencil size={15} />}
       <Select
         aria-label={t("doc.mode")}
-        value={mode.readOnly ? "read" : "edit"}
+        value={mode.mode}
         onChange={(e) => mode.change(e.target.value as DocumentMode)}
       >
         <option value="edit">{t("doc.mode.edit")}</option>
+        <option value="clean">{t("doc.mode.clean")}</option>
         <option value="read">{t("doc.mode.read")}</option>
       </Select>
     </span>

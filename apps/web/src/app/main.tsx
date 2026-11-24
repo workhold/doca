@@ -119,7 +119,8 @@ if (!isHome()) void loadBootstrap().catch(() => {});
 if (canDownloadOfflineShell()) {
   const standalone = matchMedia("(display-mode: standalone)");
   const prepare = () => {
-    if (standalone.matches) void downloadOfflineShell().catch(() => {});
+    if (standalone.matches && navigator.onLine)
+      void downloadOfflineShell().catch(() => {});
   };
   standalone.addEventListener("change", prepare);
   prepare();

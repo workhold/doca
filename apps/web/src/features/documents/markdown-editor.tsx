@@ -4,7 +4,14 @@ import { replicaCodecs } from "@web/features/documents/replica-database.js";
 import { useCommentHighlight } from "@web/features/comments/use-comment-highlight.js";
 import { platformAssetId } from "@web/shared/utils/asset-path.js";
 import { useAI } from "@web/features/ai/ai-context.js";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Sparkles, MessageSquare } from "lucide-react";
 import {
   DocumentDownload,
@@ -12,7 +19,7 @@ import {
 } from "@web/features/documents/file-transfer.js";
 import { OutlineDrawer } from "@web/features/documents/outline-drawer.js";
 import { attachMarkdownScroll } from "@web/features/documents/markdown-scroll.js";
-import { useDocumentReadOnly } from "@web/features/documents/document-mode.js";
+import { useDocumentEditorMode } from "@web/features/documents/document-mode.js";
 import { fromMarkdown } from "mdast-util-from-markdown";
 import { createPortal } from "react-dom";
 import * as Y from "yjs";
@@ -139,7 +146,7 @@ export default function MarkdownDocument({
   const epoch = useRef<string | undefined>(undefined),
     unsaved = useRef(false),
     remote = useRef<RemoteMarkdownSelection[]>([]);
-  const reading = useDocumentReadOnly(
+  const { readOnly: reading, showRemoteSelections } = useDocumentEditorMode(
     ready
       ? Math.min(serverRank, roleRank(detail.resource.role)) >= 3
       : undefined,
@@ -152,6 +159,8 @@ export default function MarkdownDocument({
     Math.min(serverRank, roleRank(detail.resource.role)) >= 3;
   const editable = useRef(canEdit);
   editable.current = canEdit;
+  const showPeers = useRef(showRemoteSelections);
+  showPeers.current = showRemoteSelections;
   const session = useMemo(
     () =>
       ready
@@ -305,7 +314,7 @@ export default function MarkdownDocument({
             setOnline(true);
             queue.resume();
           }
-          if (editable.current)
+          if (editable.current && showPeers.current)
             handle.current?.renderRemoteSelections(remote.current);
         } else if (m.type === "ack") {
           validate(m);
@@ -342,7 +351,7 @@ export default function MarkdownDocument({
                 focus: { bytes: fromBase64(p.selection.focus) },
               },
             }));
-          if (editable.current)
+          if (editable.current && showPeers.current)
             handle.current?.renderRemoteSelections(remote.current);
         } else if (m.type === "error" && m.operation !== "cursor")
           failure(Error(m.message));
@@ -399,6 +408,11 @@ export default function MarkdownDocument({
       window.removeEventListener("beforeunload", guard);
     };
   }, [model, id, user?.id]);
+  useLayoutEffect(() => {
+    if (canEdit && online && showRemoteSelections)
+      handle.current?.renderRemoteSelections(remote.current);
+    else handle.current?.clearRemoteSelections();
+  }, [canEdit, online, showRemoteSelections]);
   useEffect(() => {
     const publish = (selection: MarkdownTextSelection | null) =>
       realtime.send({
@@ -420,10 +434,7 @@ export default function MarkdownDocument({
       if (!selection && !document.hasFocus() && canEdit && online) return;
       publish(selection);
     });
-    if (!canEdit || !online) {
-      publish(null);
-      handle.current?.clearRemoteSelections();
-    }
+    if (!canEdit || !online) publish(null);
     const leave = () => publish(null);
     window.addEventListener("pagehide", leave);
     return () => {

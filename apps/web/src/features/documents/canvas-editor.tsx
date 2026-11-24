@@ -4,7 +4,7 @@ import { OfflineEditingNotice } from "@web/features/documents/offline-editing-no
 import { replicaCodecs } from "@web/features/documents/replica-database.js";
 import { useCommentHighlight } from "@web/features/comments/use-comment-highlight.js";
 import { useAI } from "@web/features/ai/ai-context.js";
-import { useDocumentReadOnly } from "@web/features/documents/document-mode.js";
+import { useDocumentEditorMode } from "@web/features/documents/document-mode.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { MessageSquare, Sparkles } from "lucide-react";
@@ -143,7 +143,9 @@ export default function CanvasDocument({
         : "";
   const [renderFailed, setRenderFailed] = useState(false);
   const rank = Math.min(roleRank(detail.resource.role), sync.rank);
-  const reading = useDocumentReadOnly(sync.binding ? rank >= 3 : undefined);
+  const { readOnly: reading, showRemoteSelections } = useDocumentEditorMode(
+    sync.binding ? rank >= 3 : undefined,
+  );
   const editable =
     !reading && rank >= 3 && !!sync.binding && !sync.blocked && !renderFailed;
   const createComment = useRef<() => void>(() => {});
@@ -234,7 +236,7 @@ export default function CanvasDocument({
   }, [editable, model, publish]);
   const remote = useMemo(
     () =>
-      sync.connected && editable
+      sync.connected && editable && showRemoteSelections
         ? sync.presence.sessions
             .filter((p) => p.selection?.type === "elements")
             .map((p) => ({
@@ -247,7 +249,7 @@ export default function CanvasDocument({
               text: p.selection.text,
             }))
         : [],
-    [sync.presence, sync.connected, editable],
+    [sync.presence, sync.connected, editable, showRemoteSelections],
   );
   const [referenceHighlight, setReferenceHighlight] =
     useState<CanvasAnchorDecoration | null>(null);

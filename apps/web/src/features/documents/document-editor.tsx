@@ -4,7 +4,7 @@ import { replicaCodecs } from "@web/features/documents/replica-database.js";
 import { useAIBridge } from "@web/features/ai/ai-context.js";
 import { captureRichSelection } from "@web/features/comments/rich-selection-anchor.js";
 import { resolveRichAnchor, type RichAnchor } from "@core/modules/documents/codecs/rich-anchor.js";
-import { useDocumentReadOnly } from "@web/features/documents/document-mode.js";
+import { useDocumentEditorMode } from "@web/features/documents/document-mode.js";
 import { DocumentFind } from "@web/features/documents/document-find.js";
 import { CommentNavigation } from "@web/features/comments/comment-navigation.js";
 import { ResolvedComments } from "@web/features/comments/resolved-comments.js";
@@ -562,7 +562,9 @@ function RichDocument({
       session.doc.destroy();
     };
   }, [id, session, user?.id]);
-  const reading = useDocumentReadOnly(serverRank === null ? undefined : rank >= 3);
+  const { readOnly: reading, showRemoteSelections } = useDocumentEditorMode(
+    serverRank === null ? undefined : rank >= 3,
+  );
   const editable =
     !reading && ready && rank >= 3 && !presenting && !blocked && (connected || localReady);
   useEffect(() => {
@@ -1135,6 +1137,7 @@ function RichDocument({
               runtime={session.runtime}
               host={contentHost}
               editable={connected && editable}
+              visible={showRemoteSelections}
             />
           )}
           {discussion}

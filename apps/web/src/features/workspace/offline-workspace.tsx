@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, Download, FileText, Search, WifiOff } from "lucide-react";
 import { useI18n } from "@web/shared/i18n.js";
 import {
@@ -46,24 +46,16 @@ export function OfflineWorkspace({
       stop();
     };
   }, [accountId]);
+  const prepare = useCallback(() => {
+    setDownload("pending");
+    void downloadOfflineShell().then(
+      () => setDownload("done"),
+      () => setDownload("failed"),
+    );
+  }, []);
   useEffect(() => {
-    if (!available) return;
-    let active = true;
-    void navigator.serviceWorker
-      .getRegistration()
-      .then((registration) => {
-        if (
-          active &&
-          registration?.active?.scriptURL ===
-            new URL("/doca-offline-worker.js", location.origin).href
-        )
-          setDownload("done");
-      })
-      .catch(() => {});
-    return () => {
-      active = false;
-    };
-  }, [available]);
+    if (available && !offline) prepare();
+  }, [available, offline, prepare]);
   const query = filter.trim().toLocaleLowerCase(locale);
   const list = items?.filter((item) =>
     [item.title, item.libraryTitle].some((value) =>
@@ -93,13 +85,7 @@ export function OfflineWorkspace({
             <button
               type="button"
               disabled={download === "pending"}
-              onClick={() => {
-                setDownload("pending");
-                void downloadOfflineShell().then(
-                  () => setDownload("done"),
-                  () => setDownload("failed"),
-                );
-              }}
+              onClick={prepare}
             >
               <Download size={16} aria-hidden="true" />
               {t(
@@ -125,7 +111,7 @@ export function OfflineWorkspace({
       {!offline && available && download === "done" && (
         <p role="status">{t("offline.frontendReady")}</p>
       )}
-      {download === "failed" && (
+      {!offline && download === "failed" && (
         <p role="status">{t("offline.frontendFailed")}</p>
       )}
       {!!items?.length && (

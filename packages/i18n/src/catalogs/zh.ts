@@ -3093,6 +3093,7 @@ export const zh = {
   "doc.unfavorite": "取消收藏",
   "doc.mode": "文档模式",
   "doc.mode.edit": "编辑",
+  "doc.mode.clean": "纯净编辑",
   "doc.mode.read": "阅读",
   "doc.mode.readonly": "当前仅有阅读权限",
   "doc.filterType": "文档类型",
