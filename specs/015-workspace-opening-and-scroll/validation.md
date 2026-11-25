@@ -1,7 +1,7 @@
 # 验证记录
 
 **Spec**: [文档打开状态与工作台滚动](spec.md)
-**Result**: partial
+**Result**: passed
 
 ## Scope
 
@@ -24,4 +24,10 @@
 
 ## 发布验收
 
-AC-005 等待 0.2.44 的 GitHub、Docker Hub 和桌面发布结果。
+2026-11-26 完成 AC-005。GitHub 标签 `v0.2.44`、Release 附件、Docker Hub 镜像及桌面安装包均来自合并提交 `42f04180932f1909de921dfd67c1b3354dbfa7c3`。[发布 PR](https://github.com/workhold/doca/pull/164)
+
+- 合并前应用、macOS、Windows、PostgreSQL 17/18、文档与 SDD 检查通过。合并后的 PostgreSQL 18 权限撤销用例曾超时，同提交重跑通过。本地 3,523 项 Vitest 测试分两批通过，11 项按既有条件跳过。另以同源 Chrome 验证 0.2.43 的离线缓存交接到 0.2.44 后可离线打开。[合并后数据库检查](https://github.com/workhold/doca/actions/runs/45652797129)
+- `smartdoca/doca:0.2.44` 与 `smartdoca/doca:latest` 的实际公开清单均为 `sha256:3eabd8ca03a8f473c307561af4ddd7ea547be59043be14302c586a27f9846d25`。Linux amd64、arm64 的平台清单和配置摘要均与 CI 验收结果一致。[Docker Hub 发布任务](https://github.com/workhold/doca/actions/runs/45652898465)
+- 下载了全部 13 个 GitHub Release 附件，文件 SHA-256 与 GitHub 发布摘要一致，安装包和部署文件等随附的校验文件也相符。macOS DMG 只读挂载后确认版本 0.2.44、x86_64 与 arm64 通用二进制及内置 Web 资源。Windows EXE、MSI 来自 `x86_64-pc-windows-msvc` 构建，MSI 元数据确认为 x64。[GitHub Release](https://github.com/workhold/doca/releases/tag/v0.2.44) · [桌面发布任务](https://github.com/workhold/doca/actions/runs/45652865516)
+
+发布日志、制品和校验记录见 `artifacts/verification/release-0.2.44/`。
