@@ -56,6 +56,7 @@ Connection state moves loading, syncing, ready, and on failure disconnected or e
 - The queue sends serially. Only an ACK that matches the head id may dequeue. An unknown, late, or duplicate ACK must not drop later input.
 - Disconnect keeps the bytes and the id. Reconnect catches up from the remote, then retries unacknowledged increments.
 - A client offline event immediately retires the realtime connection and suspends retries. The online event reconnects and runs the usual document join.
+- The offline notice appears for an editable replica when the browser is offline or the collaboration connection fails. Initial online connection and document synchronization keep the notice hidden. After a disconnect, the notice clears when the document finishes synchronizing.
 - Do not treat `encodeStateAsUpdate(doc, vector).length` as dirty. The same state can still return a historical delete set. A length greater than 2 is not a new write.
 - An epoch mismatch pauses the old queue. Export or a separate recovery copy is allowed. Old increments are not forced onto the new document.
 - Current host adapters persist original checkpoints and pending message IDs through `offline-replica.ts`. Offline editing requires an authorized replica and successful local storage. The desktop bundle and the downloaded Web frontend can start from the local document list.
@@ -109,7 +110,7 @@ The platform implements epoch, protocol checks, commit receipts, and history rec
 
 Formal selection APIs and unified rollback across formats remain shared work for the component and platform. The host owns offline document startup and its persistent queue. Component capabilities still require verification of the installed package exports.
 
-Offline home lists authorized documents under **Recent edits**. A document joins the directory after a live open in the new client when its matching local replica is available. The desktop serves its bundled frontend. The Web workspace automatically caches same-origin build assets after sign-in. An editable replica shows an offline editing message while its live collaboration session is disconnected. Reconnect validates access and lineage before sending queued changes through the existing durable ACK path. A closed document resumes synchronization when reopened. See [offline documents and recovery](https://github.com/workhold/doca/blob/main/docs/access-offline-events.md#离线文档入口).
+Offline home lists authorized documents under **Recent edits**. A document joins the directory after a live open in the new client when its matching local replica is available. The desktop serves its bundled frontend. The Web workspace automatically caches same-origin build assets after sign-in. An editable replica shows an offline editing message after the client detects a connection loss. Reconnect validates access and lineage before sending queued changes through the existing durable ACK path. A closed document resumes synchronization when reopened. See [offline documents and recovery](https://github.com/workhold/doca/blob/main/docs/access-offline-events.md#离线文档入口).
 
 ## Plugin elements increment — 2026-10-02
 

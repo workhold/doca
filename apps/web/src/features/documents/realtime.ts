@@ -6,11 +6,13 @@ class Realtime {
   private refs = 0;
   private retry = 0;
   private sessionExpired = false;
+  private connectionFailed = false;
 
   retain() {
     if (++this.refs === 1) {
       this.retry = 0;
       this.sessionExpired = false;
+      this.connectionFailed = !navigator.onLine;
       window.addEventListener("offline", this.offline);
       window.addEventListener("online", this.online);
       this.connect();
@@ -36,6 +38,9 @@ class Realtime {
   get connected() {
     return navigator.onLine && this.socket?.readyState === WebSocket.OPEN;
   }
+  get unavailable() {
+    return !navigator.onLine || this.connectionFailed;
+  }
   send(m: Message) {
     if (!this.connected) return false;
     this.socket!.send(JSON.stringify(m));
@@ -48,7 +53,7 @@ class Realtime {
   }
   private offline = () => {
     clearTimeout(this.timer);
-    if (!this.socket) return;
+    this.connectionFailed = true;
     this.closeSocket();
     this.emit({ type: "disconnected" });
   };
@@ -70,6 +75,7 @@ class Realtime {
         const m = JSON.parse(e.data);
         if (m.type === "ready") {
           this.retry = 0;
+          this.connectionFailed = false;
           this.emit({ type: "connected" });
         } else this.emit(m);
       } catch {
@@ -80,6 +86,7 @@ class Realtime {
       if (this.socket !== ws) return;
       this.socket = null;
       this.sessionExpired = e.code === 4401;
+      this.connectionFailed = !this.sessionExpired && e.code !== 4403;
       this.emit({ type: "disconnected", code: e.code });
       if (this.sessionExpired) {
         window.dispatchEvent(new Event("session-expired"));

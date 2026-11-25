@@ -20,6 +20,8 @@ Public discovery, personal collections, favorites, and recent visits serve diffe
 
 ## Files, comments, and notifications
 
+In narrow windows, the file manager's column view starts with the folder contents. Select a file to preview it and use the close button to return to the folder.
+
 Use personal files or shared folders for ordinary files. Downloads pass authorization; an object ID is not a public download link. Documents can reference files without making the physical storage directory public. See [file storage](storage.md).
 
 Comments support replies, mentions, resolving, and notifications according to resource access. Temporary collaboration cursors are separate from permanent comment anchors. [Comments and notifications](comments-and-community.md) describe visibility and supported behavior.

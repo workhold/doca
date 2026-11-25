@@ -317,6 +317,11 @@
     "zh": "发行记录",
     "pages": [
       [
+        "releases/0.2.44",
+        "0.2.44 · Document startup and list scrolling",
+        "0.2.44 · 文档打开与列表滚动"
+      ],
+      [
         "releases/0.2.43",
         "0.2.43 · Offline editing and distraction-free mode",
         "0.2.43 · 离线编辑与纯净模式"

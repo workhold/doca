@@ -1572,7 +1572,7 @@ function WorkspaceApp() {
         <div
           className={
             "main-scroll" +
-            (pluginRoute
+            (renderedPluginRoute !== undefined
               ? " plugin-scroll-host"
               : !resourceId && scope === "knowledge-books"
                 ? " knowledge-books-scroll-host"

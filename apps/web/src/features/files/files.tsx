@@ -279,7 +279,7 @@ function PreviewPanel({
   close: () => void;
   openLarge: () => void;
 }) {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
 
   if (!file)
     return (
@@ -290,6 +290,9 @@ function PreviewPanel({
     );
   return (
     <aside className="file-preview-panel" aria-label={t("fileManager.preview")}>
+      <button type="button" className="icon file-preview-close" onClick={close} aria-label={t("dialog.close")}>
+        <X size={18} />
+      </button>
       <div
         className="file-preview-content"
         onDoubleClick={openLarge}

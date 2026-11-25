@@ -643,7 +643,7 @@ export default function MarkdownDocument({
       }}
     >
       <section ref={container} className="markdown-document surface-editor">
-        <OfflineEditingNotice active={canEdit && !online} />
+        <OfflineEditingNotice editable={canEdit} connected={online} />
         {attachmentPreview.dialog}
         <OutlineDrawer
           container={container}

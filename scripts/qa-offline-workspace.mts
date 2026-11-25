@@ -88,6 +88,21 @@ const editor = (page: Page | Frame) =>
       '.document-editor-shell [data-slate-editor][contenteditable="true"]',
     )
     .first();
+async function scrollToLastItem(page: Page, container: string, items: string) {
+  await page.locator(items).last().waitFor();
+  const bounds = await page.locator(container).boundingBox();
+  assert(bounds);
+  const last = await page.locator(items).last().boundingBox();
+  assert(last && last.y + last.height > bounds.y + bounds.height);
+  await page.mouse.move(bounds.x + 12, bounds.y + bounds.height / 2);
+  await page.mouse.wheel(0, 5000);
+  await page.waitForFunction(({ container, items }) => {
+    const pane = document.querySelector(container)!;
+    const last = document.querySelectorAll(items);
+    return pane.scrollTop > 0 &&
+      last[last.length - 1]!.getBoundingClientRect().bottom <= pane.getBoundingClientRect().bottom + 1;
+  }, { container, items }, { timeout: 5000 });
+}
 const replica = (
   page: Page | Frame,
   documentId: string,
@@ -370,6 +385,84 @@ try {
     `Signed-in production workspace automatically cached ${cachedPaths.length} static URLs with no API responses`,
   );
 
+  for (const { id, selector, title } of documents.slice(0, formats.length)) {
+    const tab = await context.newPage();
+    let resumeSync!: () => void;
+    let waiting = new Promise<void>((resolve) => { resumeSync = resolve; });
+    let interceptedSync = false;
+    await tab.routeWebSocket("**/api/v1/ws", (socket) => {
+      socket.connectToServer().onMessage(async (raw) => {
+        const message = JSON.parse(String(raw));
+        if (message.type === "sync-response" && message.room === id) {
+          interceptedSync = true;
+          await waiting;
+        }
+        socket.send(raw);
+      });
+    });
+    await tab.addInitScript(() => {
+      const selector = ".editor-offline-notice";
+      new MutationObserver((records) => {
+        if (records.some((record) => Array.from(record.addedNodes).some(
+          (node) => node instanceof Element && (node.matches(selector) || node.querySelector(selector)),
+        ))) document.documentElement.dataset.qaOfflineNoticeShown = "true";
+      }).observe(document, { childList: true, subtree: true });
+    });
+    try {
+      await tab.goto(`${origin}/#/r/${id}`);
+      await tab.locator(selector).first().waitFor();
+      await mode(tab).waitFor();
+      assert.equal(await tab.locator(".editor-offline-notice").count(), 0, title);
+      resumeSync();
+      await tab.getByText(/已保存到云端/).last().waitFor({ state: "attached" });
+      assert(interceptedSync, title);
+      assert.equal(await tab.locator("html").getAttribute("data-qa-offline-notice-shown"), null, title);
+      if (id === rich.id) {
+        const notice = tab.locator(".editor-offline-notice");
+        await context.setOffline(true);
+        await notice.waitFor();
+        waiting = new Promise<void>((resolve) => { resumeSync = resolve; });
+        await context.setOffline(false);
+        await tab.getByText("正在同步…", { exact: true }).waitFor({ state: "attached" });
+        assert.equal(await notice.count(), 1);
+        resumeSync();
+        await notice.waitFor({ state: "hidden" });
+      }
+    } finally {
+      resumeSync();
+      await tab.close();
+    }
+  }
+  pass("Five cached editors opened online without showing the offline notice while document sync was held");
+  pass("A disconnected rich-text editor kept its offline notice until document sync resumed after reconnecting");
+
+  for (let index = 1; index <= 14; index++) {
+    await request("/resources", {
+      kind: "library",
+      format: "rich_text",
+      title: `Scroll QA Library ${index}`,
+    });
+  }
+  for (const [route, pane, items] of [
+    ["documents", ".main-scroll", ".document-table-row"],
+    ["libraries", ".main-scroll", ".library-card"],
+    ["offline", ".offline-workspace", ".offline-workspace-list > li"],
+  ] as const) {
+    const tab = await context.newPage();
+    await tab.setViewportSize({ width: 1000, height: 520 });
+    await tab.goto(`${origin}/#/${route}`);
+    await scrollToLastItem(tab, pane, items);
+    if (route === "documents") {
+      const viewport = await tab.locator(pane).boundingBox();
+      const filters = await tab.locator(".dashboard-controls").boundingBox();
+      assert(viewport && filters && Math.abs(filters.y - viewport.y) <= 1);
+      await tab.locator('.sidebar a[href="#/libraries"]').first().click();
+      await scrollToLastItem(tab, pane, ".library-card");
+    }
+    await tab.close();
+  }
+  pass("Recent documents, library cards, and the offline directory scrolled to their last item");
+
   const sender = page;
   const viewer = await context.newPage();
   // The sheet SDK draws collaborator labels on its canvas instead of using DOM overlays.
@@ -533,6 +626,84 @@ try {
     console.log(`Network events verified for ${item.title}`);
   }
   pass("Five open editors followed the browser network events. Rich text switched while its socket was still open, then synced an offline edit without losing focus");
+
+  const personalFolder = await request("/files/folders", { name: "Scroll QA personal" });
+  const sharedFolder = await request("/files/folders", { name: "Scroll QA shared", parentId: "shared" });
+  for (let index = 1; index <= 16; index++) {
+    const name = `Scroll QA ${index}`;
+    await request("/knowledge-books", { title: name });
+    for (const parentId of [null, personalFolder.id, "shared", sharedFolder.id])
+      await request("/files/folders", { name, parentId });
+  }
+  const sharedPath = `shared-files/${sharedFolder.id}?name=${encodeURIComponent(sharedFolder.name)}`;
+  const personalTrail = [
+    { type: "system", id: "root", name: "我的文件夹" },
+    { type: "folder", id: personalFolder.id, name: personalFolder.name },
+  ];
+  const personalPath = `files?path=${encodeURIComponent(JSON.stringify(personalTrail))}`;
+  for (const [route, pane, items] of [
+    ["knowledge-books", ".book-list-content", ".book-library-card"],
+    [`r/${library.id}`, ".document-tree", ".document-tree .tree-row"],
+    ["files", ".files-content", ".files-column .file-entry"],
+    ["shared-files", ".shared-folders-page", ".shared-folder-row:not(.shared-folder-table-head)"],
+  ] as const) {
+    const tab = await context.newPage();
+    await tab.setViewportSize({ width: 1260, height: 520 });
+    await tab.goto(`${origin}/#/${route}`);
+    await scrollToLastItem(tab, pane, items);
+    await tab.close();
+  }
+  pass("Knowledge books, the library document tree, and the personal and shared folder roots scrolled to their last item");
+
+  const folders = [
+    [personalPath, personalFolder.name],
+    [sharedPath, sharedFolder.name],
+  ] as const;
+  const columnEntries = (name: string) => `.files-column:has(> .files-column-title[title="${name}"]) .file-entry`;
+  for (const [path, name] of folders) {
+    for (const [label, items] of [
+      ["图标视图", ".files-grid .file-entry"],
+      ["列表视图", ".files-list .file-entry"],
+      ["分栏视图", columnEntries(name)],
+    ] as const) {
+      const tab = await context.newPage();
+      await tab.setViewportSize({ width: 1260, height: 520 });
+      await tab.goto(`${origin}/#/${path}`);
+      await tab.getByRole("button", { name: label, exact: true }).click();
+      await scrollToLastItem(tab, ".files-content", items);
+      await tab.close();
+    }
+  }
+  pass("Personal and shared folders scrolled through their contents in grid, list, and column views");
+
+  const fileResponse = await context.request.post(
+    `${origin}/api/v1/files/items?parentType=folder&parentId=${sharedFolder.id}&filename=scroll-preview.txt`,
+    {
+      headers: { origin, "content-type": "application/octet-stream" },
+      data: Buffer.from("Isolated folder preview"),
+    },
+  );
+  assert.equal(fileResponse.status(), 200, await fileResponse.text());
+  const previewFile = await fileResponse.json();
+  for (const [path, name] of folders) {
+    const tab = await context.newPage();
+    await tab.setViewportSize({ width: 390, height: 620 });
+    await tab.goto(`${origin}/#/${path}`);
+    await tab.getByRole("button", { name: "分栏视图", exact: true }).click();
+    const contents = tab.locator(".files-content");
+    assert(await contents.isVisible(), "A narrow column view must show the folder contents");
+    await scrollToLastItem(tab, ".files-content", columnEntries(name));
+    if (path === sharedPath) {
+      const scrollTop = await contents.evaluate((node) => node.scrollTop);
+      await tab.locator(`.file-entry[data-id="${previewFile.id}"]`).click();
+      await tab.locator(".file-preview-content").waitFor();
+      await tab.locator(".file-preview-close").click();
+      await contents.waitFor();
+      assert.equal(await contents.evaluate((node) => node.scrollTop), scrollTop);
+    }
+    await tab.close();
+  }
+  pass("Narrow personal and shared folder columns scrolled, and closing a file preview kept the folder's scroll position");
 
   await page.close();
   await stopHost();
