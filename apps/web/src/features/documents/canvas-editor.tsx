@@ -351,7 +351,7 @@ export default function CanvasDocument({
         else handle.undo();
       }}
     >
-      <OfflineEditingNotice active={!!user && editable && !sync.connected} />
+      <OfflineEditingNotice editable={!!user && editable} connected={sync.connected} />
       {slots.live &&
         createPortal(<span role="status">{sync.status}</span>, slots.live)}
       <DocumentDownload

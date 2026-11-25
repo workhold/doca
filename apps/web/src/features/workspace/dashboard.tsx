@@ -249,7 +249,7 @@ export function Dashboard({
   );
   return (
     <section
-      className={`dashboard${trash ? " dashboard-trash" : ""}${!libraries && !trash && !mine ? " dashboard-home" : ""}`}
+      className={`dashboard${trash ? " dashboard-trash" : ""}${home ? " dashboard-home" : ""}${libraries ? " dashboard-libraries" : ""}`}
     >
       {preview && (
         <TrashPreview resource={preview} close={() => setPreview(null)} />

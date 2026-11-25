@@ -745,7 +745,7 @@ function RichDocument({
         }
       }}
     >
-      <OfflineEditingNotice active={editable && localReady && !connected} />
+      <OfflineEditingNotice editable={editable && localReady} connected={connected} />
       <DocumentPageWidthMenu
         mode={pageWidth}
         change={setPageWidth}

@@ -89,16 +89,18 @@
   padding: 0 10px;
 }
 
-/* Home has one scroll surface: actions leave first, then the list tabs stick. */
-.dashboard-scroll-host:has(> .dashboard-home) {
+/* Document and library dashboards scroll inside the workspace. */
+.dashboard-scroll-host:has(> :is(.dashboard-home, .dashboard-libraries)) {
   overflow: auto;
   display: block;
   scrollbar-gutter: stable;
 }
-.dashboard-scroll-host > .dashboard-home {
+.dashboard-scroll-host > :is(.dashboard-home, .dashboard-libraries) {
   height: auto;
   min-height: 100%;
   display: block;
+}
+.dashboard-scroll-host > .dashboard-home {
   padding-top: 24px;
 }
 .dashboard-controls {

@@ -12,6 +12,8 @@ Images and attachments use host uploads, asset IDs, and authorized downloads. Ed
 
 The offline workspace source adds **Account menu → Offline documents** to the desktop client and browsers with the Doca frontend downloaded. Home shows this list when the backend is unreachable. Open a replica to edit under the last known permission and sync after the connection and access checks recover. See [how to enable offline documents](access-offline-events.md#离线文档入口).
 
+The Documents page scrolls through recent visits below its sticky filters. The Libraries page and the offline document directory can also scroll to the final item when their lists exceed the viewport.
+
 ## Sharing and permissions
 
 The sharing panel manages visibility, invitations, member authorization sources, and links. Changes check a version or revision; refresh after a 409 conflict. Management and ownership operations follow their own authorization rules; see [permissions](permission-inheritance.md).

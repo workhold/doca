@@ -260,7 +260,7 @@ export default function SheetDocument({
   );
   return (
     <section className={`surface-editor sheet-document ${reading ? "is-reading" : ""}`}>
-      <OfflineEditingNotice active={!!user && editable && !sync.connected} />
+      <OfflineEditingNotice editable={!!user && editable} connected={sync.connected} />
       {documentPicker.picker}
       {attachmentPreview.dialog}
       {slots.live &&

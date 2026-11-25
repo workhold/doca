@@ -1,5 +1,8 @@
 .offline-workspace {
   width: min(100% - 32px, 760px);
+  height: 100dvh;
+  overflow: auto;
+  scrollbar-gutter: stable;
   margin: 0 auto;
   padding-block: clamp(24px, 6vw, 60px);
 }

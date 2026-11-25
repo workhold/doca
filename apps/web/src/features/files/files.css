@@ -341,6 +341,9 @@
   color: var(--text-muted);
   font-size: 12px;
 }
+.file-preview-close {
+  display: none;
+}
 .file-preview-placeholder {
   width: 38px;
   height: 38px;
@@ -445,8 +448,22 @@
   .file-preview-panel { width: 44%; }
 }
 @media (max-width: 640px) {
-  .files-view-columns .files-content { display: none; }
-  .files-view-columns .file-preview-panel { width: 100%; border-left: 0; }
+  .files-view-columns:has(> .file-preview-panel:not(.empty)) > .files-content,
+  .files-view-columns > .file-preview-panel.empty {
+    display: none;
+  }
+  .files-view-columns > .file-preview-panel:not(.empty) {
+    flex-basis: 100%;
+    min-width: 0;
+    border-left: 0;
+  }
+  .file-preview-panel > .file-preview-close {
+    display: inline-flex;
+    align-self: flex-end;
+    flex: none;
+    width: 44px;
+    height: 44px;
+  }
   .files-toolbar-title h1 { font-size: 19px; }
   .files-divider { display: none; }
 }

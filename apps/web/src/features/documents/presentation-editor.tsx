@@ -302,7 +302,7 @@ export default function PresentationDocument({
       ref={root}
       className={`surface-editor presentation-document ${reading ? "is-reading" : ""} ${presenting ? "is-presenting" : ""}`}
     >
-      <OfflineEditingNotice active={!!user && editable && !sync.connected} />
+      <OfflineEditingNotice editable={!!user && editable} connected={sync.connected} />
       {attachmentPreview.dialog}
       <Feedback message={sync.error || error} tone="error" />
       {model && (!sync.connected || sync.blocked) && (
