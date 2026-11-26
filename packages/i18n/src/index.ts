@@ -3,6 +3,7 @@ import { type Locale } from "./locales";
 
 export { en, type MessageKey } from "./catalogs/en";
 export { zh } from "./catalogs/zh";
+export { desktopEn, type DesktopMessageKey } from "./catalogs/desktop";
 export {
   encodeSystemError,
   decodeSystemError,
@@ -11,6 +12,7 @@ export {
 } from "./system-errors";
 export {
   createTranslator,
+  createDesktopTranslator,
   interpolate,
   lookupTemplate,
   translate,
@@ -20,6 +22,7 @@ export {
   defaultLocale,
   htmlLang,
   isLocale,
+  localeNames,
   locales,
   matchLocale,
   type Locale,

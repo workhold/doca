@@ -19,6 +19,8 @@ Allowed codes live in `locales` in `packages/i18n`. An unknown value falls back 
 
 A signed-in choice is page state `ui.locale`. The browser also stores `doca.locale` in `localStorage`. Mobile stores it on the device. An assistant can change `ui.locale` through the existing `page_state`.
 
+Each page load starts the Web login screen in the administrator's current site default language. Its language selector applies immediately for the current visit. After sign-in, the workspace resolves its language from `ui.locale` and the site default.
+
 ## Host catalog
 
 Catalogs are in `packages/i18n`. The English catalog `en` is the source of keys. Every other language must cover exactly the same keys.

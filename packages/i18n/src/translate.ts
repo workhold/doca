@@ -1,3 +1,8 @@
+import {
+  desktopEn,
+  desktopZh,
+  type DesktopMessageKey,
+} from "./catalogs/desktop";
 import { en, type MessageKey } from "./catalogs/en";
 import { zh } from "./catalogs/zh";
 import { type Locale } from "./locales";
@@ -35,4 +40,10 @@ export function translate(locale: Locale, key: MessageKey, values?: MessageValue
 
 export function createTranslator(locale: Locale) {
   return (key: MessageKey, values?: MessageValues) => translate(locale, key, values);
+}
+
+export function createDesktopTranslator(locale: Locale) {
+  const primary = locale === "zh" ? desktopZh : desktopEn;
+  return (key: DesktopMessageKey, values?: MessageValues) =>
+    interpolate(lookupTemplate(primary, desktopEn, key, values), values);
 }

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { MessageKey } from "@doca/i18n";
 import { writeClipboardText } from "@web/shared/clipboard.js";
 import { useI18n } from "@web/shared/i18n.js";
 import { Feedback } from "@web/shared/components/feedback.js";
@@ -9,7 +10,7 @@ export function QrLogin({ logged }: { logged: () => Promise<void> }) {
   loggedRef.current = logged;
   const [svg, setSvg] = useState("");
   const [payload, setPayload] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState<MessageKey | { message: string }>();
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -21,13 +22,26 @@ export function QrLogin({ logged }: { logged: () => Promise<void> }) {
         headers: { accept: "application/json" },
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message ?? "二维码生成失败");
       if (stop) return;
-      if (typeof data.svg !== "string" || !data.svg.includes("<svg") || data.svg.includes("<script"))
-        throw new Error("二维码生成失败");
+      if (!response.ok) {
+        setError(
+          typeof data.message === "string"
+            ? { message: data.message }
+            : "login.qr.issueFailed",
+        );
+        return;
+      }
+      if (
+        typeof data.svg !== "string" ||
+        !data.svg.includes("<svg") ||
+        data.svg.includes("<script")
+      ) {
+        setError("login.qr.issueFailed");
+        return;
+      }
       setSvg(data.svg);
       setPayload(typeof data.payload === "string" ? data.payload : "");
-      setError("");
+      setError(undefined);
       const wait = async () => {
         if (stop) return;
         try {
@@ -44,21 +58,28 @@ export function QrLogin({ logged }: { logged: () => Promise<void> }) {
             return;
           }
           if (status.status === 410) {
-            void issue().catch((reason: Error) => setError(reason.message));
+            void issue().catch(issueFailed);
             return;
           }
           if (!status.ok) {
-            setError(body.message ?? "登录状态查询失败");
+            setError(
+              typeof body.message === "string"
+                ? { message: body.message }
+                : "login.qr.statusFailed",
+            );
             return;
           }
-        } catch (reason) {
-          if (!stop) setError(reason instanceof Error ? reason.message : "登录状态查询失败");
+        } catch {
+          if (!stop) setError("login.qr.statusFailed");
         }
         if (!stop) timer = window.setTimeout(() => void wait(), 2000);
       };
       timer = window.setTimeout(() => void wait(), 1500);
     }
-    void issue().catch((reason: Error) => setError(reason.message));
+    function issueFailed() {
+      if (!stop) setError("login.qr.issueFailed");
+    }
+    void issue().catch(issueFailed);
     return () => {
       stop = true;
       window.clearTimeout(timer);
@@ -68,28 +89,37 @@ export function QrLogin({ logged }: { logged: () => Promise<void> }) {
   return (
     <div className="qr-login">
       {svg ? (
-        <div role="img" aria-label="登录二维码" dangerouslySetInnerHTML={{ __html: svg }} />
+        <div
+          role="img"
+          aria-label={t("login.qr.label")}
+          dangerouslySetInnerHTML={{ __html: svg }}
+        />
       ) : (
-        <p>正在生成二维码…</p>
+        <p>{t("login.qr.loading")}</p>
       )}
-      <p>打开 Doca App，在设置里选择「扫码登录网页」。</p>
+      <p>{t("login.qr.instruction")}</p>
       {payload ? (
         <button
           type="button"
           className="text-button"
           onClick={() => {
-            void writeClipboardText(payload).then(() => {
-              setError("");
-              setCopied(true);
-            }).catch(() => {
-              setError(t("fileManager.copyFailed"));
-            });
+            void writeClipboardText(payload)
+              .then(() => {
+                setError(undefined);
+                setCopied(true);
+              })
+              .catch(() => {
+                setError("fileManager.copyFailed");
+              });
           }}
         >
-          {copied ? "已复制" : "复制二维码内容"}
+          {t(copied ? "login.qr.copied" : "login.qr.copy")}
         </button>
       ) : null}
-      <Feedback message={error} tone="error" />
+      <Feedback
+        message={typeof error === "string" ? t(error) : error?.message}
+        tone="error"
+      />
     </div>
   );
 }

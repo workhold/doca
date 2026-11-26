@@ -33,21 +33,21 @@ impl Default for Settings {
 }
 
 pub fn canonical_origin(input: &str) -> Result<String, String> {
-    let url = Url::parse(input.trim()).map_err(|_| "请输入有效的后端地址".to_string())?;
+    let url = Url::parse(input.trim()).map_err(|_| "desktop.error.invalidAddress")?;
     if url.username() != ""
         || url.password().is_some()
         || url.path() != "/"
         || url.query().is_some()
         || url.fragment().is_some()
     {
-        return Err("后端地址只能包含协议、域名和端口".into());
+        return Err("desktop.error.addressOrigin".into());
     }
     let loopback = matches!(
         url.host_str(),
         Some("127.0.0.1" | "localhost" | "[::1]" | "::1")
     );
     if url.scheme() != "https" && !(url.scheme() == "http" && loopback) {
-        return Err("远端服务需要 HTTPS；仅本机地址可使用 HTTP".into());
+        return Err("desktop.error.httpsRequired".into());
     }
     Ok(url.origin().ascii_serialization())
 }
@@ -142,8 +142,18 @@ mod tests {
             canonical_origin(" https://doca.example.com/ ").unwrap(),
             "https://doca.example.com"
         );
-        assert!(canonical_origin("http://doca.example.com").is_err());
-        assert!(canonical_origin("https://doca.example.com/path").is_err());
+        assert_eq!(
+            canonical_origin("doca.example.com").unwrap_err(),
+            "desktop.error.invalidAddress"
+        );
+        assert_eq!(
+            canonical_origin("http://doca.example.com").unwrap_err(),
+            "desktop.error.httpsRequired"
+        );
+        assert_eq!(
+            canonical_origin("https://doca.example.com/path").unwrap_err(),
+            "desktop.error.addressOrigin"
+        );
         assert!(canonical_origin("https://user:password@doca.example.com").is_err());
         assert_eq!(
             canonical_origin("http://127.0.0.1:3000").unwrap(),

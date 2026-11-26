@@ -15,6 +15,7 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -38,6 +39,7 @@ type I18nValue = {
   locale: Locale;
   t: (key: MessageKey, values?: MessageValues) => string;
   setLocale: (locale: Locale) => Promise<void>;
+  setLoginLocale: (locale: Locale) => void;
   reloadLocale: (siteLocale?: string, signedIn?: boolean) => Promise<void>;
 };
 
@@ -50,6 +52,8 @@ export function LocaleScope({ value, children }: { value: I18nValue; children: R
 
 export function LocaleProvider({ children, initialLocale }: { children: ReactNode; initialLocale?: Locale }) {
   const [locale, setLocaleState] = useState<Locale>(() => initialLocale ?? storedLocale());
+  const loginLocale = useRef<Locale | null>(null);
+  const localeRequest = useRef(0);
   useEffect(() => {
     if (initialLocale) setLocaleState(initialLocale);
   }, [initialLocale]);
@@ -75,21 +79,27 @@ export function LocaleProvider({ children, initialLocale }: { children: ReactNod
   }, []);
   const reloadLocale = useCallback(
     async (siteLocale?: string, signedIn = true) => {
+      const request = ++localeRequest.current;
       const fallback = matchLocale(siteLocale) ?? defaultLocale;
       if (!signedIn) {
-        setLocaleState(fallback);
+        setLocaleState(loginLocale.current ?? fallback);
         return;
       }
+      let resolved = fallback;
       try {
         const item = await readPageState<unknown>("ui.locale");
-        const next = matchLocale(item?.value);
-        setLocaleState(next ?? fallback);
-      } catch {
-        setLocaleState(fallback);
-      }
+        resolved = matchLocale(item?.value) ?? fallback;
+      } catch {}
+      if (localeRequest.current === request) setLocaleState(resolved);
     },
     [],
   );
+  const setLoginLocale = useCallback((next: Locale) => {
+    if (!isLocale(next)) return;
+    ++localeRequest.current;
+    loginLocale.current = next;
+    setLocaleState(next);
+  }, []);
   const setLocale = useCallback(async (next: Locale) => {
     if (!isLocale(next)) return;
     setLocaleState(next);
@@ -106,9 +116,10 @@ export function LocaleProvider({ children, initialLocale }: { children: ReactNod
       locale,
       t: createTranslator(locale),
       setLocale,
+      setLoginLocale,
       reloadLocale,
     }),
-    [locale, setLocale, reloadLocale],
+    [locale, setLocale, setLoginLocale, reloadLocale],
   );
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

@@ -277,82 +277,20 @@
   color: #245d49;
 }
 form.auth-card.account-login-card {
-  position: relative;
   padding: 0;
-}
-form.auth-card.account-login-card:has(.qr-corner) {
-  overflow: hidden;
 }
 form.auth-card.account-login-card .auth-card-body,
 form.auth-card.account-login-card .qr-login-overlay {
-  padding: 38px;
+  padding: 6px 38px 38px;
 }
 form.auth-card.account-login-card.is-scanning .auth-card-body {
   visibility: hidden;
 }
-.qr-corner {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 3;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  line-height: 0;
-}
-.qr-corner:hover,
-.qr-corner:focus-visible {
-  background: transparent;
-  border-color: transparent;
-}
-.qr-corner-tip {
-  position: absolute;
-  top: 16px;
-  right: calc(100% + 6px);
-  padding: 4px 10px;
-  border-radius: 4px;
-  background: #e8f0ff;
-  color: var(--brand, #3370ff);
-  font-size: 12px;
-  line-height: 1.4;
-  white-space: nowrap;
-}
-.qr-corner-tip::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  right: -5px;
-  transform: translateY(-50%);
-  border: 5px solid transparent;
-  border-left-color: #e8f0ff;
-  border-right: 0;
-}
-.qr-corner-mark {
-  position: relative;
-  width: 112px;
-  height: 112px;
-  color: #fff;
-  background: var(--brand, #3370ff);
-  clip-path: polygon(0 0, 100% 0, 100% 100%);
-}
-.qr-corner-mark svg {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-}
-.qr-corner:hover .qr-corner-mark {
-  background: #245bdb;
-}
 .qr-login-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #fff;
   text-align: center;
 }
 .qr-login-overlay h2 {
@@ -381,7 +319,7 @@ form.auth-card.account-login-card.is-scanning .auth-card-body {
 @media (max-width: 700px) {
   form.auth-card.account-login-card .auth-card-body,
   form.auth-card.account-login-card .qr-login-overlay {
-    padding: 28px;
+    padding: 6px 28px 28px;
   }
 }
 .source-field {

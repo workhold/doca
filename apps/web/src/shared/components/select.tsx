@@ -12,7 +12,10 @@ import React, {
 import { createPortal } from "react-dom";
 import { Check, ChevronDown } from "lucide-react";
 
-type Item = { value: string; label: string; disabled: boolean };
+type Item = { value: string; label: string; disabled: boolean; lang?: string };
+type SelectProps = SelectHTMLAttributes<HTMLSelectElement> & {
+  popoverOptions?: { align?: "start" | "end"; minWidth?: number; className?: string };
+};
 function text(nodes: React.ReactNode): string {
   return Children.toArray(nodes)
     .map((n) =>
@@ -31,6 +34,7 @@ export function selectItems(children: React.ReactNode): Item[] {
         value?: string;
         children?: React.ReactNode;
         disabled?: boolean;
+        lang?: string;
       }>(n)
     )
       return [];
@@ -45,6 +49,7 @@ export function selectItems(children: React.ReactNode): Item[] {
             value: String(n.props.value ?? text(n.props.children)),
             label: text(n.props.children),
             disabled: !!n.props.disabled,
+            ...(n.props.lang ? { lang: n.props.lang } : {}),
           },
         ]
       : [];
@@ -60,8 +65,11 @@ export function Select({
   onInvalid,
   disabled,
   className = "",
+  popoverOptions,
   ...props
-}: SelectHTMLAttributes<HTMLSelectElement>) {
+}: SelectProps) {
+  const { align = "start", minWidth = 190, className: popoverClassName } =
+    popoverOptions ?? {};
   const items = selectItems(children),
     [internal, setInternal] = useState(
       String(defaultValue ?? items[0]?.value ?? ""),
@@ -111,19 +119,20 @@ export function Select({
   useLayoutEffect(() => {
     if (!open || !trigger.current) return;
     const rect = trigger.current.getBoundingClientRect(),
-      width = Math.min(Math.max(rect.width, 190), window.innerWidth - 24);
+      width = Math.min(Math.max(rect.width, minWidth), window.innerWidth - 24);
+    const left = align === "end" ? rect.right - width : rect.left;
     const below = window.innerHeight - rect.bottom - 16,
       above = rect.top - 16;
     const flip = below < Math.min(items.length * 36 + 12, 220) && above > below;
     const maxHeight = Math.max(70, Math.min(280, flip ? above : below));
     setPosition({
-      left: Math.max(12, Math.min(rect.left, window.innerWidth - width - 12)),
+      left: Math.max(12, Math.min(left, window.innerWidth - width - 12)),
       top: flip ? rect.top - 5 : rect.bottom + 5,
       transform: flip ? "translateY(-100%)" : "none",
       width,
       maxHeight,
     });
-  }, [open, items.length]);
+  }, [open, items.length, align, minWidth]);
   useEffect(() => {
     if (!open) return;
     const outside = (e: PointerEvent) => {
@@ -226,7 +235,9 @@ export function Select({
           }
         }}
       >
-        <span className="select-value">{current?.label ?? "请选择"}</span>
+        <span className="select-value" lang={current?.lang}>
+          {current?.label ?? "请选择"}
+        </span>
         <ChevronDown size={14} aria-hidden="true" />
       </button>
       <select
@@ -256,7 +267,7 @@ export function Select({
             id={id}
             role="listbox"
             aria-label={props["aria-label"] ?? "可选项"}
-            className="select-popover"
+            className={popoverClassName ? `select-popover ${popoverClassName}` : "select-popover"}
             style={{ position: "fixed", ...position }}
             onMouseDown={(e) => e.preventDefault()}
           >
@@ -264,6 +275,7 @@ export function Select({
               <div
                 key={item.value}
                 role="option"
+                lang={item.lang}
                 id={id + "-" + index}
                 aria-selected={item.value === selected}
                 aria-disabled={item.disabled || undefined}

@@ -2,6 +2,7 @@ import { browserClipperZh } from "./browser-clipper.js";
 import { desktopZh } from "./desktop.js";
 import { handoverZh } from "./resource-handover.js";
 import { groupsZh } from "./groups.js";
+import { localeNames } from "../locales.js";
 import type { MessageKey } from "./en";
 
 export const zh = {
@@ -2623,8 +2624,8 @@ export const zh = {
   "settings.saved": "已自动保存",
   "settings.language": "语言",
   "settings.language.hint": "只切换界面文字，不翻译文档、评论和邮件正文。",
-  "locale.zh": "中文",
-  "locale.en": "English",
+  "locale.zh": localeNames.zh,
+  "locale.en": localeNames.en,
   "mobile.settings.title": "设置",
   "mobile.settings.currentServer": "当前服务器",
   "mobile.settings.signedOut": "未登录",
@@ -2816,6 +2817,21 @@ export const zh = {
   "login.passwordReset": "密码已重置，其他会话已退出，请重新登录。",
   "login.headline": "把知识留在",
   "login.headlineRest": "触手可及的地方。",
+  "login.demo.brief": "发布计划",
+  "login.demo.checklist": "发布前检查",
+  "login.demo.intro": "确认本次发布范围，跟进上线前的准备工作。",
+  "login.demo.feedback": "整理团队反馈",
+  "login.demo.reviewNotes": "核对发布说明",
+  "login.demo.hoursTitle": "项目工时",
+  "login.demo.task": "任务",
+  "login.demo.hours": "工时",
+  "login.demo.research": "用户调研",
+  "login.demo.design": "方案设计",
+  "login.demo.review": "评审",
+  "login.demo.total": "合计",
+  "login.demo.canvasTitle": "项目流程",
+  "login.demo.idea": "想法",
+  "login.demo.plan": "方案",
   "login.tagline": "个人记录，轻量共享。",
   "login.taglineRest": "你的文档与知识库，从这里开始。",
   "login.account": "账号登录",
@@ -2844,6 +2860,14 @@ export const zh = {
   "login.back": "返回登录",
   "login.forgot": "忘记密码",
   "login.scanTitle": "扫码登录",
+  "login.invalidCredentials": "账号或密码错误。",
+  "login.qr.label": "登录二维码",
+  "login.qr.loading": "正在生成二维码…",
+  "login.qr.instruction": "打开 Doca App，在设置里选择「扫码登录网页」。",
+  "login.qr.copy": "复制二维码内容",
+  "login.qr.copied": "已复制",
+  "login.qr.issueFailed": "二维码生成失败。",
+  "login.qr.statusFailed": "登录状态查询失败。",
   "trash.previewTitle": "{title} · 回收站只读预览",
   "trash.loadingPreview": "正在加载预览…",
   "trash.noPreview": "暂无可预览的文档",
