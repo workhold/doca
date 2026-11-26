@@ -17,10 +17,10 @@ description: Add interface languages to a Doca editor subpackage (rich text, spr
 <RichTextEditor locale={locale} />
 ```
 
-当前只有 `zh` 和 `en`。不认识的代码按 `en` 显示。缺省时按 `zh` 显示。
+当前支持 `zh`、`en`、`zh-Hant`、`ja`、`fr`、`ko`、`es` 和 `ru`。不认识的代码按 `en` 显示。缺省时按 `zh` 显示。
 
 2. 字典 key 用稳定的英文标识，例如 `toolbar.bold`、`find.replaceAll`。不要用中文，也不要用会随文案修改的整句英文。
-3. 至少提供 `en` 和 `zh` 两份目录，key 集合相同。新增语言时只加一份目录。
+3. 为每种支持的语言提供一份目录，key 集合与英文相同。
 4. 占位符写成 `{name}`。需要区分数量时提供 `key.one` 和 `key.other`，调用方传 `count`。
 5. `locale` 变化只更新按钮、菜单、占位符和提示。不要因此重建文档、Y.Doc、协同适配器或插件列表。
 6. 可以额外接受 `messages?: Record<string, string>` 覆盖个别 key。没有这份 prop 也可以。

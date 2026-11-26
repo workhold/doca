@@ -1,9 +1,16 @@
 import { expect, it } from "vitest";
-import { en, interpolate, lookupTemplate, translate, zh } from "@doca/i18n";
+import { catalogs, en, htmlLang, interpolate, locales, lookupTemplate, matchLocale, translate } from "@doca/i18n";
 import { normalizePageStateValue } from "@core/modules/page-state.js";
 
-it("keeps every locale catalog aligned with the English keys", () => {
-  expect(Object.keys(zh).sort()).toEqual(Object.keys(en).sort());
+it.each(locales)("keeps the %s catalog aligned with the English keys and placeholders", (locale) => {
+  const catalog = catalogs[locale];
+  const keys = Object.keys(en).sort() as Array<keyof typeof en>;
+  expect(Object.keys(catalog).sort()).toEqual(keys);
+  const tokens = (value: string) => (value.match(/\{\w+\}/g) ?? []).sort();
+  for (const key of keys) {
+    expect(catalog[key].trim(), key).not.toBe("");
+    expect(tokens(catalog[key]), key).toEqual(tokens(en[key]));
+  }
 });
 
 it("translates with English keys, placeholders, and an English fallback", () => {
@@ -20,7 +27,30 @@ it("translates with English keys, placeholders, and an English fallback", () => 
 });
 
 it("accepts only supported interface locales", () => {
-  expect(normalizePageStateValue("ui.locale", "en")).toBe("en");
-  expect(normalizePageStateValue("ui.locale", "zh")).toBe("zh");
-  expect(() => normalizePageStateValue("ui.locale", "fr")).toThrow(/invalid_locale/);
+  for (const locale of locales) {
+    expect(normalizePageStateValue("ui.locale", locale)).toBe(locale);
+    expect(matchLocale(htmlLang(locale))).toBe(locale);
+  }
+  for (const value of ["ar", "zh-TW", "fr-FR", "constructor", null, {}]) {
+    expect(() => normalizePageStateValue("ui.locale", value)).toThrow(/invalid_locale/);
+  }
+});
+
+it("recognizes regional interface tags without changing canonical write values", () => {
+  expect(["zh-TW", "zh-HK", "zh_mo", "zh-Hant-HK"].map(matchLocale))
+    .toEqual(["zh-Hant", "zh-Hant", "zh-Hant", "zh-Hant"]);
+  expect(["zh-CN", "zh-Hans-TW", "en-GB", "ja-JP", "fr-CA", "ko-KR", "es-MX", "ru-RU"].map(matchLocale))
+    .toEqual(["zh", "zh", "en", "ja", "fr", "ko", "es", "ru"]);
+  expect(matchLocale("ar-SA")).toBeNull();
+});
+
+it.each([
+  ["zh-Hant", "搜尋"],
+  ["ja", "検索"],
+  ["fr", "Rechercher"],
+  ["ko", "검색"],
+  ["es", "Buscar"],
+  ["ru", "Поиск"],
+] as const)("translates a common control in %s", (locale, label) => {
+  expect(translate(locale, "common.search")).toBe(label);
 });

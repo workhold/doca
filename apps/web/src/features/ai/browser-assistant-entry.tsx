@@ -1,3 +1,4 @@
+import type { Locale } from "@doca/i18n";
 import { useEffect, useMemo, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import { LocaleProvider } from "@web/shared/i18n.js";
@@ -13,7 +14,7 @@ export type BrowserAssistantConfig = {
   sessionId: string | null;
   profile: { id: string; revision: number; name: string };
   page: { title: string; url: string };
-  locale?: "zh" | "en";
+  locale?: Locale;
   /** Paths use the shared /ai/... vocabulary. The bridge must only map to assistant/ui. */
   request: AIChatRuntime["request"];
   captureCurrentPage: () => Promise<BrowserPageCapture>;

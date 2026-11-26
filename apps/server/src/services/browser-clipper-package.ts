@@ -27,6 +27,7 @@ const files = [
   "ui.js",
   "ui.css",
   "messages.js",
+  "messages-locales.js",
   "icon.svg",
   "icon.png",
 ] as const;

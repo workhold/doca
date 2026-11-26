@@ -42,5 +42,5 @@ jobs:
         run: pnpm typecheck
       - name: Build application
         run: pnpm build
-      - name: Smoke-test SQLite startup, desktop authentication, and Web assets
-        run: pnpm exec vitest run tests/cloud.test.ts tests/desktop-auth.test.ts tests/static-compression.test.ts tests/web-plugin-registry.test.ts --maxWorkers=2
+      - name: Smoke-test SQLite startup, desktop authentication, Web assets and language catalogs
+        run: pnpm exec vitest run tests/cloud.test.ts tests/desktop-auth.test.ts tests/static-compression.test.ts tests/web-plugin-registry.test.ts tests/i18n.test.ts tests/browser-extension-background.test.ts --maxWorkers=2

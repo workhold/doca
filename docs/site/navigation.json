@@ -317,6 +317,12 @@
     "zh": "发行记录",
     "pages": [
       [
+        "releases/0.3.0",
+        "0.3.0 · Eight interface languages",
+        "0.3.0 · 八种界面语言",
+        true
+      ],
+      [
         "releases/0.2.46",
         "0.2.46 · Desktop and sign-in languages",
         "0.2.46 · 桌面端与登录页语言"

@@ -1,6 +1,5 @@
-import { localeLabel, locales } from "@doca/i18n";
+import { htmlLang, localeLabel, locales } from "@doca/i18n";
 import { useEffect, useRef } from "react";
-import { Tooltip } from "antd";
 import { useI18n } from "@web/shared/i18n.js";
 
 export function LocaleSwitch() {
@@ -29,15 +28,9 @@ export function LocaleSwitch() {
   }, []);
   return (
     <details className="locale-switch" ref={root}>
-      <Tooltip
-        title={t("settings.language")}
-        placement="bottom"
-        mouseEnterDelay={0.3}
-      >
-        <summary aria-label={t("settings.language")}>
-          {t(localeLabel[locale])}
-        </summary>
-      </Tooltip>
+      <summary aria-label={t("settings.language")} lang={htmlLang(locale)}>
+        {t(localeLabel[locale])}
+      </summary>
       <div
         className="locale-switch-menu"
         role="listbox"
@@ -48,6 +41,7 @@ export function LocaleSwitch() {
             key={code}
             type="button"
             role="option"
+            lang={htmlLang(code)}
             aria-selected={code === locale}
             onClick={() => {
               close();

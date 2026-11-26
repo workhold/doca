@@ -8,13 +8,15 @@ This is the integration source document for all five editors; subpackages consum
 
 | Format | Installed package | Host entry |
 | --- | --- | --- |
-| Rich text | @smartdoca/slate 0.4.26 | document-editor.tsx |
-| Markdown | @smartdoca/markdown 0.4.4 | markdown-editor.tsx |
-| Spreadsheet | @smartdoca/sheet 0.2.20 | spreadsheet-editor.tsx |
-| Canvas | @smartdoca/canvas 0.5.16 | canvas-editor.tsx |
-| Slides | @smartdoca/slides 0.3.0-alpha.5 | presentation-editor.tsx |
+| Rich text | @smartdoca/slate 0.4.27 | document-editor.tsx |
+| Markdown | @smartdoca/markdown 0.4.6 | markdown-editor.tsx |
+| Spreadsheet | @smartdoca/sheet 0.2.21 | spreadsheet-editor.tsx |
+| Canvas | @smartdoca/canvas 0.5.17 | canvas-editor.tsx |
+| Slides | @smartdoca/slides 0.3.0-alpha.6 | presentation-editor.tsx |
 
 Entries are in the [document feature](../apps/web/src/features/documents). Packages own models, editing commands, undo, rendering, selections, and conversion. The host owns identity, ACLs, uploads/downloads, references, user cards, navigation, comments, and collaboration transport. Locale updates chrome without translating content or rebuilding the editor.
+
+The host and all five editors support the same eight [interface languages](i18n.md). Sheet also applies the matching Univer locale to its native dialogs and menus.
 
 ## References, resources, and find
 

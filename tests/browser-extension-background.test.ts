@@ -9,7 +9,7 @@ import {
   captureImageInfo,
 } from "../apps/browser-extension/image-processing.js";
 // @ts-expect-error extension catalogs are runtime-only JavaScript.
-import { translate } from "../apps/browser-extension/messages.js";
+import { isLocale, storedLocale, translate } from "../apps/browser-extension/messages.js";
 const source = (
   await readFile(
     new URL("../apps/browser-extension/background.js", import.meta.url),
@@ -17,7 +17,7 @@ const source = (
   )
 )
   .replace(/^import \{[\s\S]*?\} from "\.\/image-processing\.js";\n/, "")
-  .replace(/^import \{ translate \} from "\.\/messages\.js";\n/m, "");
+  .replace(/^import \{[^}]*\} from "\.\/messages\.js";\n/m, "");
 const origin = "https://doca.example.test",
   connectionId = randomUUID();
 const config = {
@@ -49,6 +49,8 @@ function runtime() {
     readCaptureImageResponse,
     MAX_IMAGE_SOURCE_BYTES,
     captureImageInfo,
+    isLocale,
+    storedLocale,
     translate,
     URL,
     crypto: {

@@ -59,3 +59,7 @@ pnpm docs:dev
 Docsify 运行库、搜索插件、亮色/暗色样式及 MIT 许可证随站点保存于 `docs/site/assets/vendor/docsify/`。`README.txt` 记录版本及校验过的上游 npm 包完整性，这些资源从文档站自身加载。Mermaid 图按需加载 `site.js` 固定的 ESM 版本，需要能够访问该 CDN。
 
 新增公开页面时，创建双语文件，登记到 `navigation.json`，执行 `pnpm docs:check` 和 `pnpm docs:build`。非公开技术或设计记录进入[研发索引](research.zh-CN.md)，审阅后的验收摘要进入[验收索引](verification/README.md)。代码示例和版本要求保持一致。修改契约时遵循仓库相应技能，并按要求同步打包引用。运行库和额外插件需明确选择版本并完成浏览器验证。
+
+## 语言版本
+
+文档站当前内容、仓库入口和 0.3.0 及后续多语言发行记录使用简体中文、英语、繁体中文、日语、法语、韩语、西班牙语和俄语。各语言的后缀、站点路径和导航文字在 `docs/site/languages.json`。更早的发行记录与独立验收资料保留发布时的版本。添加公开页面时提交各语言稿；新增多语言发行记录在导航条目最后标记 `true`。文档截图放在对应语言的 `docs/images/` 子目录。

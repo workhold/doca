@@ -1,8 +1,9 @@
 import { createPortal } from "react-dom";
 import { useEffect, useRef, useState } from "react";
 import { RichTextEditor, type RichTextEditorProps, type EditorValue } from "@smartdoca/slate";
+import type { Locale } from "@doca/i18n";
 
-type Options = Pick<RichTextEditorProps, "resources" | "plugins" | "locale" | "formulaRenderer">;
+type Options = Pick<RichTextEditorProps, "resources" | "plugins" | "formulaRenderer"> & { locale?: Locale };
 type Projection = { value: EditorValue; mount: HTMLDivElement; ready: () => void };
 
 /** A portal retains host locale, plugin and document contexts without another collaboration session. */

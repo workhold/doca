@@ -25,18 +25,18 @@
   <a href="#quick-start-with-docker">Self-host Doca</a>
 </p>
 
-<p align="center">English · <a href="README.zh-CN.md">简体中文</a></p>
+<p align="center">English · <a href="README.zh-CN.md">简体中文</a> · <a href="README.zh-Hant.md">繁體中文</a> · <a href="README.ja.md">日本語</a> · <a href="README.fr.md">Français</a> · <a href="README.ko.md">한국어</a> · <a href="README.es.md">Español</a> · <a href="README.ru.md">Русский</a></p>
 
 **中文简介：** Doca 是面向个人和小团队的开源文档管理与知识库系统，支持多人协同编辑、在线文档、Markdown、在线表格、幻灯片、无限画布和 AI 助手，可通过 Docker 私有化部署。
 
 Doca puts **online documents, Markdown, spreadsheets, slides, infinite canvas, knowledge management, and team collaboration** in one place. Capture personal notes, build team knowledge, and connect your own AI models to help with the work.
 
-![Doca workspace with recent documents, a team knowledge library, and the AI assistant entry](docs/images/workspace.jpg)
+![Doca workspace with recent documents, a team knowledge library, and the AI assistant entry](docs/images/en/workspace.jpg)
 
 <p align="center"><sub>Pick up where you left off. Documents, team knowledge, and your AI assistant in one workspace.</sub></p>
 
 > [!NOTE]
-> The [live demo](https://d.smartdoca.cc) is for exploration. Its interface starts in Chinese; after signing in, switch to English from the language menu at the top right. Demo data is cleared from time to time; please do not store important data there.
+> The [live demo](https://d.smartdoca.cc) is for exploration. Use the language menu on the sign-in screen or in the workspace header. Demo data is cleared from time to time; please do not store important data there.
 
 ## Make room for your next idea
 
@@ -50,22 +50,22 @@ Doca puts **online documents, Markdown, spreadsheets, slides, infinite canvas, k
 
 Rich text for plans and meeting notes, with a library tree, formatting tools, permissions, and document history close at hand.
 
-![Doca rich text editor displaying a team collaboration guide beside the knowledge library tree](docs/images/rich-text.jpg)
+![Doca rich text editor displaying a team collaboration guide beside the knowledge library tree](docs/images/en/rich-text.jpg)
 
 ### Five formats, one workspace
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/images/markdown.jpg" alt="Doca Markdown editor with a development note in source and preview split view"><br><b>Markdown</b> — notes, code, and structured writing.</td>
-    <td width="50%"><img src="docs/images/spreadsheet.jpg" alt="Doca spreadsheet editor with a formatted project budget"><br><b>Spreadsheets</b> — budgets, data, and project tracking.</td>
+    <td width="50%"><img src="docs/images/en/markdown.jpg" alt="Doca Markdown editor with a development note in source and preview split view"><br><b>Markdown</b> — notes, code, and structured writing.</td>
+    <td width="50%"><img src="docs/images/en/spreadsheet.jpg" alt="Doca spreadsheet editor with a formatted project budget"><br><b>Spreadsheets</b> — budgets, data, and project tracking.</td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/images/slides.jpg" alt="Doca presentation editor displaying a product introduction"><br><b>Slides</b> — present ideas and project updates.</td>
-    <td width="50%"><img src="docs/images/canvas.jpg" alt="Doca canvas editor showing a project flowchart, mind map, and action table"><br><b>Canvas</b> — map out a process on an infinite board.</td>
+    <td width="50%"><img src="docs/images/en/slides.jpg" alt="Doca presentation editor displaying a product introduction"><br><b>Slides</b> — present ideas and project updates.</td>
+    <td width="50%"><img src="docs/images/en/canvas.jpg" alt="Doca canvas editor showing a project flowchart, mind map, and action table"><br><b>Canvas</b> — map out a process on an infinite board.</td>
   </tr>
 </table>
 
-<p align="center"><sub>Editor screenshots updated on 2026-11-22, captured from Doca 0.2.37 with sample content in an isolated local deployment.</sub></p>
+<p align="center"><sub>Editor screenshots captured from Doca 0.3.0 in English with sample content in an isolated local deployment.</sub></p>
 
 ## What you can do
 
@@ -116,12 +116,12 @@ Installers are available from [GitHub Releases](https://github.com/workhold/doca
 
 ## Quick start with Docker
 
-Requires Docker Engine, Docker Compose, and an HTTP(S) origin served by a reverse proxy. A fresh SQLite/local-storage installation needs only one YAML file: no Git, no source checkout, no seccomp JSON, and no external initialization scripts. Existing installations must read the [release requirements](https://workhold.github.io/doca/#/en/releases/0.2.46) and retain their project name, volumes, databases, attachments and master key.
+Requires Docker Engine, Docker Compose, and an HTTP(S) origin served by a reverse proxy. A fresh SQLite/local-storage installation needs only one YAML file: no Git, no source checkout, no seccomp JSON, and no external initialization scripts. Existing installations must read the [release requirements](https://workhold.github.io/doca/#/en/releases/0.3.0) and retain their project name, volumes, databases, attachments and master key.
 
 ```sh
 # 1. Download the standalone configuration into a permanent deployment directory
 mkdir doca && cd doca
-curl -fL https://github.com/workhold/doca/releases/download/v0.2.46/doca-compose-v0.2.46.yaml -o compose.yaml
+curl -fL https://github.com/workhold/doca/releases/download/v0.3.0/doca-compose-v0.3.0.yaml -o compose.yaml
 
 # 2. Generate the master key with openssl rand -hex 32
 # Edit compose.yaml: fill in DOCA_ORIGIN and DOCA_CREDENTIAL_MASTER_KEY
@@ -166,7 +166,7 @@ Open `http://127.0.0.1:39130`. Initialize the administrator with `bash scripts/b
 - [Deployment and configuration](https://workhold.github.io/doca/#/en/operations/deployment)
 - [Plugin development](https://workhold.github.io/doca/#/en/plugins/plugin-development)
 - [HTTP API](https://workhold.github.io/doca/#/en/reference/api); the running application also provides `/api/openapi.json`.
-- [Release notes](https://workhold.github.io/doca/#/en/releases/0.2.46)
+- [Release notes](https://workhold.github.io/doca/#/en/releases/0.3.0)
 - [Documentation source](docs/README.md)
 
 For a documentation preview, run `pnpm docs:dev` and open `http://127.0.0.1:39140/#/en/`. `pnpm docs:check` verifies bilingual coverage and local links. GitHub Pages setup is in [documentation maintenance](docs/documentation.md).

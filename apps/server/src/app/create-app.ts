@@ -2,6 +2,7 @@ import { pluginServices } from "@core/shared/plugin-services.js";
 import { registerGroups } from "../routes/groups.js";
 import { createUserDirectory } from "@core/modules/discovery/users.js";
 import { HOST_VERSION } from "./version.js";
+import { defaultLocale, locales } from "@doca/i18n";
 import { createHistoryWorker } from "../jobs/history-worker.js";
 import { sessionDurations } from "./session-policy.js";
 import {
@@ -649,7 +650,7 @@ export async function createApp(db: DB, options: CreateAppOptions) {
       return {
         siteName: settings.site_name,
         siteLogoUrl: (await readSiteLogo(settings.site_logo))?.url ?? null,
-        defaultLocale: settings.default_locale ?? "zh",
+        defaultLocale: settings.default_locale ?? defaultLocale,
         defaultTimezone: settings.default_timezone ?? "Asia/Shanghai",
         registrationEnabled: !!settings.registration,
         authOptions: await identityPolicy(db),
@@ -1103,7 +1104,7 @@ export async function createApp(db: DB, options: CreateAppOptions) {
     object({
       revision: version,
       siteName: name,
-      defaultLocale: Type.Union([Type.Literal("zh"), Type.Literal("en")]),
+      defaultLocale: Type.Union(locales.map((locale) => Type.Literal(locale))),
       defaultTimezone: Type.String({ minLength: 1, maxLength: 100 }),
       registrationEnabled: Type.Boolean(),
     }),

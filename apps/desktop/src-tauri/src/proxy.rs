@@ -154,14 +154,11 @@ async fn show_manager(State(config): State<Arc<ProxyConfig>>, headers: HeaderMap
     {
         return StatusCode::FORBIDDEN;
     }
-    let locale = match headers
+    const LOCALES: [&str; 8] = ["zh", "en", "zh-Hant", "ja", "fr", "ko", "es", "ru"];
+    let locale = headers
         .get(header::ACCEPT_LANGUAGE)
         .and_then(|value| value.to_str().ok())
-    {
-        Some("en") => Some("en"),
-        Some("zh") => Some("zh"),
-        _ => None,
-    };
+        .and_then(|value| LOCALES.into_iter().find(|locale| *locale == value));
     if config.control.send(Control::ShowManager(locale)).is_err() {
         return StatusCode::SERVICE_UNAVAILABLE;
     }
@@ -936,7 +933,17 @@ mod tests {
         assert!(receiver.try_recv().is_err());
 
         headers.insert(header::ORIGIN, "http://127.0.0.1:43111".parse().unwrap());
-        for (language, expected) in [("en", Some("en")), ("zh", Some("zh")), ("fr", None)] {
+        for (language, expected) in [
+            ("en", Some("en")),
+            ("zh", Some("zh")),
+            ("zh-Hant", Some("zh-Hant")),
+            ("ja", Some("ja")),
+            ("fr", Some("fr")),
+            ("ko", Some("ko")),
+            ("es", Some("es")),
+            ("ru", Some("ru")),
+            ("ar", None),
+        ] {
             headers.insert(header::ACCEPT_LANGUAGE, language.parse().unwrap());
             assert_eq!(
                 show_manager(State(config.clone()), headers.clone()).await,

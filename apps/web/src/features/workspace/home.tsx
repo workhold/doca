@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { api } from "@web/shared/api.js";
 import { useI18n } from "@web/shared/i18n.js";
-import { htmlLang } from "@doca/i18n";
+import { bilingualLocale, htmlLang } from "@doca/i18n";
 import { CollectionAction } from "@web/features/discovery/collection-action.js";
 import { listTime } from "@web/shared/utils/list-time.js";
 import type { WorkspaceActivityPage } from "@core/modules/workspace/plugin-activity.js";
@@ -172,7 +172,7 @@ export function WorkspaceHome({ name }: { name: string }) {
                   setPages([null]);
                 }}
               >
-                {source.title[locale]}
+                {source.title[bilingualLocale(locale)]}
               </button>
             ))}
           </div>
@@ -220,7 +220,7 @@ export function WorkspaceHome({ name }: { name: string }) {
                         {item.kind === "document" && item.format !== null
                           ? t(formatLabels[item.format])
                           : item.kind === "plugin"
-                            ? item.sourceTitle[locale]
+                            ? item.sourceTitle[bilingualLocale(locale)]
                             : t(`workspace.kind.${item.kind}`)}
                       </span>
                       {item.kind === "document" && item.inLibrary && (

@@ -16,7 +16,7 @@ import { DesktopBackendSwitch } from "@web/features/workspace/desktop-backend-sw
 
 import { pluginRouteScope } from "./plugin-route-scope.js";
 
-import type { MessageKey } from "@doca/i18n";
+import { navigationTitle, type MessageKey } from "@doca/i18n";
 import { AIProvider } from "@web/features/ai/ai-context.js";
 import { publishNotificationUnread } from "@web/shared/notification-unread.js";
 import { useI18n } from "@web/shared/i18n.js";
@@ -545,7 +545,7 @@ function WorkspaceApp() {
     const navigation = navigationLayout.entries.find((entry) => entry.webPath === hash.slice(1))
       ?? navigationLayout.entries.find((entry) => entry.webPath === path);
     const pluginNavigation = pluginNavigationByScope.get(scope);
-    let pageTitle = navigation?.title[locale]
+    let pageTitle = (navigation && navigationTitle(locale, navigation))
       ?? (pluginNavigation && activePluginIds.has(pluginNavigation.pluginId)
         ? pluginMessage(locale, pluginNavigation.labelKey)
         : routeTitleKey ? t(routeTitleKey) : "");

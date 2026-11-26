@@ -1,4 +1,4 @@
-import { translate, type MessageKey } from "@doca/i18n";
+import { translate, type Locale, type MessageKey } from "@doca/i18n";
 import { createRoot } from "react-dom/client";
 import { flushSync } from "react-dom";
 import { MarkdownPreview } from "@smartdoca/markdown";
@@ -104,7 +104,7 @@ async function rasterizeHtmlDiagram(svg: SVGSVGElement, fonts: string, signal?: 
   return output;
 }
 
-export async function capturePdfView(source: HTMLElement, signal?: AbortSignal, locale = "zh") {
+export async function capturePdfView(source: HTMLElement, signal?: AbortSignal, locale: Locale = "zh") {
   signal?.throwIfAborted();
   await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   const deadline = Date.now() + 20_000;
@@ -161,7 +161,7 @@ export async function capturePdfView(source: HTMLElement, signal?: AbortSignal, 
   }
   for (const media of Array.from(clone.querySelectorAll("video, audio"))) {
     const label = document.createElement("p");
-    label.textContent = translate(locale === "zh" ? "zh" : "en", media.tagName === "VIDEO" ? "pdf.videoPlaceholder" : "pdf.audioPlaceholder");
+    label.textContent = translate(locale, media.tagName === "VIDEO" ? "pdf.videoPlaceholder" : "pdf.audioPlaceholder");
     const mediaPath = media.getAttribute("src") || media.querySelector("source")?.getAttribute("src");
     const asset = mediaPath ? platformAssetId(new URL(mediaPath, location.origin).pathname) : null;
     if (asset) {
@@ -204,7 +204,7 @@ export async function capturePdfView(source: HTMLElement, signal?: AbortSignal, 
   return { html: `<style>${fonts}</style>${clone.outerHTML}`, width };
 }
 
-export async function exportRenderedPdf(source: HTMLElement, resourceId: string, filename: string, signal?: AbortSignal, locale = "zh") {
+export async function exportRenderedPdf(source: HTMLElement, resourceId: string, filename: string, signal?: AbortSignal, locale: Locale = "zh") {
   const bounded = signal ? AbortSignal.any([signal, AbortSignal.timeout(60_000)]) : AbortSignal.timeout(60_000);
   try {
     return await withAbort((async () => {
@@ -231,7 +231,7 @@ function withAbort<T>(task: Promise<T>, signal: AbortSignal): Promise<T> {
 }
 
 /** Mount only the package's preview; it has no editor, Y.Doc or save transport. */
-export async function exportMarkdownPdf(markdown: string, resourceId: string, filename: string, locale: string) {
+export async function exportMarkdownPdf(markdown: string, resourceId: string, filename: string, locale: Locale) {
   const mount = document.createElement("div");
   mount.className = "doca-markdown";
   mount.style.cssText = "position:fixed;left:-10000px;top:0;width:794px;pointer-events:none";
@@ -261,7 +261,7 @@ const pdfErrorKeys: Record<string, MessageKey> = {
   pdf_render_timeout: "pdf.renderTimeout", pdf_render_too_large: "pdf.tooLarge", pdf_render_busy: "pdf.busy",
   pdf_render_unavailable: "pdf.unavailable", pdf_invalid_request: "pdf.invalidRequest", pdf_format_unsupported: "pdf.unsupportedFormat",
 };
-export function localizedPdfError(error: unknown, locale: string) {
+export function localizedPdfError(error: unknown, locale: Locale) {
   const key = pdfErrorKeys[error instanceof Error ? error.message : ""];
-  return key ? Error(translate(locale === "zh" ? "zh" : "en", key)) : error;
+  return key ? Error(translate(locale, key)) : error;
 }

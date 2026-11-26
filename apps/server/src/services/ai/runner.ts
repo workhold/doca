@@ -150,7 +150,7 @@ import {
 } from "@db/index.js";
 import { transact } from "@db/transactions.js";
 import { AppError, fail, systemErrorReason, systemErrorText } from "@core/shared/errors.js";
-import { encodeSystemError } from "@doca/i18n";
+import { encodeSystemError, locales } from "@doca/i18n";
 
 import { clearPageState, readPageState, writePageState, } from "../page-state.js";
 import { enqueueProjection } from "@core/modules/automation/jobs.js";
@@ -5352,7 +5352,7 @@ export function createAIRunner(
         id: "page_state",
         ...withCallExamples(
           "page_state",
-          "读取或更新用户的页面状态。可改 ui.locale（zh 或 en）、ui.filesView（columns、grid 或 list）、ai.model（模型 id）。",
+          `读取或更新用户的页面状态。可改 ui.locale（${locales.join("、")}）、ui.filesView（columns、grid 或 list）、ai.model（模型 id）。`,
         ),
         inputSchema: z.object({
           action: z.enum(["get", "set"]),

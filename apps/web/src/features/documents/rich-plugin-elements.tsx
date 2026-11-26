@@ -1,3 +1,4 @@
+import { bilingualLocale } from "@doca/i18n";
 import {
   createContext,
   useContext,
@@ -69,7 +70,7 @@ function RichElementContent({ element }: { element: CustomElement }) {
             context={{
               documentId: session?.documentId ?? "",
               format: "rich_text",
-              locale,
+              locale: bilingualLocale(locale),
               readOnly,
               signal: abort.signal,
             }}

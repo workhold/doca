@@ -1,3 +1,4 @@
+import { htmlLang } from "@doca/i18n";
 import { useEffect, useState } from "react";
 import { Copy, Plus, Plug, RefreshCw, ShieldCheck } from "lucide-react";
 import { Switch } from "antd";
@@ -331,7 +332,7 @@ export function McpSettings({ admin = false }: { admin?: boolean }) {
                           {" "}
                           · {t("mcp.expires")}{" "}
                           {new Date(service.expires_at).toLocaleString(
-                            locale === "zh" ? "zh-CN" : "en",
+                            htmlLang(locale),
                           )}
                         </span>
                       )}
@@ -393,7 +394,7 @@ export function McpSettings({ admin = false }: { admin?: boolean }) {
         </div> : executions === null ? <p>{t("mcp.loading")}</p> : !executions.length ? <p>{t("mcp.executionEmpty")}</p> :
           <div className="mcp-list">{executions.map(execution => <article className="mcp-service" key={execution.id}>
             <h3>{execution.purpose}</h3>
-            <p>{execution.service_name} · {executionStatus(execution.status)} · {new Date(execution.created_at).toLocaleString(locale === "zh" ? "zh-CN" : "en")}</p>
+            <p>{execution.service_name} · {executionStatus(execution.status)} · {new Date(execution.created_at).toLocaleString(htmlLang(locale))}</p>
             <div className="mcp-actions">
               <button type="button" disabled={busy} onClick={() => void act(async () => setDetail(await api<ExecutionDetail>(`/me/mcp-executions/${execution.id}`)))}>{t("mcp.executionView")}</button>
               {!execution.closed_at || ["queued", "running", "awaiting_approval"].includes(execution.status)

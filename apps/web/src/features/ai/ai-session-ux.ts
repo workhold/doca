@@ -1,3 +1,4 @@
+import { htmlLang, type Locale } from "@doca/i18n";
 import type { AIReference } from "@core/workflows/ai-documents.js";
 
 export const INITIAL_RENDER_QUESTIONS = 8;
@@ -139,11 +140,11 @@ export function activeQuestionFromPositions(
 export function formatContextTokens(
   tokens?: number | null,
   format?: (count: string) => string,
-  locale = "en",
+  locale: Locale = "en",
 ) {
   if (!Number.isFinite(tokens) || !tokens || tokens <= 0) return null;
   const count = Math.round(tokens).toLocaleString(
-    locale === "zh" ? "zh-CN" : "en",
+    htmlLang(locale),
   );
   return format ? format(count) : count;
 }

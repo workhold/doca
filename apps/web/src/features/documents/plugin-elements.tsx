@@ -1,3 +1,4 @@
+import { bilingualLocale } from "@doca/i18n";
 import {
   Component,
   useEffect,
@@ -112,7 +113,7 @@ export function PluginElementDialog({
   const context: PluginElementEditorContext = {
     documentId,
     format,
-    locale,
+    locale: bilingualLocale(locale),
     readOnly: false,
     signal: abort.signal,
     initialData: session.initialData
@@ -127,7 +128,7 @@ export function PluginElementDialog({
       )
         return;
       try {
-        session.commit(createPluginElementPayload(provider, data, locale));
+        session.commit(createPluginElementPayload(provider, data, bilingualLocale(locale)));
         close();
       } catch {
         setError(true);
@@ -137,7 +138,7 @@ export function PluginElementDialog({
   return (
     <Modal
       open
-      title={provider?.title[locale] ?? t("editor.element.insert")}
+      title={provider?.title[bilingualLocale(locale)] ?? t("editor.element.insert")}
       footer={null}
       destroyOnHidden
       onCancel={close}
@@ -159,7 +160,7 @@ export function PluginElementDialog({
                 setError(false);
               }}
             >
-              {item.title[locale]}
+              {item.title[bilingualLocale(locale)]}
             </button>
           ))}
           {!providers.length && <p>{t("editor.element.empty")}</p>}

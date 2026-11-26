@@ -1,3 +1,5 @@
+import type { MessageKey } from "@doca/i18n";
+import { useI18n } from "@web/shared/i18n.js";
 import { useEffect, useRef, useState } from "react";
 import { realtime, fromBase64, toBase64 } from "@web/features/documents/realtime.js";
 import { openReplica } from "@web/features/documents/offline-replica.js";
@@ -23,13 +25,14 @@ export function useSurfaceSync<T>(
   changed: (() => void) | undefined,
   schemaVersion: number,
 ) {
+  const { t } = useI18n();
   const changeRef = useRef(changed);
   changeRef.current = changed;
   const [binding, setBinding] = useState<SurfaceBinding<T> | null>(null),
     [connected, setConnected] = useState(false),
     [error, setError] = useState(""),
     [rank, setRank] = useState(5),
-    [status, setStatus] = useState("正在加载…"),
+    [status, setStatus] = useState<MessageKey>("common.loading"),
     [revision, setRevision] = useState(0),
     [dirty, setDirty] = useState(false);
   const [presence, setPresence] = useState<{ self: string; sessions: any[] }>({
@@ -57,11 +60,11 @@ export function useSurfaceSync<T>(
       setStatus(
         online
           ? pending || writes
-            ? "正在保存…"
-            : "已保存到云端"
+            ? "editor.sync.saving"
+            : "editor.sync.cloud"
           : pending
-            ? "已保存到本地 · 等待同步"
-            : "本地副本 · 等待连接",
+            ? "editor.sync.savedLocal"
+            : "editor.sync.waiting",
       );
     };
     const outbox = new UpdateOutbox(
@@ -118,7 +121,7 @@ export function useSurfaceSync<T>(
       if (active) {
         setError((e as Error).message);
         setConnected(false);
-        setStatus("同步暂停 · 本地内容保留");
+        setStatus("editor.sync.paused");
       }
     };
     const store = (update: Uint8Array) => {
@@ -303,7 +306,7 @@ export function useSurfaceSync<T>(
     connected,
     error,
     rank,
-    status,
+    status: t(status),
     revision,
     dirty,
     presence,

@@ -1,3 +1,4 @@
+import { bilingualLocale } from "@doca/i18n";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { Drawer, Modal, Tooltip } from "antd";
 import { PluginStoreIcon } from "./store-icon.js";
@@ -61,7 +62,7 @@ export function useExtensionContext(
     resource,
     resources,
     target: location.hash.startsWith("#/m/plugins/") ? "mobile" : "web",
-    locale,
+    locale: bilingualLocale(locale),
     capabilities: capabilities(resource),
     signal:
       session?.identity === identity ? session.controller.signal : inactive,
@@ -203,8 +204,8 @@ export function PluginExtensionHost() {
   }, []);
   const view = active ? webPluginRegistry.views.get(active.viewId) : undefined;
   if (!active || !view || active.context.signal.aborted) return null;
-  const content = view.render({ ...active.context, locale });
-  const title = view.title[locale];
+  const content = view.render({ ...active.context, locale: bilingualLocale(locale) });
+  const title = view.title[bilingualLocale(locale)];
   if (active.presentation === "dialog")
     return (
       <Modal

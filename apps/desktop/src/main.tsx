@@ -18,7 +18,7 @@ import {
   matchLocale,
   type DesktopMessageKey,
   type Locale,
-} from "@doca/i18n";
+} from "@doca/i18n/desktop";
 import "./style.css";
 
 type Endpoint = {

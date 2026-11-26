@@ -1,3 +1,4 @@
+import type { MessageKey } from "@doca/i18n";
 import { useI18n } from "@web/shared/i18n.js";
 import { OfflineEditingNotice } from "@web/features/documents/offline-editing-notice.js";
 import { replicaCodecs } from "@web/features/documents/replica-database.js";
@@ -139,7 +140,7 @@ export default function MarkdownDocument({
     [blocked, setBlocked] = useState(false),
     [serverRank, setServerRank] = useState(5),
     [dirty, setDirty] = useState(false),
-    [status, setStatus] = useState("正在加载 Markdown…"),
+    [status, setStatus] = useState<MessageKey>("common.loading"),
     [error, setError] = useState(""),
     [revision, setRevision] = useState(0);
   const [liveSlot, setLiveSlot] = useState<HTMLElement | null>(null);
@@ -205,16 +206,16 @@ export default function MarkdownDocument({
       setDirty(unsaved.current);
       setStatus(
         failed
-          ? "同步已暂停，请保留页面并导出恢复副本"
+          ? "editor.sync.pausedRecovery"
           : joined
             ? unsaved.current
-              ? "正在保存…"
-              : "已保存到云端"
+              ? "editor.sync.saving"
+              : "editor.sync.cloud"
             : writes
-              ? "正在保存到本地…"
+              ? "editor.sync.savingLocal"
               : pending
-                ? "已保存到本地 · 等待同步"
-                : "本地副本 · 等待连接",
+                ? "editor.sync.savedLocal"
+                : "editor.sync.waiting",
       );
     };
     const queue = new UpdateOutbox(
@@ -474,7 +475,7 @@ export default function MarkdownDocument({
                 );
               } catch {}
             },
-            label: (a) => a.quote || "Markdown 选中文字",
+            label: (a) => a.quote || t("editor.selection.markdownText"),
             scrollOffset: () => {
               const view = handle.current?.getEditorView();
               if (!view) return 0;
@@ -534,7 +535,7 @@ export default function MarkdownDocument({
             },
           }
         : null,
-    [ready, model],
+    [ready, model, t],
   );
   useEffect(() => {
     if (!ready || !handle.current) return;
@@ -671,7 +672,7 @@ export default function MarkdownDocument({
           onError={setError}
           options={[
             {
-              label: "Markdown（.md）",
+              label: "Markdown (.md)",
               run: () =>
                 download(
                   handle.current?.getMarkdown() ?? model.text.toString(),
@@ -679,7 +680,7 @@ export default function MarkdownDocument({
                 ),
             },
             {
-              label: "PDF（.pdf）",
+              label: "PDF (.pdf)",
               run: () =>
                 downloadPdf(
                   handle.current?.getMarkdown() ?? model.text.toString(),
@@ -688,7 +689,7 @@ export default function MarkdownDocument({
           ]}
         />
         {liveSlot &&
-          createPortal(<span role="status">{status}</span>, liveSlot)}
+          createPortal(<span role="status">{t(status)}</span>, liveSlot)}
         <Feedback message={error} tone="error" />
         {session && (
           <ModelFind

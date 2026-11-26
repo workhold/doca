@@ -286,7 +286,7 @@ async function syncAssistant() {
   assistant = module.mountBrowserAssistant($("assistant-root"), config);
 }
 function render() {
-  document.documentElement.lang = state.locale === "zh" ? "zh-CN" : "en";
+  document.documentElement.lang = state.locale === "zh" ? "zh-CN" : state.locale;
   document.querySelectorAll("[data-label]").forEach((node) => {
     node.textContent = t(node.dataset.label);
   });
@@ -294,6 +294,7 @@ function render() {
     node.placeholder = t(node.dataset.placeholder);
   });
   $("locale").value = state.locale;
+  $("locale").setAttribute("aria-label", t("locale"));
   $("settings").title = $("settings").ariaLabel = t("extensionSettings");
   $("back").title = $("back").ariaLabel = t("back");
   if (renderedOrigin !== state.origin) {
@@ -392,9 +393,7 @@ function profileDetail() {
     (profile) => profile.id === $("profile").value,
   );
   $("profile-detail").textContent = profile
-    ? state.locale === "zh"
-      ? `${profile.strategy === "append" ? "追加到文档" : "新建文档"} · ${profile.destinationTitle || (profile.libraryId || profile.targetId ? "保存位置不可用" : "个人文档")}\n${t("captureImagePolicy")}`
-      : `${profile.strategy === "append" ? "Append" : "New document"} · ${profile.destinationTitle || (profile.libraryId || profile.targetId ? "Destination unavailable" : "Personal documents")}\n${t("captureImagePolicy")}`
+    ? `${t(profile.strategy === "append" ? "appendDocument" : "newDocument")} · ${profile.destinationTitle || t(profile.libraryId || profile.targetId ? "destinationUnavailable" : "personalDocuments")}\n${t("captureImagePolicy")}`
     : t("noProfiles");
 }
 function rememberProfile() {

@@ -1,67 +1,83 @@
 (() => {
+  const editions = window.docaDocsLanguages;
+  const languages = Object.keys(editions);
+  const images = new URL("assets/images/", document.baseURI);
+  const localizedConfig = (field, fallback) => ({
+    ...Object.fromEntries(languages.map(code => [`/${code}/`, editions[code][field]])),
+    "/": fallback,
+  });
   const pageIndex = fetch("assets/pages.json").then(response => {
     if (!response.ok) throw new Error("Cannot load the documentation page index");
     return response.json();
   });
+  let language = "en";
   let mermaid;
   function localizeSearch() {
-    const chinese = document.documentElement.lang === "zh-CN";
+    const edition = editions[language];
     const search = document.querySelector(".search");
     if (!search) return;
     const clear = search.querySelector(".clear-button");
-    clear.title = chinese ? "清空搜索" : "Clear search";
-    clear.querySelector("span").textContent = clear.title;
-    search.querySelector("input").setAttribute("aria-label", chinese ? "搜索文档" : "Search documentation");
+    clear.title = edition.clear;
+    clear.querySelector("span").textContent = edition.clear;
+    search.querySelector("input").setAttribute("aria-label", edition.search);
     const status = search.querySelector(".results-status");
-    const count = /^(?:Found (\d+) results|找到 (\d+) 条结果)$/.exec(status.textContent);
-    if (count) {
-      const value = chinese ? `找到 ${count[1] ?? count[2]} 条结果` : `Found ${count[1] ?? count[2]} results`;
-      if (status.textContent !== value) status.textContent = value;
-    }
+    const count = /^Found (\d+) results$/.exec(status.textContent)?.[1];
+    if (count) status.textContent = edition.results.replace("{count}", count);
   }
   window.$docsify = {
     name: "Doca",
     repo: "workhold/doca",
-    nameLink: { "/zh-cn/": "#/zh-cn/", "/": "#/en/" },
-    skipLink: { "/zh-cn/": "跳到正文", "/": "Skip to main content" },
+    nameLink: {
+      ...Object.fromEntries(languages.map(code => [`/${code}/`, `#/${code}/`])),
+      "/": "#/en/",
+    },
+    skipLink: localizedConfig("skip", editions.en.skip),
     loadSidebar: true,
     loadNavbar: true,
+    mergeNavbar: true,
     auto2top: true,
     subMaxLevel: 2,
     notFoundPage: "/_404.md",
     alias: {
       "/_sidebar.md": "/en/_sidebar.md",
       "/_navbar.md": "/en/_navbar.md",
-      "/en/(?:.*/)?_sidebar.md": "/en/_sidebar.md",
-      "/en/(?:.*/)?_navbar.md": "/en/_navbar.md",
-      "/zh-cn/(?:.*/)?_sidebar.md": "/zh-cn/_sidebar.md",
-      "/zh-cn/(?:.*/)?_navbar.md": "/zh-cn/_navbar.md"
+      ...Object.fromEntries(languages.flatMap(code =>
+        ["_sidebar.md", "_navbar.md"].map(file => [
+          `/${code}/(?:.*/)?${file}`,
+          `/${code}/${file}`,
+        ]),
+      )),
     },
     search: {
       paths: "auto",
-      namespace: "doca-0.1.10",
-      pathNamespaces: ["/en", "/zh-cn"],
-      placeholder: { "/zh-cn/": "搜索文档", "/": "Search documentation" },
-      noData: { "/zh-cn/": "没有找到结果", "/": "No results" },
+      namespace: "doca-docs-0.3.0",
+      pathNamespaces: languages.map(code => "/" + code),
+      placeholder: localizedConfig("search", editions.en.search),
+      noData: localizedConfig("noResults", editions.en.noResults),
       depth: 6,
-      maxAge: 3600000
+      maxAge: 3600000,
     },
     plugins: [function (hook, vm) {
       hook.mounted(() => {
         localizeSearch();
         const status = document.querySelector(".search .results-status");
-        new MutationObserver(localizeSearch).observe(status, { childList: true });
+        if (status) new MutationObserver(localizeSearch).observe(status, { childList: true });
       });
       hook.beforeEach((markdown, next) => {
-        const chinese = vm.route.path.startsWith("/zh-cn/");
-        document.documentElement.lang = chinese ? "zh-CN" : "en";
+        // The image directory is shared by all routes under the Pages site base.
+        markdown = markdown.replace(/\]\(assets\/images\//g, `](${images}`);
+        const path = vm.route.path === "/" ? "/en/" : vm.route.path;
+        const code = path.split("/")[1];
+        language = Object.hasOwn(editions, code) ? code : "en";
+        const edition = editions[language];
+        document.documentElement.lang = edition.tag;
         pageIndex.then(pages => {
-          const path = vm.route.path === "/" ? "/en/" : vm.route.path;
-          const page = pages.find(page => page.en === path || page.zh === path);
+          const page = pages.find(row => row[language]?.route === path);
           if (!page) { next(markdown); return; }
-          const source = chinese ? page.zhSource : page.enSource;
-          const other = chinese ? page.en : page.zh;
-          next(`${markdown}\n\n---\n\n[${chinese ? "在 GitHub 编辑此页" : "Edit this page on GitHub"}](https://github.com/workhold/doca/edit/main/docs/${source}) · [${chinese ? "English" : "简体中文"}](${other})\n`);
+          const alternate = languages.map(code =>
+            `[${editions[code].name}](${page[code]?.route ?? `/${code}/`})`,
+          );
+          next(`${markdown}\n\n---\n\n[${edition.edit}](https://github.com/workhold/doca/edit/main/docs/${page[language].source})\n\n${alternate.join(" · ")}\n`);
         }).catch(error => {
           console.error(error);
           next(markdown);

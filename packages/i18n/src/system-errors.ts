@@ -1,5 +1,5 @@
 import type { MessageKey } from "./catalogs/en";
-import type { MessageValues } from "./translate";
+import type { MessageValues } from "./message-template";
 
 export type SystemErrorReason = {
   code: string;

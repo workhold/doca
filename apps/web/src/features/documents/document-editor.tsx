@@ -1,3 +1,4 @@
+import type { MessageKey } from "@doca/i18n";
 import { useI18n } from "@web/shared/i18n.js";
 import { OfflineEditingNotice } from "@web/features/documents/offline-editing-notice.js";
 import { replicaCodecs } from "@web/features/documents/replica-database.js";
@@ -116,10 +117,11 @@ export function DocumentEditor({
   loadMoreComments?: () => Promise<void>;
   discussion?: React.ReactNode;
 }) {
+  const { t } = useI18n();
   const r = detail.resource;
   if (r.format === "presentation")
     return (
-      <Suspense fallback={<p className="empty">正在加载演示文稿…</p>}>
+      <Suspense fallback={<p className="empty">{t("common.loading")}</p>}>
         <PresentationDocument
           key={`${r.id}:${user?.id ?? "anonymous"}`}
           detail={detail}
@@ -133,7 +135,7 @@ export function DocumentEditor({
   if (r.format === "markdown")
     return (
       <>
-        <Suspense fallback={<p className="empty">正在加载 Markdown…</p>}>
+        <Suspense fallback={<p className="empty">{t("common.loading")}</p>}>
           <MarkdownDocument
             key={`${r.id}:${user?.id ?? "anonymous"}`}
             detail={detail}
@@ -148,7 +150,7 @@ export function DocumentEditor({
     );
   if (r.format === "spreadsheet")
     return (
-      <Suspense fallback={<p className="empty">正在加载在线表格…</p>}>
+      <Suspense fallback={<p className="empty">{t("common.loading")}</p>}>
         <SheetDocument
           key={`${r.id}:${user?.id ?? "anonymous"}`}
           detail={detail}
@@ -161,7 +163,7 @@ export function DocumentEditor({
     );
   if (r.format === "canvas")
     return (
-      <Suspense fallback={<p className="empty">正在加载画布…</p>}>
+      <Suspense fallback={<p className="empty">{t("common.loading")}</p>}>
         <CanvasDocument
           key={`${r.id}:${user?.id ?? "anonymous"}`}
           detail={detail}
@@ -175,8 +177,8 @@ export function DocumentEditor({
   if (r.format !== "rich_text")
     return (
       <div className="empty">
-        <h2>此文档类型暂不支持编辑</h2>
-        <p>已保留独立的编辑器与协同编码接口，此类型暂未接入。</p>
+        <h2>{t("editor.notEditable")}</h2>
+        <p>{t("editor.notEditableDetail")}</p>
       </div>
     );
   return (
@@ -245,7 +247,7 @@ function RichDocument({
     [localReady, setLocalReady] = useState(false),
     [blocked, setBlocked] = useState(false),
     [connected, setConnected] = useState(false),
-    [status, setStatus] = useState("正在连接…"),
+    [status, setStatus] = useState<MessageKey>("editor.sync.connecting"),
     [error, setError] = useState(""),
     [canRetrySync, setCanRetrySync] = useState(true),
     [peers, setPeers] = useState<{ id: string; display_name: string }[]>([]),
@@ -376,13 +378,13 @@ function RichDocument({
         setStatus(
           joined
             ? unsaved.current
-              ? "正在保存…"
-              : "已保存到云端"
+              ? "editor.sync.saving"
+              : "editor.sync.cloud"
             : writes
-              ? "正在保存到本地…"
+              ? "editor.sync.savingLocal"
               : dirty
-                ? "已保存到本地 · 等待同步"
-                : "本地副本 · 等待连接",
+                ? "editor.sync.savedLocal"
+                : "editor.sync.waiting",
         );
       },
     );
@@ -392,7 +394,7 @@ function RichDocument({
       joined = false;
       outbox.pause();
       setConnected(false);
-      setStatus("正在同步…");
+      setStatus("editor.sync.synchronizing");
       realtime.send({
         type: "join",
         id: crypto.randomUUID(),
@@ -412,7 +414,7 @@ function RichDocument({
       }
       writes++;
       unsaved.current = true;
-      setStatus(joined ? "正在保存…" : "正在保存到本地…");
+      setStatus(joined ? "editor.sync.saving" : "editor.sync.savingLocal");
       storing = storing
         .then(async () => {
           await replica!.store(entry.update, entry, epoch.current);
@@ -428,7 +430,7 @@ function RichDocument({
         joined = false;
         outbox.pause();
         setConnected(false);
-        setStatus("连接中断 · 正在重连");
+        setStatus("editor.sync.reconnecting");
       }
       if (m.room !== id) return;
       try {
@@ -485,7 +487,7 @@ function RichDocument({
           outbox.pause();
           setError(m.message);
           setCanRetrySync(m.status >= 500 || m.status === 400);
-          setStatus("保存未完成");
+          setStatus("editor.sync.incomplete");
           setConnected(false);
           setBlocked(true);
           joined = false;
@@ -759,10 +761,10 @@ function RichDocument({
         options={[...(["docx", "markdown", "pdf"] as const).map((format) => ({
           label:
             format === "docx"
-              ? "Word（.docx）"
+              ? "Word (.docx)"
               : format === "markdown"
-                ? "Markdown（.md）"
-                : "PDF（.pdf）",
+                ? "Markdown (.md)"
+                : "PDF (.pdf)",
           run: async () => {
             const { exportDocument } =
               await import("@smartdoca/slate/conversion");
@@ -797,7 +799,7 @@ function RichDocument({
             );
           },
         })), {
-          label: "保存到平台文件夹（Markdown）",
+          label: t("editor.file.saveMarkdown"),
           run: async () => {
             const { exportDocument } =
               await import("@smartdoca/slate/conversion");
@@ -840,8 +842,8 @@ function RichDocument({
       {liveInfo &&
         createPortal(
           <span className="document-live-details">
-            <span role="status">{status}</span>
-            <span>{peers.length} 人在线</span>
+            <span role="status">{t(status)}</span>
+            <span>{t("doc.online", { count: peers.length })}</span>
             <span className="editor-peers">
               {peers.map((p) => (
                 <UserBadge
@@ -874,7 +876,7 @@ function RichDocument({
         <div className="error" role="alert">
           {error}{" "}
           {canRetrySync && (
-            <button onClick={() => realtime.socket?.close()}>重新连接</button>
+            <button onClick={() => realtime.socket?.close()}>{t("editor.sync.reconnect")}</button>
           )}
         </div>
       )}
@@ -905,8 +907,8 @@ function RichDocument({
       {(blocked || (ready && !connected)) && (
         <div className="subtle small">
           {blocked
-            ? "同步已暂停，未确认的修改仍保留在此浏览器，可先下载恢复文件。"
-            : !localReady && "未保存的内容仍保留在此页面，请不要关闭。"}
+            ? t("editor.sync.pausedDetail")
+            : !localReady && t("editor.sync.keepOpen")}
           <button
             onClick={() => {
               const blob = new Blob(
@@ -929,7 +931,7 @@ function RichDocument({
               setTimeout(() => URL.revokeObjectURL(url), 1000);
             }}
           >
-            下载恢复文件
+            {t("editor.sync.downloadRecovery")}
           </button>
         </div>
       )}
@@ -1100,7 +1102,7 @@ function RichDocument({
               )}
             />
           ) : (
-            <p className="empty">正在加载文档内容…</p>
+            <p className="empty">{t("common.loading")}</p>
           )}
           {ready && (
             <>

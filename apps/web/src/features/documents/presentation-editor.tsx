@@ -245,10 +245,10 @@ export default function PresentationDocument({
               handle.revealAnchor(a);
             },
             label: (a) =>
-              `第 ${readDocument(model.doc).slideOrder.indexOf(a.slideId) + 1} 页 · 选中元素`,
+              t("editor.selection.slide", { page: readDocument(model.doc).slideOrder.indexOf(a.slideId) + 1 }),
           }
         : null,
-    [handle, model],
+    [handle, model, t],
   );
   const markers = useMemo<CommentMarker[]>(
     () =>
@@ -312,7 +312,7 @@ export default function PresentationDocument({
             void sync.exportRecovery().catch((e) => setError(e.message))
           }
         >
-          导出本地恢复文件
+          {t("editor.sync.exportRecovery")}
         </button>
       )}
       <DocumentDownload
@@ -398,7 +398,7 @@ export default function PresentationDocument({
           )}
         />
       ) : (
-        <p className="empty">正在加载演示文稿…</p>
+        <p className="empty">{t("common.loading")}</p>
       )}
       {handle && !presenting && (
         <ModelFind

@@ -17,7 +17,8 @@
       "@core/*": ["packages/core/src/*"],
       "@db/*": ["packages/db/src/*"],
       "@server/*": ["apps/server/src/*"],
-      "@doca/i18n": ["packages/i18n/src/index.ts"]
+      "@doca/i18n": ["packages/i18n/src/index.ts"],
+      "@doca/i18n/desktop": ["packages/i18n/src/desktop.ts"]
     }
   },
   "include": [

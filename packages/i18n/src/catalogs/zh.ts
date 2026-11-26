@@ -2,7 +2,7 @@ import { browserClipperZh } from "./browser-clipper.js";
 import { desktopZh } from "./desktop.js";
 import { handoverZh } from "./resource-handover.js";
 import { groupsZh } from "./groups.js";
-import { localeNames } from "../locales.js";
+import { localeMessages } from "../locales.js";
 import type { MessageKey } from "./en";
 
 export const zh = {
@@ -2624,8 +2624,7 @@ export const zh = {
   "settings.saved": "已自动保存",
   "settings.language": "语言",
   "settings.language.hint": "只切换界面文字，不翻译文档、评论和邮件正文。",
-  "locale.zh": localeNames.zh,
-  "locale.en": localeNames.en,
+  ...localeMessages,
   "mobile.settings.title": "设置",
   "mobile.settings.currentServer": "当前服务器",
   "mobile.settings.signedOut": "未登录",
@@ -2724,6 +2723,31 @@ export const zh = {
   "library.trigger.manual": "人工",
   "library.trigger.schedule": "定时",
 
+  "editor.sync.connecting": "正在连接…",
+  "editor.sync.saving": "正在保存…",
+  "editor.sync.cloud": "已保存到云端",
+  "editor.sync.savedLocal": "已保存到本地 · 等待同步",
+  "editor.sync.waiting": "本地副本 · 等待连接",
+  "editor.sync.paused": "同步暂停 · 本地内容保留",
+  "editor.sync.pausedRecovery": "同步已暂停，请保留页面并导出恢复副本",
+  "editor.sync.savingLocal": "正在保存到本地…",
+  "editor.sync.synchronizing": "正在同步…",
+  "editor.sync.reconnecting": "连接中断 · 正在重连",
+  "editor.sync.incomplete": "保存未完成",
+  "editor.sync.reconnect": "重新连接",
+  "editor.sync.pausedDetail": "同步已暂停，未确认的修改仍保留在此浏览器，可先下载恢复文件。",
+  "editor.sync.keepOpen": "未保存的内容仍保留在此页面，请不要关闭。",
+  "editor.sync.downloadRecovery": "下载恢复文件",
+  "editor.sync.exportRecovery": "导出本地恢复文件",
+  "editor.notEditable": "此文档类型暂不支持编辑",
+  "editor.notEditableDetail": "此格式尚未接入编辑器。",
+  "editor.selection.markdownText": "Markdown 选中文字",
+  "editor.selection.canvas": "画布区域 · {count} 个元素",
+  "editor.selection.sheetRecords": "单元格区域 · {count} 条记录",
+  "editor.selection.sheetRows": "单元格区域 · 第 {start}–{end} 行",
+  "editor.selection.slide": "第 {page} 页 · 选中元素",
+  "editor.canvas.imageFormat": "{format} 图片",
+  "editor.file.saveMarkdown": "保存到平台文件夹（Markdown）",
   "editor.bodyPlaceholder": "输入正文，或输入 / 插入内容",
   "editor.offlineEditing": "正在离线编辑，连接恢复后会自动同步修改。",
   "editor.uploadFailed": "{name} 上传失败：{reason}",

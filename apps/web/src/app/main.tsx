@@ -1,6 +1,8 @@
 import "../shared/browser-crypto.js";
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { ConfigProvider } from "antd";
+import { antdLocale } from "@web/shared/antd-locale.js";
 import { AccountLogin } from "@web/features/auth/account-login.js";
 import { rememberedShareToken, takeLoginDocument } from "@web/features/auth/login-return.js";
 import { loadBootstrap } from "@web/shared/bootstrap.js";
@@ -126,9 +128,16 @@ if (canDownloadOfflineShell()) {
   prepare();
 }
 
+function LocalizedEntry() {
+  const { locale } = useI18n();
+  return (
+    <ConfigProvider locale={antdLocale(locale)}>
+      <Entry />
+      <FeedbackViewport />
+    </ConfigProvider>
+  );
+}
+
 createRoot(document.getElementById("root")!).render(
-  <LocaleProvider>
-    <Entry />
-    <FeedbackViewport />
-  </LocaleProvider>,
+  <LocaleProvider><LocalizedEntry /></LocaleProvider>,
 );

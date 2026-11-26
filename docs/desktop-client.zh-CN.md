@@ -6,21 +6,21 @@
 
 ## 安装与连接
 
-从 [Doca 0.2.46](https://github.com/workhold/doca/releases/tag/v0.2.46) 下载 macOS（DMG）或 Windows（NSIS/MSI）安装包。当前安装包未做签名与公证。macOS 首次打开可使用右键 →「打开」，Windows 可能出现 SmartScreen 提示。
+从 [Doca 0.3.0](https://github.com/workhold/doca/releases/tag/v0.3.0) 下载 macOS（DMG）或 Windows（NSIS/MSI）安装包。当前安装包未做签名与公证。macOS 首次打开可使用右键 →「打开」，Windows 可能出现 SmartScreen 提示。
 
-![桌面客户端连接管理器：添加远端服务](images/desktop-manager-add.jpg)
+![桌面客户端连接管理器：添加远端服务](images/zh-cn/desktop-manager-add.jpg)
 
-首次打开会显示连接管理器。当前源码构建从系统偏好中选择第一个受支持的语言，都不匹配时使用英文。连接前可在**语言**中选择 **中文**或 **English**。Doca 会在本机记住该选择，供下次启动连接管理器使用。
+首次打开会显示连接管理器。当前源码构建从系统偏好中选择第一个受支持的语言，都不匹配时使用英文。连接前可在**语言**中从 Doca 支持的八种语言中选择。Doca 会在本机记住该选择，供下次启动连接管理器使用。
 
 填写名称与服务地址后选择**添加地址**。正式服务需要 HTTPS，本机开发可使用 127.0.0.1 的 HTTP 地址。地址只能包含协议、域名和端口。选择该地址上的**浏览器登录**，系统浏览器会打开服务的 `/#/desktop-connect` 页面并沿用站点的登录方式。批准后桌面客户端自动打开工作空间。
 
-![浏览器登录完成后，管理器显示已连接的后端](images/desktop-manager.jpg)
+![浏览器登录完成后，管理器显示已连接的后端](images/zh-cn/desktop-manager.jpg)
 
 连接管理器可添加、重命名、选择、退出登录和移除多个服务地址，多个后端可同时保持登录。凭证只保存在本机加密凭据文件中，服务端只保存凭证哈希，详见[连接与认证](#连接与认证)。
 
 ## 工作空间与多后端
 
-![桌面客户端工作空间：标签栏打开多个文档，右上角可切换后端](images/desktop-workspace.jpg)
+![桌面客户端工作空间：标签栏打开多个文档，右上角可切换后端](images/zh-cn/desktop-workspace.jpg)
 
 每个工作空间窗口有独立标签栏。标签页是同一窗口内相互独立的 Doca Web 页面上下文；切换标签保留已打开页面，关闭标签即销毁该页面。后台标签暂停导航、通知和在线心跳轮询，重新选中时刷新。打开的文档继续协作和保存。支持新建标签和窗口、站内链接在新标签打开，以及 Ctrl/Command+T、Ctrl/Command+W、Ctrl/Command+N、Ctrl/Command+Tab（Shift 反向）。新建按钮跟随标签列表，新窗口工具有提示；右键标签标题可复制（相同地址）、在新窗口打开、关闭、关闭左侧、关闭右侧和全部关闭，窗口内标签可拖拽排序。
 

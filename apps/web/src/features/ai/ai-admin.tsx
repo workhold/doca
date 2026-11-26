@@ -1,4 +1,4 @@
-import { htmlLang, type MessageKey, type MessageValues } from "@doca/i18n";
+import { htmlLang, type Locale, type MessageKey, type MessageValues } from "@doca/i18n";
 import { useI18n } from "@web/shared/i18n.js";
 import {
   AutoComplete,
@@ -98,7 +98,7 @@ function reportedError(error: unknown): AdminError {
   return { message: value.message, status: value.status };
 }
 
-function adminNotice(notice: AdminNotice, t: Translator, locale: "zh" | "en") {
+function adminNotice(notice: AdminNotice, t: Translator, locale: Locale) {
   const num = (value: number) => value.toLocaleString(htmlLang(locale));
   if (notice.id === "saved") return t("aiAdmin.saved");
   if (notice.id === "catalog")
