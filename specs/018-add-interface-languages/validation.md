@@ -1,9 +1,9 @@
 # Validation: Eight interface languages
 
 **Spec**: [spec.md](spec.md)
-**Result**: partial
+**Result**: passed
 
-The Doca 0.3.0 release candidate passed local language acceptance. Published release verification is tracked below.
+Doca 0.3.0 passed local language acceptance and published release verification.
 
 ## Language acceptance
 
@@ -31,10 +31,14 @@ The Markdown package was republished as 0.4.6 after a delay serving the previous
 
 - The focused host run passed 190 tests across locale catalogs, SQLite preference behavior and the extension. The browser screenshot script exercised the editors through the Web app’s installed npm packages.
 - Web and desktop production builds, Web and mobile type checks, the iOS bundle export, desktop Rust tests, the plugin SDK and deployment packages, `pnpm sdd:check`, `pnpm test:docs`, `pnpm docs:check`, and `pnpm docs:build` completed locally.
+- The final full host run passed 3,538 tests with 11 skipped. It used `pnpm test --maxWorkers=6` and the pinned PDF renderer.
 - The first full host test run encountered extension fixture, local PDF runtime, and AI timing failures. The extension fixtures passed the focused rerun. The PDF suite passed 10 tests with the pinned renderer and local libraries. The reduced-concurrency AI rerun passed 292 tests and reported five failures. Four also reproduced in a separate 0.2.46 checkout. The remaining case passed when run in isolation.
 
 ## Publication
 
-Verify GitHub Release assets, the documentation deployment and both Docker Hub architectures after the release jobs complete.
+- GitHub merged [PR #172](https://github.com/workhold/doca/pull/172). The annotated `v0.3.0` tag points to commit `7559c406303ebb8389642722b6b574b71cf9949a`. The 13 Release assets were downloaded and checked, including the web archive, deployment files, plugin SDK, macOS universal DMG, Windows x64 EXE and MSI, and the attached SHA-256 checksums. [GitHub Release](https://github.com/workhold/doca/releases/tag/v0.3.0) · [Desktop build and upload](https://github.com/workhold/doca/actions/runs/45863525171)
+- Docker Hub serves `smartdoca/doca:0.3.0` and `smartdoca/doca:latest` with the same index, `sha256:bea72b9dabe6b27bce6f61930edf388072ce45edb0dd43a3fdb35126bbb290b5`. The published manifest contains `linux/amd64` and `linux/arm64` from the native runners. [Docker Hub](https://hub.docker.com/r/smartdoca/doca/tags?name=0.3.0) · [Image verification](https://github.com/workhold/doca/actions/runs/45863525946)
+- Chromium walked the eight home, desktop guide and release routes on GitHub Pages. Each route loaded the matching edition and its localized screenshots. [Published docs](https://workhold.github.io/doca/) · [Pages deployment](https://github.com/workhold/doca/actions/runs/45863510680)
+- The merged application and desktop checks passed. PostgreSQL 17 and 18 upgrade checks also passed on the release source. [Database upgrade](https://github.com/workhold/doca/actions/runs/45863510659)
 
 Raw verification output belongs under `artifacts/verification/language-expansion/`.
