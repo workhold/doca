@@ -317,6 +317,11 @@
     "zh": "发行记录",
     "pages": [
       [
+        "releases/0.2.45",
+        "0.2.45 · Library trackpad scrolling",
+        "0.2.45 · 知识库触控板滚动"
+      ],
+      [
         "releases/0.2.44",
         "0.2.44 · Document startup and list scrolling",
         "0.2.44 · 文档打开与列表滚动"

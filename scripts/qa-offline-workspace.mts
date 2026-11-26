@@ -103,6 +103,22 @@ async function scrollToLastItem(page: Page, container: string, items: string) {
       last[last.length - 1]!.getBoundingClientRect().bottom <= pane.getBoundingClientRect().bottom + 1;
   }, { container, items }, { timeout: 5000 });
 }
+async function scrollOverLibraryCard(page: Page) {
+  const pane = page.locator(".main-scroll");
+  await page.locator(".library-cover").first().hover();
+  const start = await pane.evaluate((el) => el.scrollTop);
+  await page.mouse.wheel(2, 24);
+  await page.waitForFunction(
+    (top) => document.querySelector(".main-scroll")!.scrollTop > top,
+    start,
+  );
+  const down = await pane.evaluate((el) => el.scrollTop);
+  await page.mouse.wheel(-2, -24);
+  await page.waitForFunction(
+    (top) => document.querySelector(".main-scroll")!.scrollTop < top,
+    down,
+  );
+}
 const replica = (
   page: Page | Frame,
   documentId: string,
@@ -451,16 +467,19 @@ try {
     const tab = await context.newPage();
     await tab.setViewportSize({ width: 1000, height: 520 });
     await tab.goto(`${origin}/#/${route}`);
+    if (route === "libraries") await scrollOverLibraryCard(tab);
     await scrollToLastItem(tab, pane, items);
     if (route === "documents") {
       const viewport = await tab.locator(pane).boundingBox();
       const filters = await tab.locator(".dashboard-controls").boundingBox();
       assert(viewport && filters && Math.abs(filters.y - viewport.y) <= 1);
       await tab.locator('.sidebar a[href="#/libraries"]').first().click();
+      await scrollOverLibraryCard(tab);
       await scrollToLastItem(tab, pane, ".library-card");
     }
     await tab.close();
   }
+  pass("Small diagonal wheel deltas over library cards scrolled the workspace down and back up");
   pass("Recent documents, library cards, and the offline directory scrolled to their last item");
 
   const sender = page;
