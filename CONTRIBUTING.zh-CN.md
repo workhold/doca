@@ -11,6 +11,17 @@ MIT 许可证许可。
 
 请勿提交从其他项目复制、且你无权按 MIT 许可证再许可的代码。
 
+## 提问、提议与问题反馈
+
+发帖前请先在[讨论区](https://github.com/workhold/doca/discussions)和
+[Issues](https://github.com/workhold/doca/issues)搜索同一主题。
+
+- 在 [Q&A](https://github.com/workhold/doca/discussions/categories/q-a) 交流 Doca 的使用和部署问题。
+- 在 [Ideas](https://github.com/workhold/doca/discussions/categories/ideas) 提出功能建议，说明使用场景和期望结果。
+  范围明确后，维护者可以建立关联的 Issue 跟踪实施。
+- 用[缺陷表单](https://github.com/workhold/doca/issues/new?template=bug.yml)报告可复现的问题。
+  需要跟踪的具体工作（包括文档修正）可以提交到 [Issues](https://github.com/workhold/doca/issues)。
+
 ## 开发检查
 
 使用 Node.js 22.12 或更高版本，以及 `package.json` 中声明的 pnpm 版本。启动应用前先按[开发环境](docs/development.zh-CN.md)完成配置。
@@ -33,4 +44,4 @@ pnpm check
 - 遵守 [AGENTS.md](AGENTS.md)，兼容性变化须事先确认，数据库改动须遵守[升级规范](docs/database-schema-evolution.zh-CN.md)。生成的验收产物写入 `artifacts/`，审阅后的摘要提交到 `docs/verification/`。
 - 文档改动运行 `pnpm docs:check` 和 `pnpm docs:build`。
 
-安全漏洞请通过 README 中的作者邮箱 [smartdoca@163.com](mailto:smartdoca@163.com) 私下报告，不在公开 Issue 中披露利用细节或凭据。
+安全漏洞请通过 README 中的作者邮箱 [smartdoca@163.com](mailto:smartdoca@163.com) 私下报告，不在公开 Issue 或讨论中披露利用细节或凭据。

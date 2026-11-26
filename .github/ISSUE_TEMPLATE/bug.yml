@@ -1,0 +1,41 @@
+name: Bug report / 缺陷报告
+description: Report a reproducible problem in Doca. 报告可复现的 Doca 缺陷。
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search [existing issues](https://github.com/workhold/doca/issues) before filing. Report security vulnerabilities privately using the [contribution guide](https://github.com/workhold/doca/blob/main/CONTRIBUTING.md).
+        提交前请搜索[已有 Issue](https://github.com/workhold/doca/issues)。安全漏洞请按[贡献指南](https://github.com/workhold/doca/blob/main/CONTRIBUTING.zh-CN.md)私下报告。
+  - type: textarea
+    id: environment
+    attributes:
+      label: Version and environment / 版本与环境
+      description: Include the Doca version and relevant client, OS, browser, or deployment details. 请提供 Doca 版本以及相关的客户端、系统、浏览器或部署信息。
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce / 复现步骤
+      description: Give the shortest sequence of steps that reproduces the bug. 请写出能复现问题的最短步骤。
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior / 期望行为
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior / 实际行为
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs and screenshots / 日志与截图
+      description: Remove credentials, personal information, and private document content before sharing. 分享前请移除凭据、个人信息和私密文档内容。

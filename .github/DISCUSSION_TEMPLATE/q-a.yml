@@ -1,0 +1,18 @@
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check the [Doca docs](https://workhold.github.io/doca/#/en/) and [existing questions](https://github.com/workhold/doca/discussions/categories/q-a). Redact private data from logs and screenshots.
+        请先查阅 [Doca 文档](https://workhold.github.io/doca/#/zh-cn/)和[已有问答](https://github.com/workhold/doca/discussions/categories/q-a)。请对日志和截图中的私密数据脱敏。
+  - type: textarea
+    id: question
+    attributes:
+      label: Question / 问题
+      description: What are you trying to do, and where are you stuck? 你想完成什么，卡在了哪一步？
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Setup and what you tried / 环境与已尝试的操作
+      description: If relevant, include the Doca version, platform or deployment method, steps you tried, and any sanitized error messages. 如适用，请提供 Doca 版本、平台或部署方式、已尝试的操作和脱敏后的报错。

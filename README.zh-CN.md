@@ -109,7 +109,8 @@ Doca 桌面客户端（Windows、macOS）连接你部署的 Doca 服务：工作
 | **插件商城** | [store.smartdoca.cc](https://store.smartdoca.cc) |
 | **项目源码** | [github.com/workhold/doca](https://github.com/workhold/doca) |
 | **发行版本** | [下载与发行说明](https://github.com/workhold/doca/releases) |
-| **问题反馈** | [提交问题或功能建议](https://github.com/workhold/doca/issues) |
+| **社区讨论** | [使用问答与功能建议](https://github.com/workhold/doca/discussions) |
+| **问题反馈** | [报告缺陷](https://github.com/workhold/doca/issues/new/choose) |
 
 ## Docker 快速开始
 

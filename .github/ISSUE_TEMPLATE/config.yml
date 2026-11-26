@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Feature proposals / 功能建议
+    url: https://github.com/workhold/doca/discussions/categories/ideas
+    about: Propose a feature or add to an existing idea. 提交功能建议或参与已有讨论。
+  - name: Questions and help / 使用问答
+    url: https://github.com/workhold/doca/discussions/categories/q-a
+    about: Ask about using or deploying Doca. 交流 Doca 的使用与部署问题。

@@ -111,7 +111,8 @@ Installers are available from [GitHub Releases](https://github.com/workhold/doca
 | **Plugin marketplace** | [store.smartdoca.cc](https://store.smartdoca.cc) |
 | **Source code** | [github.com/workhold/doca](https://github.com/workhold/doca) |
 | **Releases** | [Download and release notes](https://github.com/workhold/doca/releases) |
-| **Feedback** | [Report an issue or request a feature](https://github.com/workhold/doca/issues) |
+| **Community** | [Ask questions and propose features](https://github.com/workhold/doca/discussions) |
+| **Issues** | [Report a bug](https://github.com/workhold/doca/issues/new/choose) |
 
 ## Quick start with Docker
 

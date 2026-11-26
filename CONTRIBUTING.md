@@ -13,6 +13,19 @@ and pull requests are welcome. A contribution is licensed under the MIT License.
 Do not submit code copied from another project unless you have the right to
 license that code under the MIT License.
 
+## Questions, ideas, and reports
+
+Search [Discussions](https://github.com/workhold/doca/discussions) and
+[Issues](https://github.com/workhold/doca/issues) for your topic before posting.
+
+- Ask how to use or deploy Doca in [Q&A](https://github.com/workhold/doca/discussions/categories/q-a).
+- Propose features in [Ideas](https://github.com/workhold/doca/discussions/categories/ideas).
+  Describe your use case and the outcome you want. Once the scope is clear, a
+  maintainer can open an issue that links back to the proposal.
+- Report reproducible bugs with the [bug form](https://github.com/workhold/doca/issues/new?template=bug.yml).
+  Use [Issues](https://github.com/workhold/doca/issues) to track specific work,
+  including documentation fixes.
+
 ## Development checks
 
 Use Node.js 22.12 or later and the pnpm version declared in `package.json`. Follow [development setup](docs/development.md) before starting the application.
@@ -39,4 +52,4 @@ Never run collaboration tests against user data.
 - Follow [AGENTS.md](AGENTS.md), including prior agreement for compatibility changes and the [database upgrade contract](docs/database-schema-evolution.md). Store generated verification output in `artifacts/`; commit reviewed summaries in `docs/verification/`.
 - Run `pnpm docs:check` and `pnpm docs:build` for documentation changes.
 
-Report security vulnerabilities privately to [smartdoca@163.com](mailto:smartdoca@163.com), the author contact listed in the README. Do not include exploit details or credentials in public issues.
+Report security vulnerabilities privately to [smartdoca@163.com](mailto:smartdoca@163.com), the author contact listed in the README. Do not include exploit details or credentials in public issues or discussions.
