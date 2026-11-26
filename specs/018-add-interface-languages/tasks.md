@@ -8,4 +8,4 @@
 - [x] T004 Publish the editors and integrate their exact registry versions in Doca. AC-002, AC-005.
 - [x] T005 Capture and review isolated UI screenshots and the preference and editor runtime checks in all eight languages. AC-001, AC-002, AC-003, AC-004.
 - [x] T006 Update the project READMEs, public docs, localized screenshots and current contracts. Build and verify the language-specific documentation routes. AC-004.
-- [ ] T007 Release Doca 0.3.0 and record the GitHub, documentation and Docker Hub results. AC-005.
+- [x] T007 Release Doca 0.3.0 and record the GitHub, documentation and Docker Hub results. AC-005.

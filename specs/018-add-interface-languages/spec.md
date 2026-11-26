@@ -1,7 +1,7 @@
 # Feature Specification: Eight interface languages
 
 **Level**: full
-**Status**: accepted
+**Status**: verified
 **Created**: 2026-11-26
 **Decision**: Add Traditional Chinese, Japanese, French, Korean, Spanish, and Russian to Doca and all five editor packages. The operator expressly approved the language-preference compatibility plan on 2026-11-26 and requested host release 0.3.0. Arabic is deferred at the operator’s request.
 
