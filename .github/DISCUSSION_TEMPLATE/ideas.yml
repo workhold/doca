@@ -1,0 +1,25 @@
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search [existing ideas](https://github.com/workhold/doca/discussions/categories/ideas) before posting. If you find a match, add your use case to that discussion. Please redact private data from examples.
+        发帖前请搜索[已有建议](https://github.com/workhold/doca/discussions/categories/ideas)。如果已有相同建议，请在原帖补充使用场景。请对示例中的私密数据脱敏。
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and use case / 问题与使用场景
+      description: What are you trying to accomplish, and what gets in the way today? 你想完成什么，目前遇到了什么困难？
+    validations:
+      required: true
+  - type: textarea
+    id: desired-behavior
+    attributes:
+      label: Desired behavior / 期望行为
+      description: What should Doca do in this situation, and how would that help? 在这个场景下，你希望 Doca 怎么做，这会带来什么帮助？
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and context / 替代方案与补充信息
+      description: Share workarounds, related discussions, or anonymized examples. 可以补充临时解决办法、相关讨论或脱敏示例。
