@@ -14,7 +14,7 @@ These settings are applied on GitHub separately from the files in this repositor
 - Live demo: `https://d.smartdoca.cc`
 - Description:
 
-  > Doca｜开源文档管理与知识库，支持多人协同编辑、在线文档、Markdown、表格、幻灯片、画布和 AI 助手。Self-hosted document management, knowledge base & real-time collaborative editing for individuals and small teams.
+  > Self-hosted document management, knowledge base & real-time collaborative editing for individuals and small teams. Doca｜开源文档管理与知识库，支持多人协同编辑、在线文档、Markdown、表格、幻灯片、画布和 AI 助手。
 
 - Topics: `document-management`, `knowledge-base`, `collaborative-editing`,
   `real-time-collaboration`, `online-office`, `self-hosted`, `markdown`,
@@ -22,10 +22,12 @@ These settings are applied on GitHub separately from the files in this repositor
   `yjs`, `react`, `typescript`, `docker`.
 
 Keep the description bilingual so both Chinese and English searches can match.
-Chinese is the primary audience: `README.md` is the Chinese repository homepage,
-and `README.en.md` is the secondary English version linked near the top. Primary
-website, demo, documentation, marketplace, feature, and deployment links use Chinese copy
-and the Chinese documentation routes on the default homepage.
+English is the primary language: `README.md` is the English repository homepage,
+and `README.zh-CN.md` is the secondary Chinese version linked near the top. Primary
+documentation, feature, and deployment links use English copy and the English
+documentation routes. Destinations without English are marked: the website is
+Chinese-only and labeled as such, and the homepage note says the demo starts in
+Chinese and switches after sign-in.
 Use topics describing shipped capabilities and actual technologies. GitHub allows
 at most 20 topics; topic names use lowercase letters, numbers, and hyphens.
 See [Classifying your repository with topics](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/classifying-your-repository-with-topics).

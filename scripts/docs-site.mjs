@@ -81,7 +81,7 @@ for (const name of ["database.md", "database.zh-CN.md"]) {
   }
 }
 const publishedRoutes = new Set(pages.flatMap(page => languages.map(lang => route(page, lang))));
-for (const [name, lang] of [["README.md", "zh-cn"], ["README.en.md", "en"]]) {
+for (const [name, lang] of [["README.md", "en"], ["README.zh-CN.md", "zh-cn"]]) {
   const markdown = await readFile(resolve(root, name), "utf8");
   const entrance = `https://workhold.github.io/doca/#/${lang}/`;
   const links = documentLinks(fromMarkdown(markdown));
