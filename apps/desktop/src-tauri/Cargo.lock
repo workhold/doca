@@ -1020,7 +1020,7 @@ dependencies = [
 
 [[package]]
 name = "doca-desktop"
-version = "0.2.44"
+version = "0.2.45"
 dependencies = [
  "aes-gcm",
  "axum",

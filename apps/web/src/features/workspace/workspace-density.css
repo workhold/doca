@@ -149,8 +149,11 @@
   width: 17px;
   height: 17px;
 }
-.dashboard-home > .dashboard-results {
+/* Let wheel input over the results reach the workspace scroll pane. */
+:is(.dashboard-home, .dashboard-libraries) > .dashboard-results {
   overflow: visible;
+}
+.dashboard-home > .dashboard-results {
   min-height: calc(100dvh - 200px);
   flex: none;
 }
