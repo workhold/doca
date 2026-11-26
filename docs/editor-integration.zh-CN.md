@@ -8,13 +8,15 @@
 
 | 格式 | 当前安装包 | 宿主入口 |
 | --- | --- | --- |
-| 富文本 | @smartdoca/slate 0.4.26 | document-editor.tsx |
-| Markdown | @smartdoca/markdown 0.4.4 | markdown-editor.tsx |
-| 表格 | @smartdoca/sheet 0.2.20 | spreadsheet-editor.tsx |
-| 画布 | @smartdoca/canvas 0.5.16 | canvas-editor.tsx |
-| 幻灯片 | @smartdoca/slides 0.3.0-alpha.5 | presentation-editor.tsx |
+| 富文本 | @smartdoca/slate 0.4.27 | document-editor.tsx |
+| Markdown | @smartdoca/markdown 0.4.6 | markdown-editor.tsx |
+| 表格 | @smartdoca/sheet 0.2.21 | spreadsheet-editor.tsx |
+| 画布 | @smartdoca/canvas 0.5.17 | canvas-editor.tsx |
+| 幻灯片 | @smartdoca/slides 0.3.0-alpha.6 | presentation-editor.tsx |
 
 入口位于 [文档 feature](../apps/web/src/features/documents)。包负责模型、编辑命令、撤销、格式渲染、选择与转换；宿主负责身份、ACL、上传下载、引用、用户卡片、导航、评论和协同连接。语言只影响界面，不翻译用户正文，不重建编辑器。
+
+宿主和五种编辑器支持相同的八种[界面语言](i18n.zh-CN.md)。原生表格菜单和对话框使用对应的 Univer 语言。
 
 ## 引用、资源与查找
 

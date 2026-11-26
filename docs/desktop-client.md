@@ -6,21 +6,21 @@ The desktop client in `apps/desktop` uses Tauri 2. It packages the Doca Web fron
 
 ## Install and connect
 
-Download the macOS (DMG) or Windows (NSIS/MSI) installer from the [Doca 0.2.46 release](https://github.com/workhold/doca/releases/tag/v0.2.46). Current builds are unsigned and lack notarization. On macOS, right-click the app and choose **Open** the first time. Windows may show a SmartScreen prompt.
+Download the macOS (DMG) or Windows (NSIS/MSI) installer from the [Doca 0.3.0 release](https://github.com/workhold/doca/releases/tag/v0.3.0). Current builds are unsigned and lack notarization. On macOS, right-click the app and choose **Open** the first time. Windows may show a SmartScreen prompt.
 
-![Desktop client connection manager: add a remote service](images/desktop-manager-add.jpg)
+![Desktop client connection manager: add a remote service](images/en/desktop-manager-add.jpg)
 
-The first launch shows the connection manager. Current source builds choose the first supported language from the system preferences, with English as the fallback. Use **Language** to choose **中文** or **English** before connecting. Doca remembers this choice locally for launches of the connection manager.
+The first launch shows the connection manager. Current source builds choose the first supported language from the system preferences, with English as the fallback. Use **Language** to choose any of Doca’s eight interface languages before connecting. Doca remembers this choice locally for launches of the connection manager.
 
 Enter a name and the service origin, then choose **Add address**. Production services require HTTPS, loopback development hosts may use HTTP on 127.0.0.1, and the origin cannot include a path, credentials, query or fragment. Choose **Sign in via browser** on the entry. The system browser opens the host's `/#/desktop-connect` page, where its existing login methods apply. After approval the desktop client opens the workspace automatically.
 
-![After browser sign-in, the manager shows the connected backend](images/desktop-manager.jpg)
+![After browser sign-in, the manager shows the connected backend](images/en/desktop-manager.jpg)
 
 The connection manager can add, rename, select, sign out of and remove multiple hosts, and several backends can stay signed in at once. Credentials live only in the local encrypted credential file; the host stores only a hash. See [connection and authentication](#connection-and-authentication).
 
 ## Workspace and multiple backends
 
-![Desktop client workspace with several tabs open and the switch-backend control](images/desktop-workspace.jpg)
+![Desktop client workspace with several tabs open and the switch-backend control](images/en/desktop-workspace.jpg)
 
 Each workspace window has its own tab strip. Tabs are independent same-origin Doca Web page contexts within that window; switching tabs keeps an open page running, and closing a tab disposes its page. Background tabs pause navigation, notification, and presence polling and refresh when reselected. Document collaboration and saves continue while the tab is open. Users can create tabs and windows, open same-origin links in a new tab, and use Ctrl/Command+T, Ctrl/Command+W, Ctrl/Command+N and Ctrl/Command+Tab (Shift reverses tab direction). The new-tab button follows the tab list and the new-window tool has a tooltip; right-clicking a tab title offers duplicate (same URL), open in a new window, close, close left, close right and close all, and tabs drag to reorder within their own window.
 

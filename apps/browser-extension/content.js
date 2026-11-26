@@ -2,7 +2,7 @@
   if (globalThis.docaContentScriptInstalled) return;
   globalThis.docaContentScriptInstalled = true;
   const messages = {
-    zh: {
+    "zh": {
       "dock.page": "收录当前页面",
       "dock.selection": "收录选中区域",
       "dock.assistant": "Doca 助手",
@@ -25,7 +25,7 @@
       "dock.retry": "重试",
       "dock.failed": "收录未完成，请重试",
       "dock.failedWithCode": "收录未完成（错误代码：{code}）",
-      clipper_too_many_pending: "当前未完成的任务较多，请稍后重试。",
+      "clipper_too_many_pending": "当前未完成的任务较多，请稍后重试。",
       "dock.connectionFailed": "暂时无法连接 Doca，请重试",
       "dock.selectionMissing": "请先选中需要收录的网页内容",
       "dock.updated": "插件已更新，请刷新当前网页",
@@ -37,10 +37,9 @@
       "dock.personal": "个人文档",
       "dock.default": "默认",
       "dock.compressionFailed": "图片压缩失败，收录尚未完成，请重试",
-      "dock.animationLarge":
-        "动图超过 20 MiB 或 2500 万像素，请选择更小的图片，不会转成静态图",
+      "dock.animationLarge": "动图超过 20 MiB 或 2500 万像素，请选择更小的图片，不会转成静态图"
     },
-    en: {
+    "en": {
       "dock.page": "Capture this page",
       "dock.selection": "Capture selection",
       "dock.assistant": "Doca assistant",
@@ -55,8 +54,7 @@
       "dock.loading": "Loading capture rules…",
       "dock.saving": "Capturing…",
       "dock.saved": "Saved to Doca",
-      "dock.warnings":
-        "{count} items could not be fully processed; placeholders were saved",
+      "dock.warnings": "{count} items could not be fully processed; placeholders were saved",
       "dock.open": "Open document",
       "dock.login": "Sign in to Doca",
       "dock.setup": "Open settings",
@@ -64,24 +62,242 @@
       "dock.retry": "Retry",
       "dock.failed": "Capture incomplete. Please retry.",
       "dock.failedWithCode": "Capture incomplete (error code: {code}).",
-      clipper_too_many_pending:
-        "Too many tasks are currently active. Please try again shortly.",
+      "clipper_too_many_pending": "Too many tasks are currently active. Please try again shortly.",
       "dock.connectionFailed": "Could not connect to Doca. Please retry.",
       "dock.selectionMissing": "Select the webpage content to capture first",
       "dock.updated": "The extension was updated. Reload this page.",
       "dock.reload": "Reload page",
       "dock.positionFailed": "Could not save the position. Drag to retry.",
-      "dock.images":
-        "Large images compressed; SVG converted; unavailable images marked",
+      "dock.images": "Large images compressed; SVG converted; unavailable images marked",
       "dock.create": "New document",
       "dock.append": "Append to document",
       "dock.personal": "Personal documents",
       "dock.default": "Default",
-      "dock.compressionFailed":
-        "Image compression failed. Capture is incomplete; please retry.",
-      "dock.animationLarge":
-        "The animation exceeds 20 MiB or 25 million pixels. Choose a smaller image; it will not be flattened.",
+      "dock.compressionFailed": "Image compression failed. Capture is incomplete; please retry.",
+      "dock.animationLarge": "The animation exceeds 20 MiB or 25 million pixels. Choose a smaller image; it will not be flattened."
     },
+    "zh-Hant": {
+      "dock.page": "收錄當前頁面",
+      "dock.selection": "收錄選中區域",
+      "dock.assistant": "Doca 助手",
+      "dock.site": "開啟 Doca 網站",
+      "dock.settings": "設定",
+      "dock.drag": "上下拖動工具條，也可使用方向鍵",
+      "dock.collapse": "收起工具條",
+      "dock.expand": "展開工具條",
+      "dock.close": "關閉",
+      "dock.rule": "收錄規則",
+      "dock.confirm": "確認收錄",
+      "dock.loading": "正在讀取收錄規則…",
+      "dock.saving": "正在收錄…",
+      "dock.saved": "已儲存到 Doca",
+      "dock.warnings": "有 {count} 處內容未完整處理，文件已保留佔位",
+      "dock.open": "開啟文件",
+      "dock.login": "登入 Doca",
+      "dock.setup": "開啟設定",
+      "dock.noProfiles": "請先設定收錄規則",
+      "dock.retry": "重試",
+      "dock.failed": "收錄未完成，請重試",
+      "dock.failedWithCode": "收錄未完成（錯誤程式碼：{code}）",
+      "clipper_too_many_pending": "當前未完成的任務較多，請稍後重試。",
+      "dock.connectionFailed": "暫時無法連線 Doca，請重試",
+      "dock.selectionMissing": "請先選中需要收錄的網頁內容",
+      "dock.updated": "外掛已更新，請重新整理當前網頁",
+      "dock.reload": "重新整理網頁",
+      "dock.positionFailed": "位置未能儲存，可重試拖動",
+      "dock.images": "大圖自動壓縮，SVG 轉為圖片；無法儲存的圖片保留佔位",
+      "dock.create": "新建文件",
+      "dock.append": "追加到文件",
+      "dock.personal": "個人文件",
+      "dock.default": "預設",
+      "dock.compressionFailed": "圖片壓縮失敗，收錄尚未完成，請重試",
+      "dock.animationLarge": "動圖超過 20 MiB 或 2500 萬畫素，請選擇更小的圖片，不會轉成靜態圖"
+    },
+    "ja": {
+      "dock.page": "このページを保存する",
+      "dock.selection": "キャプチャ選択",
+      "dock.assistant": "ドカアシスタント",
+      "dock.site": "Docaのウェブサイトを開く",
+      "dock.settings": "設定",
+      "dock.drag": "垂直にドラッグするか、矢印キーを使う",
+      "dock.collapse": "コラボレートツールバーが崩壊",
+      "dock.expand": "ツールバーを拡大",
+      "dock.close": "閉じる",
+      "dock.rule": "キャプチャルール",
+      "dock.confirm": "捕獲が確認されました",
+      "dock.loading": "キャプチャルールの読み込み中…",
+      "dock.saving": "捕捉中…",
+      "dock.saved": "ドカに保存した",
+      "dock.warnings": "{count}件の項目が完全に処理できなかったため、プレースホルダーは保存された",
+      "dock.open": "文書を開く",
+      "dock.login": "Docaにログインする",
+      "dock.setup": "設定を開く",
+      "dock.noProfiles": "まずキャプチャルールを設定する",
+      "dock.retry": "再試行",
+      "dock.failed": "キャプチャが不完全です。再試行してください。",
+      "dock.failedWithCode": "不完全なキャプチャ（エラーコード：{code}）。",
+      "clipper_too_many_pending": "現在、多くのタスクが実行中です。しばらくして再試行してください。",
+      "dock.connectionFailed": "Docaに接続できませんでした。再試行してください。",
+      "dock.selectionMissing": "まず、取得したいウェブページの内容を選択してください。",
+      "dock.updated": "拡張機能が更新されました。このページを再読み込みしてください。",
+      "dock.reload": "ページを再読み込み",
+      "dock.positionFailed": "位置を保存できませんでした。再試行するためにドラッグしてください。",
+      "dock.images": "大きな画像を圧縮；SVGに変換；利用できない画像はマークされている",
+      "dock.create": "新しい文書",
+      "dock.append": "文書に追加する",
+      "dock.personal": "個人文書",
+      "dock.default": "デフォルト",
+      "dock.compressionFailed": "画像圧縮に失敗しました。キャプチャが不完全です。再試行してください。",
+      "dock.animationLarge": "アニメーションのサイズが20MiB以上、または2500万ピクセル以上になっています。より小さな画像を選択してください。そうすれば圧縮されません。"
+    },
+    "fr": {
+      "dock.page": "Capture cette page",
+      "dock.selection": "Sélection de capture",
+      "dock.assistant": "Assistant Doca",
+      "dock.site": "Ouvrir le site de Doca",
+      "dock.settings": "Paramètres",
+      "dock.drag": "Déplacer verticalement ou utiliser les flèches.",
+      "dock.collapse": "Collapser de la barre d'outils",
+      "dock.expand": "Élargir la barre d'outils",
+      "dock.close": "Fermer",
+      "dock.rule": "Règle de capture",
+      "dock.confirm": "Confirmer la capture",
+      "dock.loading": "Chargement des règles de capture…",
+      "dock.saving": "Capturer…",
+      "dock.saved": "Sauvegardé à Doca",
+      "dock.warnings": "{count} éléments n’ont pas pu être traités complètement ; les placeholders ont été sauvés",
+      "dock.open": "Ouvrir le document",
+      "dock.login": "Connexion à Doca",
+      "dock.setup": "Ouvrir les paramètres",
+      "dock.noProfiles": "Définissez d’abord une règle de capture.",
+      "dock.retry": "Réessayer",
+      "dock.failed": "Capture incomplète. Veuillez réessayer.",
+      "dock.failedWithCode": "Capture incomplète (code d'erreur : {code}).",
+      "clipper_too_many_pending": "Trop de tâches sont actives actuellement. Veuillez réessayer bientôt.",
+      "dock.connectionFailed": "Impossible de se connecter à Doca. Veuillez réessayer.",
+      "dock.selectionMissing": "Sélectionner le contenu de la page web à capturer en premier",
+      "dock.updated": "L’extension a été mise à jour. Recharger cette page.",
+      "dock.reload": "Recharger la page",
+      "dock.positionFailed": "Impossible de sauvegarder la position. Déplacez-la pour réessayer.",
+      "dock.images": "Images de grande taille compressées ; SVG convertis ; images indisponibles marquées",
+      "dock.create": "Nouveau document",
+      "dock.append": "Ajouter à le document",
+      "dock.personal": "Documents personnels",
+      "dock.default": "Par défaut",
+      "dock.compressionFailed": "Compression de l’image a échoué. La capture est incomplète ; veuillez réessayer.",
+      "dock.animationLarge": "L’animation dépasse 20 MiB ou 25 millions de pixels. Choisissez une image plus petite ; elle ne sera pas flattée."
+    },
+    "ko": {
+      "dock.page": "이 페이지를 캡처하세요.",
+      "dock.selection": "캡처 선택",
+      "dock.assistant": "도카 어시스턴트",
+      "dock.site": "Doca 웹사이트를 열기",
+      "dock.settings": "설정",
+      "dock.drag": "수직으로 드래그하거나 화살표 키를 사용하세요.",
+      "dock.collapse": "도구 모음 닫기",
+      "dock.expand": "도구 모음 확장",
+      "dock.close": "닫기",
+      "dock.rule": "포착 규칙",
+      "dock.confirm": "포착 확인됨",
+      "dock.loading": "캡처 규칙 로딩 중…",
+      "dock.saving": "포착 중…",
+      "dock.saved": "도카에게 저장됨",
+      "dock.warnings": "{count} 개의 항목이 완전히 처리되지 않았습니다; 플레이스홀더는 저장되었습니다",
+      "dock.open": "문서 열기",
+      "dock.login": "Doca에 로그인하세요.",
+      "dock.setup": "설정 열기",
+      "dock.noProfiles": "먼저 캡처 규칙을 설정하세요.",
+      "dock.retry": "다시 시도",
+      "dock.failed": "불완전한 캡처입니다. 다시 시도해 주세요.",
+      "dock.failedWithCode": "불완전한 캡처 (오류 코드: {code}).",
+      "clipper_too_many_pending": "현재 너무 많은 작업이 활성화되어 있습니다. 잠시 후에 다시 시도해 주세요.",
+      "dock.connectionFailed": "Doca에 연결할 수 없습니다. 다시 시도해 주세요.",
+      "dock.selectionMissing": "먼저 캡처할 웹페이지 콘텐츠를 선택하세요.",
+      "dock.updated": "확장 기능이 업데이트되었습니다. 이 페이지를 다시 로드하세요.",
+      "dock.reload": "페이지 다시 로드",
+      "dock.positionFailed": "위치를 저장할 수 없음. 다시 드래그하여 시도하세요.",
+      "dock.images": "대형 이미지 압축됨; SVG 변환됨; 사용할 수 없는 이미지는 표시됨",
+      "dock.create": "새 문서",
+      "dock.append": "문서에 추가하기",
+      "dock.personal": "개인 문서",
+      "dock.default": "기본값",
+      "dock.compressionFailed": "이미지 압축에 실패했습니다. 캡처가 불완전합니다. 다시 시도해 주세요.",
+      "dock.animationLarge": "애니메이션의 크기가 20 MiB 또는 2500만 픽셀을 초과합니다. 더 작은 이미지를 선택하세요. 그러면 평면화되지 않습니다."
+    },
+    "es": {
+      "dock.page": "Capture esta página",
+      "dock.selection": "Selección de captura",
+      "dock.assistant": "Asistente de Doca",
+      "dock.site": "Abrir el sitio web de Doca",
+      "dock.settings": "Configuración",
+      "dock.drag": "Arrastre verticalmente o utilice las teclas de flecha.",
+      "dock.collapse": "Barra de herramientas de colapso",
+      "dock.expand": "Expandir la barra de herramientas",
+      "dock.close": "Cerrar",
+      "dock.rule": "Regla de captura",
+      "dock.confirm": "Confirmar captura",
+      "dock.loading": "Cargando reglas de captura…",
+      "dock.saving": "Capturar…",
+      "dock.saved": "Guardado en Doca",
+      "dock.warnings": "{count} artículos no pudieron ser procesados completamente; los marcadores se guardaron",
+      "dock.open": "Abrir documento",
+      "dock.login": "Inicie sesión en Doca",
+      "dock.setup": "Abrir configuraciones",
+      "dock.noProfiles": "Primero, establece una regla de captura.",
+      "dock.retry": "Reintentar",
+      "dock.failed": "Captura incompleta. Por favor, intenta de nuevo.",
+      "dock.failedWithCode": "Captura incompleta (código de error: {code}).",
+      "clipper_too_many_pending": "Hay demasiadas tareas activas en este momento. Por favor, intente de nuevo en breve.",
+      "dock.connectionFailed": "No se pudo conectar con Doca. Por favor, intenta de nuevo.",
+      "dock.selectionMissing": "Seleccione el contenido de la página web para capturar primero",
+      "dock.updated": "La extensión se actualizó. Recarga esta página.",
+      "dock.reload": "Recargar página",
+      "dock.positionFailed": "No se pudo guardar la posición. Arrastre para intentar de nuevo.",
+      "dock.images": "Imágenes grandes comprimidas; SVG convertidas; imágenes no disponibles marcadas",
+      "dock.create": "Documento nuevo",
+      "dock.append": "Añadir al documento",
+      "dock.personal": "Documentos personales",
+      "dock.default": "Predeterminado",
+      "dock.compressionFailed": "La compresión de imagen falló. La captura es incompleta; por favor, intente de nuevo.",
+      "dock.animationLarge": "La animación supera los 20 MiB o 25 millones de píxeles. Elija una imagen más pequeña; no se aplanará."
+    },
+    "ru": {
+      "dock.page": "Захватите эту страницу",
+      "dock.selection": "Выбор захвата",
+      "dock.assistant": "Дока-ассистент",
+      "dock.site": "Откройте сайт Doca",
+      "dock.settings": "Настройки",
+      "dock.drag": "Перетащите вертикально или использовать клавиши стрелок.",
+      "dock.collapse": "Разрушение инструментов управления",
+      "dock.expand": "Расширить панель инструментов",
+      "dock.close": "Закрыть",
+      "dock.rule": "Правило захвата",
+      "dock.confirm": "Подтвердить захват",
+      "dock.loading": "Загрузка правил захвата…",
+      "dock.saving": "Фиксация…",
+      "dock.saved": "Сохранено в Doca",
+      "dock.warnings": "{count} элементов не удалось полностью обработать; плейсхолдеры сохранены",
+      "dock.open": "Откройте документ",
+      "dock.login": "Войдите в Doca",
+      "dock.setup": "Открыть настройки",
+      "dock.noProfiles": "Сначала настройте правило захвата.",
+      "dock.retry": "Повторить",
+      "dock.failed": "Захват неполный. Пожалуйста, попробуйте снова.",
+      "dock.failedWithCode": "Захват неполный (код ошибки: {code}).",
+      "clipper_too_many_pending": "Сейчас слишком много задач активны. Пожалуйста, попробуйте снова в ближайшее время.",
+      "dock.connectionFailed": "Не удалось подключиться к Doca. Пожалуйста, попробуйте снова.",
+      "dock.selectionMissing": "Сначала выберите содержимое веб-страницы для захвата.",
+      "dock.updated": "Расширение обновлено. Перезагрузите эту страницу.",
+      "dock.reload": "Перезагрузить страницу",
+      "dock.positionFailed": "Не удалось сохранить позицию. Перетащите, чтобы попробовать снова.",
+      "dock.images": "Большие изображения сжаты; SVG конвертированы; неактивные изображения отмечены",
+      "dock.create": "Новый документ",
+      "dock.append": "Добавить в документ",
+      "dock.personal": "Личные документы",
+      "dock.default": "По умолчанию",
+      "dock.compressionFailed": "Сжатие изображения не удалось. Запись неполная; пожалуйста, попробуйте снова.",
+      "dock.animationLarge": "Анимация имеет размер более 20 МиБ или 25 миллионов пикселей. Выберите более маленький изображение; оно не будет выпрямлено."
+    }
   };
   let locale = "zh",
     snapshot = null,
@@ -97,7 +313,7 @@
     expandedHeight = 0,
     positionTouched = false,
     drag = null;
-  const t = (key) => messages[locale][key];
+  const t = (key) => messages[locale][key] ?? messages.en[key];
   const send = async (message) => {
     if (!chrome.runtime?.id) throw Error("Extension context invalidated");
     const result = await chrome.runtime.sendMessage(message);
@@ -264,6 +480,7 @@
   document.documentElement.append(host);
   const dropdown = globalThis.DocaSelect.enhance(profiles);
   function translate() {
+    host.lang = locale === "zh" ? "zh-CN" : locale;
     for (const [name, node] of buttons) {
       node.setAttribute("aria-label", t("dock." + name));
       node.querySelector(".tip").textContent = t("dock." + name);
@@ -387,7 +604,7 @@
       const next = await send({ type: "state" });
       if (generation !== panelGeneration || panel.hidden) return;
       state = next;
-      locale = next.locale === "en" ? "en" : "zh";
+      locale = Object.hasOwn(messages, next.locale) ? next.locale : "zh";
       translate();
       title.textContent = t("dock." + mode);
       profiles.replaceChildren();
@@ -704,7 +921,7 @@
   position();
   void send({ type: "dockPreferences", operation: "get" })
     .then((preferences) => {
-      locale = preferences.locale === "en" ? "en" : "zh";
+      locale = Object.hasOwn(messages, preferences.locale) ? preferences.locale : "zh";
       translate();
       if (!positionTouched && preferences.position !== null)
         positionRatio = preferences.position;

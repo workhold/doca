@@ -1,4 +1,4 @@
-import { translate } from "@doca/i18n";
+import { translate, type Locale } from "@doca/i18n";
 import { getDocument, OPS } from "pdfjs-dist/legacy/build/pdf.mjs";
 import "pdfjs-dist/legacy/build/pdf.worker.mjs";
 import { importPdfFile, type PdfImportResult } from "@smartdoca/markdown";
@@ -115,7 +115,7 @@ export function pdfTextBlocks(runs: PdfTextRun[], pageWidth: number): { y: numbe
   return result;
 }
 
-export async function importEditablePdf(file: File, signal?: AbortSignal, locale = "zh"): Promise<PdfImportResult & { initialValue: EditorValue }> {
+export async function importEditablePdf(file: File, signal?: AbortSignal, locale: Locale = "zh"): Promise<PdfImportResult & { initialValue: EditorValue }> {
   // The shipped parser supplies format/size/password/page limits, links, assets and warnings.
   const extracted = await importPdfFile(file, { signal, locale });
   const bounded = signal ? AbortSignal.any([signal, AbortSignal.timeout(30_000)]) : AbortSignal.timeout(30_000);
@@ -133,7 +133,7 @@ export async function importEditablePdf(file: File, signal?: AbortSignal, locale
         const text = await page.getTextContent();
         const operators = await page.getOperatorList(); // populates font names in commonObjs
         const colors = textColors(operators);
-        if (operators.fnArray.some(op => [OPS.stroke, OPS.fill, OPS.eoFill, OPS.fillStroke, OPS.eoFillStroke].includes(op))) extracted.warnings.push({ code: "COMPLEX_LAYOUT", page: number, message: translate(locale === "zh" ? "zh" : "en", "pdf.importLayoutApproximate") });
+        if (operators.fnArray.some(op => [OPS.stroke, OPS.fill, OPS.eoFill, OPS.fillStroke, OPS.eoFillStroke].includes(op))) extracted.warnings.push({ code: "COMPLEX_LAYOUT", page: number, message: translate(locale, "pdf.importLayoutApproximate") });
         let colorIndex = 0;
         const runs: PdfTextRun[] = text.items.flatMap(item => {
           if (!("str" in item) || !item.str) return [];
@@ -147,7 +147,7 @@ export async function importEditablePdf(file: File, signal?: AbortSignal, locale
           const rect = annotation.rect as number[];
           for (const run of runs) if (run.y >= rect[1]! - 4 && run.y <= rect[3]! + 4 && run.x >= rect[0]! - 3 && run.x + run.width <= rect[2]! + 3) run.link = annotation.url;
         }
-        if (!runs.some(run => run.text.trim()) && extracted.resources.some(resource => resource.key.startsWith(`pdf-resource/${number}-`))) extracted.warnings.push({ code: "NO_TEXT_EXTRACTED", page: number, message: translate(locale === "zh" ? "zh" : "en", "pdf.importScanImage") });
+        if (!runs.some(run => run.text.trim()) && extracted.resources.some(resource => resource.key.startsWith(`pdf-resource/${number}-`))) extracted.warnings.push({ code: "NO_TEXT_EXTRACTED", page: number, message: translate(locale, "pdf.importScanImage") });
         const ordered = pdfTextBlocks(runs, page.getViewport({ scale: 1 }).width);
         // Keep each successfully extracted image, including scans, in its page's reading order.
         // Rendering matrices place images between paragraphs rather than at the end of the document.

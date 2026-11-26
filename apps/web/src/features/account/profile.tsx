@@ -20,7 +20,7 @@ import {
   FileSourceDialog,
   FolderFilePicker,
 } from "@web/features/files/files.js";
-import { localeLabel, locales } from "@doca/i18n";
+import { htmlLang, isLocale, localeLabel, locales } from "@doca/i18n";
 import { useI18n } from "@web/shared/i18n.js";
 export const avatars: Record<string, string> = {
   fox: "🦊",
@@ -362,12 +362,13 @@ export function PersonalSettings({
           {t("settings.language")}
           <Select
             value={locale}
-            onChange={(event) =>
-              void setLocale(event.target.value as typeof locale)
-            }
+            onChange={(event) => {
+              const next = event.target.value;
+              if (isLocale(next)) void setLocale(next);
+            }}
           >
             {locales.map((code) => (
-              <option key={code} value={code}>
+              <option key={code} value={code} lang={htmlLang(code)}>
                 {t(localeLabel[code])}
               </option>
             ))}

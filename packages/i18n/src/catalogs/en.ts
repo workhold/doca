@@ -2,7 +2,7 @@ import { browserClipperEn } from "./browser-clipper.js";
 import { desktopEn } from "./desktop.js";
 import { handoverEn } from "./resource-handover.js";
 import { groupsEn } from "./groups.js";
-import { localeNames } from "../locales.js";
+import { localeMessages } from "../locales.js";
 /** English copy is the source catalog. Every other locale must provide these keys. */
 export const en = {
   ...browserClipperEn,
@@ -2834,8 +2834,7 @@ export const en = {
   "settings.language": "Language",
   "settings.language.hint":
     "Changes interface text only. Documents, comments, and mail stay as written.",
-  "locale.zh": localeNames.zh,
-  "locale.en": localeNames.en,
+  ...localeMessages,
   "mobile.settings.title": "Settings",
   "mobile.settings.currentServer": "Current server",
   "mobile.settings.signedOut": "Signed out",
@@ -2936,6 +2935,31 @@ export const en = {
   "library.trigger.manual": "Manual",
   "library.trigger.schedule": "Scheduled",
 
+  "editor.sync.connecting": "Connecting…",
+  "editor.sync.saving": "Saving…",
+  "editor.sync.cloud": "Saved to the cloud",
+  "editor.sync.savedLocal": "Saved locally · Waiting to sync",
+  "editor.sync.waiting": "Local copy · Waiting for connection",
+  "editor.sync.paused": "Sync paused · Local content retained",
+  "editor.sync.pausedRecovery": "Sync is paused. Keep this page open and export a recovery copy.",
+  "editor.sync.savingLocal": "Saving to this device…",
+  "editor.sync.synchronizing": "Syncing…",
+  "editor.sync.reconnecting": "Connection lost · Reconnecting",
+  "editor.sync.incomplete": "Save incomplete",
+  "editor.sync.reconnect": "Reconnect",
+  "editor.sync.pausedDetail": "Sync is paused. Unconfirmed changes are still in this browser. You can download a recovery file.",
+  "editor.sync.keepOpen": "Unsaved changes remain on this page. Keep it open.",
+  "editor.sync.downloadRecovery": "Download recovery file",
+  "editor.sync.exportRecovery": "Export local recovery file",
+  "editor.notEditable": "This document type is unavailable for editing",
+  "editor.notEditableDetail": "An editor has yet to be connected for this format.",
+  "editor.selection.markdownText": "Selected Markdown text",
+  "editor.selection.canvas": "Canvas selection · {count} elements",
+  "editor.selection.sheetRecords": "Cell selection · Records selected: {count}",
+  "editor.selection.sheetRows": "Cell selection · Rows {start}–{end}",
+  "editor.selection.slide": "Slide {page} · Selected elements",
+  "editor.canvas.imageFormat": "{format} image",
+  "editor.file.saveMarkdown": "Save to workspace folder (Markdown)",
   "editor.bodyPlaceholder": "Type, or type / to insert",
   "editor.offlineEditing": "Editing offline. Changes sync automatically when the connection returns.",
   "editor.uploadFailed": "Upload failed for {name}: {reason}",

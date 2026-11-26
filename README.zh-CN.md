@@ -25,11 +25,11 @@
   <a href="#docker-快速开始">部署自己的 Doca</a>
 </p>
 
-<p align="center"><a href="README.md">English</a> · 简体中文</p>
+<p align="center"><a href="README.md">English</a> · 简体中文 · <a href="README.zh-Hant.md">繁體中文</a> · <a href="README.ja.md">日本語</a> · <a href="README.fr.md">Français</a> · <a href="README.ko.md">한국어</a> · <a href="README.es.md">Español</a> · <a href="README.ru.md">Русский</a></p>
 
 Doca 把**在线文档、Markdown、在线表格、幻灯片、无限画布、知识管理和团队协作**放在一起。记录个人想法，沉淀团队知识，也可以连接自己的 AI 模型辅助工作。
 
-![Doca 工作台：最近访问的文档、团队知识库与 AI 助手入口](docs/images/workspace.jpg)
+![Doca 工作台：最近访问的文档、团队知识库与 AI 助手入口](docs/images/zh-cn/workspace.jpg)
 
 <p align="center"><sub>从上次停下的地方继续。文档、团队知识与 AI 助手，都在同一个工作台。</sub></p>
 
@@ -48,22 +48,22 @@ Doca 把**在线文档、Markdown、在线表格、幻灯片、无限画布、�
 
 用富文本写方案与会议纪要。知识库目录、格式工具、权限和文档历史就在手边。
 
-![Doca 在线文档编辑器：团队协作指南与知识库目录](docs/images/rich-text.jpg)
+![Doca 在线文档编辑器：团队协作指南与知识库目录](docs/images/zh-cn/rich-text.jpg)
 
 ### 五种文档格式，一个工作台
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/images/markdown.jpg" alt="Doca Markdown 编辑器：研发笔记的源码与预览分屏"><br><b>Markdown</b>：写笔记、贴代码、整理结构化内容。</td>
-    <td width="50%"><img src="docs/images/spreadsheet.jpg" alt="Doca 在线表格编辑器中的项目预算"><br><b>在线表格</b>：管理预算、数据与项目进度。</td>
+    <td width="50%"><img src="docs/images/zh-cn/markdown.jpg" alt="Doca Markdown 编辑器：研发笔记的源码与预览分屏"><br><b>Markdown</b>：写笔记、贴代码、整理结构化内容。</td>
+    <td width="50%"><img src="docs/images/zh-cn/spreadsheet.jpg" alt="Doca 在线表格编辑器中的项目预算"><br><b>在线表格</b>：管理预算、数据与项目进度。</td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/images/slides.jpg" alt="Doca 幻灯片编辑器中的产品介绍"><br><b>幻灯片</b>：表达想法，展示方案与阶段成果。</td>
-    <td width="50%"><img src="docs/images/canvas.jpg" alt="Doca 无限画布：项目流程图、思维导图与行动表格"><br><b>无限画布</b>：把流程、结构与思路放到画板上。</td>
+    <td width="50%"><img src="docs/images/zh-cn/slides.jpg" alt="Doca 幻灯片编辑器中的产品介绍"><br><b>幻灯片</b>：表达想法，展示方案与阶段成果。</td>
+    <td width="50%"><img src="docs/images/zh-cn/canvas.jpg" alt="Doca 无限画布：项目流程图、思维导图与行动表格"><br><b>无限画布</b>：把流程、结构与思路放到画板上。</td>
   </tr>
 </table>
 
-<p align="center"><sub>编辑器截图更新于 2026-11-22，基于 Doca 0.2.37 的真实界面，使用隔离本地部署中的示例内容。</sub></p>
+<p align="center"><sub>编辑器截图来自 Doca 0.3.0 简体中文界面，使用隔离环境中的示例内容。</sub></p>
 
 ## 主要功能
 
@@ -114,12 +114,12 @@ Doca 桌面客户端（Windows、macOS）连接你部署的 Doca 服务：工作
 
 ## Docker 快速开始
 
-需要 Docker Engine、Docker Compose，以及通过反向代理访问的 HTTP(S) 地址。全新 SQLite/本地存储安装只需一个 YAML，无需 Git、源码、seccomp JSON 或外部初始化脚本。已有部署更换版本前，先阅读[发行要求](https://workhold.github.io/doca/#/zh-cn/releases/0.2.46)，保留原项目名、持久卷、数据库、附件和主密钥。
+需要 Docker Engine、Docker Compose，以及通过反向代理访问的 HTTP(S) 地址。全新 SQLite/本地存储安装只需一个 YAML，无需 Git、源码、seccomp JSON 或外部初始化脚本。已有部署更换版本前，先阅读[发行要求](https://workhold.github.io/doca/#/zh-cn/releases/0.3.0)，保留原项目名、持久卷、数据库、附件和主密钥。
 
 ```sh
 # 1. 在固定部署目录下载单文件配置
 mkdir doca && cd doca
-curl -fL https://github.com/workhold/doca/releases/download/v0.2.46/doca-compose-v0.2.46.yaml -o compose.yaml
+curl -fL https://github.com/workhold/doca/releases/download/v0.3.0/doca-compose-v0.3.0.yaml -o compose.yaml
 
 # 2. 用 openssl rand -hex 32 生成主密钥
 # 编辑 compose.yaml，填写 DOCA_ORIGIN 和 DOCA_CREDENTIAL_MASTER_KEY
@@ -164,7 +164,7 @@ pnpm dev
 - [部署与配置](https://workhold.github.io/doca/#/zh-cn/operations/deployment)
 - [插件开发](https://workhold.github.io/doca/#/zh-cn/plugins/plugin-development)
 - [HTTP API](https://workhold.github.io/doca/#/zh-cn/reference/api)，运行中的应用还提供 `/api/openapi.json`。
-- [发行记录](https://workhold.github.io/doca/#/zh-cn/releases/0.2.46)
+- [发行记录](https://workhold.github.io/doca/#/zh-cn/releases/0.3.0)
 - [文档源码](docs/README.zh-CN.md)
 
 预览文档时，执行 `pnpm docs:dev` 并打开 `http://127.0.0.1:39140/#/zh-cn/`。`pnpm docs:check` 校验双语覆盖和本地链接。GitHub Pages 设置见[文档维护](docs/documentation.zh-CN.md)。

@@ -7,8 +7,8 @@ export default defineConfig({
   base: "./",
   resolve: {
     alias: {
-      "@doca/i18n": fileURLToPath(
-        new URL("../../packages/i18n/src/index.ts", import.meta.url),
+      "@doca/i18n/desktop": fileURLToPath(
+        new URL("../../packages/i18n/src/desktop.ts", import.meta.url),
       ),
     },
   },

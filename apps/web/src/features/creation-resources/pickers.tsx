@@ -1,3 +1,4 @@
+import { bilingualLocale } from "@doca/i18n";
 import { Popover, Select } from "antd";
 import { Search, X, LoaderCircle, SlidersHorizontal } from "lucide-react";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
@@ -514,7 +515,7 @@ function ResourceBrowser({
                   {t("resources.backToCollections")}
                 </button>
                 <strong>{collectionScope.title}</strong>
-                <span>{collectionScope.source.title[locale]}</span>
+                <span>{collectionScope.source.title[bilingualLocale(locale)]}</span>
               </div>
             ) : (
               <div
@@ -567,7 +568,7 @@ function ResourceBrowser({
                     type="button"
                     key={provider.id}
                     aria-pressed={providerIds?.includes(provider.id) ?? false}
-                    title={provider.description?.[locale]}
+                    title={provider.description?.[bilingualLocale(locale)]}
                     disabled={busy}
                     onClick={() => {
                       const current = providerIds ?? [];
@@ -578,7 +579,7 @@ function ResourceBrowser({
                       );
                     }}
                   >
-                    {provider.title[locale]}
+                    {provider.title[bilingualLocale(locale)]}
                   </button>
                 ))}
               </div>
@@ -608,7 +609,7 @@ function ResourceBrowser({
                     disabled={busy}
                     onClick={() => setTag(item.id)}
                   >
-                    {item.title[locale]}
+                    {item.title[bilingualLocale(locale)]}
                   </button>
                 ))}
               </div>
@@ -800,7 +801,7 @@ function ResourceBrowser({
                 {retrievalFailures.map((failure) => (
                   <li key={failure.providerId}>
                     {providers.find((p) => p.id === failure.providerId)?.title[
-                      locale
+                      bilingualLocale(locale)
                     ] ?? failure.providerId}
                     ：
                     {t(
@@ -864,9 +865,9 @@ function ResourceBrowser({
                   <span>{item.summary}</span>
                   <span
                     className="resource-card-source"
-                    title={item.source.description?.[locale]}
+                    title={item.source.description?.[bilingualLocale(locale)]}
                   >
-                    {item.source.title[locale]}
+                    {item.source.title[bilingualLocale(locale)]}
                   </span>
                 </button>
               ))}
@@ -886,10 +887,10 @@ function ResourceBrowser({
           {error && <Feedback tone="error" message={error} />}
           <div className="resource-source-info">
             <strong>
-              {t("resources.source")} · {selected.source.title[locale]}
+              {t("resources.source")} · {selected.source.title[bilingualLocale(locale)]}
             </strong>
             {selected.source.description && (
-              <p>{selected.source.description[locale]}</p>
+              <p>{selected.source.description[bilingualLocale(locale)]}</p>
             )}
           </div>
           <p>{selected.summary}</p>

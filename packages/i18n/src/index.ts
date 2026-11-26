@@ -3,7 +3,8 @@ import { type Locale } from "./locales";
 
 export { en, type MessageKey } from "./catalogs/en";
 export { zh } from "./catalogs/zh";
-export { desktopEn, type DesktopMessageKey } from "./catalogs/desktop";
+export { catalogs } from "./catalogs";
+export { createDesktopTranslator, desktopEn, type DesktopMessageKey } from "./desktop";
 export {
   encodeSystemError,
   decodeSystemError,
@@ -12,13 +13,12 @@ export {
 } from "./system-errors";
 export {
   createTranslator,
-  createDesktopTranslator,
-  interpolate,
-  lookupTemplate,
+  navigationTitle,
   translate,
-  type MessageValues,
 } from "./translate";
+export { interpolate, lookupTemplate, type MessageValues } from "./message-template";
 export {
+  bilingualLocale,
   defaultLocale,
   htmlLang,
   isLocale,
@@ -32,4 +32,10 @@ export {
 export const localeLabel = {
   zh: "locale.zh",
   en: "locale.en",
+  "zh-Hant": "locale.zh-Hant",
+  ja: "locale.ja",
+  fr: "locale.fr",
+  ko: "locale.ko",
+  es: "locale.es",
+  ru: "locale.ru",
 } as const satisfies Record<Locale, MessageKey>;

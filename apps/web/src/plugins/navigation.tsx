@@ -1,3 +1,4 @@
+import { navigationTitle } from "@doca/i18n";
 import { PluginSlot, useExtensionContext } from "./extensions.js";
 import { PluginStoreIcon } from "./store-icon.js";
 import { webPluginRegistry } from "./registry.js";
@@ -146,7 +147,7 @@ export function NavigationArea({
             (p.icon
               ? icons[p.icon]
               : (adminIcons[entry.id] ?? icons[entry.icon])) ?? Package,
-          title = (p.title ?? entry.title)[locale];
+          title = navigationTitle(locale, entry, p.title);
         const display =
           slot === "web.topRight" || slot === "web.more"
             ? "icon"

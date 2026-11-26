@@ -1,0 +1,212 @@
+{
+  "zh-Hant": {
+    "Conversations": {
+      "create": "新對話"
+    },
+    "Sender": {
+      "stopLoading": "停止請求",
+      "speechRecording": "正在錄音"
+    },
+    "Actions": {
+      "feedbackLike": "喜歡",
+      "feedbackDislike": "不喜歡",
+      "audio": "播放語音",
+      "audioRunning": "語音播放中",
+      "audioError": "播放出錯了",
+      "audioLoading": "正在載入語音"
+    },
+    "Bubble": {
+      "editableOk": "確認",
+      "editableCancel": "取消"
+    },
+    "Mermaid": {
+      "zoomIn": "放大",
+      "zoomOut": "縮小",
+      "zoomReset": "重置",
+      "download": "下載",
+      "code": "程式碼",
+      "image": "圖片"
+    },
+    "Folder": {
+      "selectFile": "請選擇一個檔案",
+      "loadError": "檔案載入失敗",
+      "noService": "未配置檔案內容服務",
+      "loadFailed": "載入檔案失敗"
+    }
+  },
+  "ja": {
+    "Conversations": {
+      "create": "新しいチャット"
+    },
+    "Sender": {
+      "stopLoading": "読み込みを停止する",
+      "speechRecording": "音声録音"
+    },
+    "Actions": {
+      "feedbackLike": "似ている",
+      "feedbackDislike": "嫌い",
+      "audio": "音声を再生する",
+      "audioRunning": "音声が再生中",
+      "audioError": "再生エラー",
+      "audioLoading": "音声の読み込み中"
+    },
+    "Bubble": {
+      "editableOk": "OK",
+      "editableCancel": "キャンセル"
+    },
+    "Mermaid": {
+      "zoomIn": "ズームイン",
+      "zoomOut": "ズームアウト",
+      "zoomReset": "リセット",
+      "download": "ダウンロード",
+      "code": "コード",
+      "image": "画像"
+    },
+    "Folder": {
+      "selectFile": "ファイルを選択してください",
+      "loadError": "ファイルの読み込みに失敗しました",
+      "noService": "ファイル内容サービスが設定されていません。",
+      "loadFailed": "ファイルの読み込みに失敗しました"
+    }
+  },
+  "fr": {
+    "Conversations": {
+      "create": "Nouvelle conversation"
+    },
+    "Sender": {
+      "stopLoading": "Arrêtez de charger.",
+      "speechRecording": "Enregistrement de la parole"
+    },
+    "Actions": {
+      "feedbackLike": "Comme",
+      "feedbackDislike": "Désagrément",
+      "audio": "Play audio",
+      "audioRunning": "Audio en train de jouer",
+      "audioError": "Erreur de lecture",
+      "audioLoading": "Chargement de l’audio"
+    },
+    "Bubble": {
+      "editableOk": "OK",
+      "editableCancel": "Annuler"
+    },
+    "Mermaid": {
+      "zoomIn": "Zoomer en grossissement",
+      "zoomOut": "Reculer",
+      "zoomReset": "Réinitialiser",
+      "download": "Télécharger",
+      "code": "Code",
+      "image": "Image"
+    },
+    "Folder": {
+      "selectFile": "Veuillez sélectionner un fichier",
+      "loadError": "Échec de chargement du fichier",
+      "noService": "Le service de contenu des fichiers n’est pas configuré.",
+      "loadFailed": "Échec de chargement du fichier"
+    }
+  },
+  "ko": {
+    "Conversations": {
+      "create": "새로운 채팅"
+    },
+    "Sender": {
+      "stopLoading": "로드 중지",
+      "speechRecording": "음성 녹음"
+    },
+    "Actions": {
+      "feedbackLike": "마음에 드네요",
+      "feedbackDislike": "싫어함",
+      "audio": "오디오 재생",
+      "audioRunning": "오디오 재생 중",
+      "audioError": "재생 오류",
+      "audioLoading": "오디오 로딩 중"
+    },
+    "Bubble": {
+      "editableOk": "OK",
+      "editableCancel": "취소"
+    },
+    "Mermaid": {
+      "zoomIn": "줌인",
+      "zoomOut": "축소",
+      "zoomReset": "리셋",
+      "download": "다운로드",
+      "code": "코드",
+      "image": "이미지"
+    },
+    "Folder": {
+      "selectFile": "파일을 선택해 주세요.",
+      "loadError": "파일 로드 실패",
+      "noService": "파일 콘텐츠 서비스가 설정되지 않았습니다.",
+      "loadFailed": "파일 로드 실패"
+    }
+  },
+  "es": {
+    "Conversations": {
+      "create": "Nuevo chat"
+    },
+    "Sender": {
+      "stopLoading": "Deje de cargar.",
+      "speechRecording": "Grabación de voz"
+    },
+    "Actions": {
+      "feedbackLike": "Como",
+      "feedbackDislike": "No me gusta",
+      "audio": "Reproducir audio",
+      "audioRunning": "Audio reproduciéndose",
+      "audioError": "Error de reproducción",
+      "audioLoading": "Cargando audio"
+    },
+    "Bubble": {
+      "editableOk": "OK",
+      "editableCancel": "Cancelar"
+    },
+    "Mermaid": {
+      "zoomIn": "Aumentar el zoom",
+      "zoomOut": "Ajustar hacia abajo",
+      "zoomReset": "Reiniciar",
+      "download": "Descargar",
+      "code": "Código",
+      "image": "Imagen"
+    },
+    "Folder": {
+      "selectFile": "Por favor, seleccione un archivo.",
+      "loadError": "No se pudo cargar el archivo",
+      "noService": "El servicio de contenido de archivo no está configurado.",
+      "loadFailed": "No se pudo cargar el archivo"
+    }
+  },
+  "ru": {
+    "Conversations": {
+      "create": "Новое чат"
+    },
+    "Sender": {
+      "stopLoading": "Прекратите загрузку.",
+      "speechRecording": "Запись речи"
+    },
+    "Actions": {
+      "feedbackLike": "Как",
+      "feedbackDislike": "Неприязнь",
+      "audio": "Плеер звука",
+      "audioRunning": "Аудио воспроизводится",
+      "audioError": "Ошибка воспроизведения",
+      "audioLoading": "Загрузка аудио"
+    },
+    "Bubble": {
+      "editableOk": "OK",
+      "editableCancel": "Отмена"
+    },
+    "Mermaid": {
+      "zoomIn": "Увеличить",
+      "zoomOut": "Уменьшить масштаб",
+      "zoomReset": "Сброс",
+      "download": "Скачать",
+      "code": "Код",
+      "image": "Изображение"
+    },
+    "Folder": {
+      "selectFile": "Пожалуйста, выберите файл.",
+      "loadError": "Не удалось загрузить файл",
+      "noService": "Сервис содержимого файла не настроен",
+      "loadFailed": "Не удалось загрузить файл"
+    }
+  }
+}

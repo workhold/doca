@@ -1,3 +1,4 @@
+import { bilingualLocale } from "@doca/i18n";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SPREADSHEET_MENU_PATHS } from "@smartdoca/sheet";
 import type {
@@ -54,7 +55,7 @@ export function useSheetPluginElements(
   const context = (): PluginElementContext => ({
     documentId,
     format: "spreadsheet",
-    locale: live.current.locale,
+    locale: bilingualLocale(live.current.locale),
     readOnly: !live.current.editable,
     signal: abort.signal,
   });

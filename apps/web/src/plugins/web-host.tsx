@@ -1,3 +1,4 @@
+import { bilingualLocale } from "@doca/i18n";
 import { CreationTemplatePicker, MaterialPicker, type ResourceRequest } from "@web/features/creation-resources/pickers.js";
 import { openExtensionView } from "./extension-ui.js";
 import { nativeCapabilities } from "./native.js";
@@ -70,7 +71,7 @@ export function createWebHost(
             : ("light" as const),
       );
       return {
-        locale,
+        locale: bilingualLocale(locale),
         theme,
         target: location.hash.startsWith("#/m/plugins/")
           ? ("mobile" as const)

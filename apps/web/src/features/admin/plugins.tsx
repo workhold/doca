@@ -1,3 +1,4 @@
+import { bilingualLocale, htmlLang } from "@doca/i18n";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Drawer, Select, Button, Modal } from "antd";
@@ -75,6 +76,7 @@ function PluginStartupNotice({
 }
 export function Plugins() {
   const { t, locale } = useI18n();
+  const storeLocale = bilingualLocale(locale);
   const [modal, modalContext] = Modal.useModal();
   const confirmAction = (content: string, destructive = false) =>
     modal.confirm({
@@ -263,7 +265,7 @@ export function Plugins() {
     setStoreError("");
     try {
       const params = new URLSearchParams({
-        locale,
+        locale: storeLocale,
         sort,
         limit: "24",
         ...(query.trim() ? { q: query.trim() } : {}),
@@ -317,11 +319,11 @@ export function Plugins() {
       clearTimeout(timer);
       generation.current++;
     };
-  }, [query, category, sort, target, locale]);
+  }, [query, category, sort, target, storeLocale]);
   useEffect(() => {
     let active = true;
     void api<{ items: { id: string; name: string; count?: number | null }[] }>(
-      `/admin/plugins/categories?locale=${locale}`,
+      `/admin/plugins/categories?locale=${storeLocale}`,
     )
       .then((r) => {
         if (active) {
@@ -335,7 +337,7 @@ export function Plugins() {
     return () => {
       active = false;
     };
-  }, [locale]);
+  }, [storeLocale]);
   useEffect(() => {
     if (tab === "installed" || tab === "upgrades") void checkUpdates();
   }, [tab]);
@@ -347,7 +349,7 @@ export function Plugins() {
     if (!detail) return;
     void Promise.all([
       api<StoreDetail>(
-        `/admin/plugins/detail/${encodeURIComponent(detail)}?locale=${locale}`,
+        `/admin/plugins/detail/${encodeURIComponent(detail)}?locale=${storeLocale}`,
       ),
       api<StorePage<StoreRelease>>(
         `/admin/plugins/releases/${encodeURIComponent(detail)}`,
@@ -365,7 +367,7 @@ export function Plugins() {
     return () => {
       detailGeneration.current++;
     };
-  }, [detail, locale]);
+  }, [detail, storeLocale]);
   const act = async (
     run: () => Promise<PluginInventory>,
     confirmation?: string,
@@ -1214,7 +1216,7 @@ export function Plugins() {
                     <li key={item.id}>
                       <time dateTime={item.created_at}>
                         {new Date(item.created_at).toLocaleString(
-                          locale === "zh" ? "zh-CN" : "en-US",
+                          htmlLang(locale),
                         )}
                       </time>
                       <span>

@@ -1,3 +1,4 @@
+const { existsSync } = require("fs");
 const path = require("path");
 const { getDefaultConfig } = require("expo/metro-config");
 
@@ -13,14 +14,13 @@ config.resolver.nodeModulesPaths = [
 ];
 
 const mobileModules = path.resolve(projectRoot, "node_modules");
+const workspacePackages = path.resolve(workspaceRoot, "packages") + path.sep;
 const singletonReact = new Set(["react", "react/jsx-runtime", "react/jsx-dev-runtime"]);
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (moduleName.startsWith("@doca/mobile/")) {
     const name = moduleName.slice("@doca/mobile/".length);
     const base = path.resolve(projectRoot, "src", name);
-    const filePath = [`${base}.ts`, `${base}.tsx`].find((candidate) =>
-      require("fs").existsSync(candidate),
-    );
+    const filePath = [`${base}.ts`, `${base}.tsx`].find((candidate) => existsSync(candidate));
     if (!filePath) {
       throw new Error(`Cannot resolve ${moduleName}`);
     }
@@ -37,6 +37,14 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
       type: "sourceFile",
       filePath: require.resolve(moduleName, { paths: [mobileModules] }),
     };
+  }
+  if (context.originModulePath.startsWith(workspacePackages) && /^\.\.?\/.*\.js$/.test(moduleName)) {
+    // Workspace packages use ESM .js specifiers even when the source is TypeScript.
+    const source = path.resolve(path.dirname(context.originModulePath), moduleName);
+    const stem = source.slice(0, -3);
+    if (!existsSync(source) && (existsSync(`${stem}.ts`) || existsSync(`${stem}.tsx`))) {
+      return context.resolveRequest(context, moduleName.slice(0, -3), platform);
+    }
   }
   return context.resolveRequest(context, moduleName, platform);
 };

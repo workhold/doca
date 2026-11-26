@@ -211,11 +211,11 @@ export default function SheetDocument({
             },
             label: (a) =>
               a.version === 3
-                ? `单元格区域 · ${a.rowIds.length} 条记录`
-                : `单元格区域 · 第 ${+a.startRowId.slice(2) + 1}–${+a.endRowId.slice(2) + 1} 行`,
+                ? t("editor.selection.sheetRecords", { count: a.rowIds.length })
+                : t("editor.selection.sheetRows", { start: +a.startRowId.slice(2) + 1, end: +a.endRowId.slice(2) + 1 }),
           }
         : null,
-    [handle],
+    [handle, t],
   );
   const markers = useMemo(
     () =>
@@ -290,7 +290,7 @@ export default function SheetDocument({
             void sync.exportRecovery().catch((e) => setError(e.message))
           }
         >
-          导出本地恢复文件
+          {t("editor.sync.exportRecovery")}
         </button>
       )}
       {handle && (
@@ -345,7 +345,7 @@ export default function SheetDocument({
           style={{ flex: 1, height: "100%", minHeight: 0 }}
         />
       ) : (
-        <p className="empty">正在加载表格…</p>
+        <p className="empty">{t("common.loading")}</p>
       )}
       <RegionComments
         onHighlightChange={highlightComment}

@@ -6,3 +6,7 @@ export const desktopZh = catalog.zh satisfies Record<
   string
 >;
 export type DesktopMessageKey = keyof typeof desktopEn;
+export const desktopCatalogs = catalog satisfies Record<
+  import("../locales").Locale,
+  Record<DesktopMessageKey, string>
+>;

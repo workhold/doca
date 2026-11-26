@@ -1,3 +1,4 @@
+import { navigationTitle } from "@doca/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState, Fragment } from "react";
 import { AppState, Pressable, View } from "react-native";
@@ -94,7 +95,7 @@ export function MobileNavigationArea({
           const entry = data.entries.find((e) => e.id === p.entryId);
           if (!entry) return null;
           const Icon = icons[p.icon ?? entry.icon] ?? Package,
-            title = (p.title ?? entry.title)[locale];
+            title = navigationTitle(locale, entry, p.title);
           const group = p.group ?? "";
           const first =
             group && !placements.slice(0, index).some((x) => x.group === group);

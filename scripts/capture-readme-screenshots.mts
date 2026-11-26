@@ -6,10 +6,11 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import { chromium } from "playwright-core";
+import { chromium, type Page } from "playwright-core";
 import sharp from "sharp";
 import { createServer } from "vite";
 import { createPresentation, type SlideElement } from "@smartdoca/slides/core";
+import { htmlLang, isLocale, localeNames, locales, translate, type Locale } from "@doca/i18n";
 import { openDatabase } from "../packages/db/src/index.js";
 import { transact } from "../packages/db/src/transactions.js";
 import { createUser } from "../packages/core/src/modules/identity/passwords.js";
@@ -20,6 +21,19 @@ import {
   readAIDocument,
 } from "../packages/core/src/workflows/ai-documents.js";
 
+const locale = process.env.DOCA_SCREENSHOT_LOCALE ?? "zh";
+assert(isLocale(locale), `Unsupported screenshot locale: ${locale}`);
+const lang = htmlLang(locale);
+const samples: Partial<Record<Locale, Record<string, string>>> = JSON.parse(
+  await readFile(new URL("../tests/fixtures/readme-screenshots/samples.json", import.meta.url), "utf8"),
+);
+function sample(text: string) {
+  if (locale === "zh") return text;
+  const value = samples[locale]?.[text];
+  assert(value, `Missing ${locale} screenshot fixture: ${text}`);
+  return value;
+}
+const built = process.env.DOCA_SCREENSHOT_BUILT === "1";
 const output = resolve(
   process.env.DOCA_SCREENSHOT_OUTPUT ?? "artifacts/readme-screenshots",
 );
@@ -53,7 +67,7 @@ try {
   const library = await content.create(owner, {
     kind: "library",
     format: "rich_text",
-    title: "团队知识库",
+    title: sample("团队知识库"),
   });
   const docs: Record<string, { id: string; title: string }> = {};
   const create = async (
@@ -84,11 +98,11 @@ try {
     );
   };
 
-  const guide = await create("rich_text", "团队协作指南");
+  const guide = await create("rich_text", sample("团队协作指南"));
   await edit(guide.id, [
     {
       type: "append",
-      text: `**DOCA / 把知识留在触手可及的地方**
+      text: sample(`**DOCA / 把知识留在触手可及的地方**
 
 从灵感到文档，从文档到团队知识。把方案、会议纪要、数据与演示放在同一个工作台，让每一次讨论都有上下文。
 
@@ -107,12 +121,12 @@ try {
 ---
 
 **从这里开始**　团队周会 · 研发笔记 · 项目预算 · 产品介绍 · 项目画板
-`,
+`),
     },
   ]);
 
-  await create("markdown", "研发笔记", {
-    markdown: `# 研发笔记
+  await create("markdown", sample("研发笔记"), {
+    markdown: sample(`# 研发笔记
 
 > 用清晰的记录，让下一次协作更轻松。
 
@@ -138,10 +152,10 @@ pnpm dev
 | 项目目标与决策 | 团队协作指南 | 方案评审后 |
 | 实现细节与问题 | 研发笔记 | 每次迭代 |
 | 预算与进度 | 在线表格 | 每周复盘 |
-`,
+`),
   });
 
-  const budget = await create("spreadsheet", "项目预算");
+  const budget = await create("spreadsheet", sample("项目预算"));
   const cells: Record<number, Record<number, any>> = {};
   const cell = (
     r: number,
@@ -159,22 +173,22 @@ pnpm dev
   const blue = "#315de9",
     pale = "#edf2ff",
     green = "#18805b";
-  cell(0, 0, "团队项目 · 预算与进度", { fs: 22, bl: 1, cl: { rgb: blue } });
-  cell(1, 0, "2026 年第四季度　/　单位：元", {
+  cell(0, 0, sample("团队项目 · 预算与进度"), { fs: 22, bl: 1, cl: { rgb: blue } });
+  cell(1, 0, sample("2026 年第四季度　/　单位：元"), {
     cl: { rgb: "#7b8498" },
     fs: 11,
   });
-  ["工作项", "负责人", "计划预算", "实际支出", "结余", "进度", "状态"].forEach(
+  [sample("工作项"), sample("负责人"), sample("计划预算"), sample("实际支出"), sample("结余"), sample("进度"), sample("状态")].forEach(
     (v, c) =>
       cell(3, c, v, { bl: 1, bg: { rgb: blue }, cl: { rgb: "#ffffff" } }),
   );
   const rows = [
-    ["需求调研", "小林", 12000, 10800, "100%", "已完成"],
-    ["交互设计", "小周", 18000, 16500, "100%", "已完成"],
-    ["前端研发", "小陈", 36000, 28400, "80%", "进行中"],
-    ["后端研发", "小张", 32000, 25600, "80%", "进行中"],
-    ["测试验收", "小许", 15000, 7200, "45%", "进行中"],
-    ["上线准备", "小林", 7000, 1500, "20%", "待交付"],
+    [sample("需求调研"), sample("小林"), 12000, 10800, "100%", sample("已完成")],
+    [sample("交互设计"), sample("小周"), 18000, 16500, "100%", sample("已完成")],
+    [sample("前端研发"), sample("小陈"), 36000, 28400, "80%", sample("进行中")],
+    [sample("后端研发"), sample("小张"), 32000, 25600, "80%", sample("进行中")],
+    [sample("测试验收"), sample("小许"), 15000, 7200, "45%", sample("进行中")],
+    [sample("上线准备"), sample("小林"), 7000, 1500, "20%", sample("待交付")],
   ] as const;
   for (const [i, row] of rows.entries()) {
     const r = i + 4,
@@ -194,19 +208,19 @@ pnpm dev
     cell(r, 5, row[4], { ...s, cl: { rgb: blue } });
     cell(r, 6, row[5], {
       ...s,
-      cl: { rgb: row[5] === "已完成" ? green : blue },
+      cl: { rgb: row[5] === sample("已完成") ? green : blue },
     });
   }
   for (let c = 0; c < 7; c++)
-    cell(10, c, c === 0 ? "合计" : "", { bl: 1, bg: { rgb: pale } });
+    cell(10, c, c === 0 ? sample("合计") : "", { bl: 1, bg: { rgb: pale } });
   for (const [c, v, f] of [
     [2, 120000, "=SUM(C5:C10)"],
     [3, 90000, "=SUM(D5:D10)"],
     [4, 30000, "=SUM(E5:E10)"],
   ] as const)
     cell(10, c, v, { bl: 1, bg: { rgb: pale }, n: { pattern: "#,##0" } }, f);
-  cell(13, 0, "本周关注", { fs: 16, bl: 1, cl: { rgb: blue } });
-  cell(15, 0, "预算执行率", { bl: 1 });
+  cell(13, 0, sample("本周关注"), { fs: 16, bl: 1, cl: { rgb: blue } });
+  cell(15, 0, sample("预算执行率"), { bl: 1 });
   cell(
     15,
     2,
@@ -214,15 +228,15 @@ pnpm dev
     { fs: 20, bl: 1, cl: { rgb: blue }, n: { pattern: "0%" } },
     "=D11/C11",
   );
-  cell(17, 0, "整体支出保持在预算内，研发与测试按计划推进。", {
+  cell(17, 0, sample("整体支出保持在预算内，研发与测试按计划推进。"), {
     cl: { rgb: "#667085" },
   });
-  cell(19, 0, "下一步：完成测试验收，整理上线清单与项目复盘。", {
+  cell(19, 0, sample("下一步：完成测试验收，整理上线清单与项目复盘。"), {
     cl: { rgb: "#667085" },
   });
   const sheet = {
     id: "budget",
-    name: "季度预算",
+    name: sample("季度预算"),
     rowCount: 100,
     columnCount: 26,
     defaultRowHeight: 36,
@@ -264,7 +278,7 @@ pnpm dev
     }),
   );
 
-  const deck = await create("presentation", "产品介绍");
+  const deck = await create("presentation", sample("产品介绍"));
   const ppt = createPresentation();
   const transform = (x: number, y: number, w: number, h: number) => ({
     x: x * 9525,
@@ -319,12 +333,12 @@ pnpm dev
     background?: string;
   }> = [
     {
-      title: "从文档到团队知识",
+      title: sample("从文档到团队知识"),
       background: "#edf2ff",
       elements: [
         text(
           "brand",
-          "DOCA  /  团队协作工作台",
+          sample("DOCA  /  团队协作工作台"),
           72,
           58,
           1000,
@@ -335,7 +349,7 @@ pnpm dev
         ),
         text(
           "cover-title",
-          "从文档，到团队知识",
+          sample("从文档，到团队知识"),
           72,
           170,
           1100,
@@ -346,7 +360,7 @@ pnpm dev
         ),
         text(
           "cover-subtitle",
-          "记录想法 · 连接知识 · 一起完成",
+          sample("记录想法 · 连接知识 · 一起完成"),
           76,
           300,
           1100,
@@ -357,7 +371,7 @@ pnpm dev
         rect("cover-line", 76, 412, 108, 8, blue),
         text(
           "cover-foot",
-          "产品介绍  /  2026.10",
+          sample("产品介绍  /  2026.10"),
           76,
           585,
           1000,
@@ -368,11 +382,11 @@ pnpm dev
       ],
     },
     {
-      title: "五种文档，一个工作台",
+      title: sample("五种文档，一个工作台"),
       elements: [
         text(
           "feature-kicker",
-          "01  /  内容创作与协作",
+          sample("01  /  内容创作与协作"),
           72,
           44,
           1100,
@@ -383,31 +397,31 @@ pnpm dev
         ),
         text(
           "feature-title",
-          "五种文档，一个工作台",
+          sample("五种文档，一个工作台"),
           72,
           108,
           1120,
-          76,
+          96,
           40,
           "#18315b",
           true,
         ),
         text(
           "feature-subtitle",
-          "让文字、数据与想法，在同一个项目里连接。",
+          sample("让文字、数据与想法，在同一个项目里连接。"),
           76,
-          194,
+          210,
           1120,
           44,
           20,
           "#617396",
         ),
         ...[
-          ["文档与 Markdown", "梳理方案，记录研发笔记", "#edf2ff"],
-          ["在线表格", "跟踪预算，整理项目数据", "#eaf6f1"],
-          ["幻灯片与画布", "展示成果，展开流程与思路", "#fff3e6"],
+          [sample("文档与 Markdown"), sample("梳理方案，记录研发笔记"), "#edf2ff"],
+          [sample("在线表格"), sample("跟踪预算，整理项目数据"), "#eaf6f1"],
+          [sample("幻灯片与画布"), sample("展示成果，展开流程与思路"), "#fff3e6"],
         ].flatMap(([title, body, color], i) => [
-          rect(`card-${i}`, 76 + i * 388, 298, 360, 232, color),
+          rect(`card-${i}`, 76 + i * 388, 298, 360, 268, color),
           text(
             `num-${i}`,
             `0${i + 1}`,
@@ -423,9 +437,9 @@ pnpm dev
             `card-title-${i}`,
             title,
             100 + i * 388,
-            390,
+            368,
             314,
-            46,
+            80,
             23,
             "#18315b",
             true,
@@ -434,16 +448,16 @@ pnpm dev
             `card-body-${i}`,
             body,
             100 + i * 388,
-            452,
+            457,
             314,
-            40,
+            84,
             16,
             "#617396",
           ),
         ]),
         text(
           "feature-foot",
-          "实时协同  /  评论讨论  /  权限分享  /  版本历史",
+          sample("实时协同  /  评论讨论  /  权限分享  /  版本历史"),
           76,
           615,
           1120,
@@ -454,11 +468,11 @@ pnpm dev
       ],
     },
     {
-      title: "让知识有自己的位置",
+      title: sample("让知识有自己的位置"),
       elements: [
         text(
           "knowledge-kicker",
-          "02  /  团队知识库",
+          sample("02  /  团队知识库"),
           72,
           56,
           1100,
@@ -469,7 +483,7 @@ pnpm dev
         ),
         text(
           "knowledge-title",
-          "让知识有自己的位置",
+          sample("让知识有自己的位置"),
           72,
           134,
           1100,
@@ -479,21 +493,21 @@ pnpm dev
           true,
         ),
         ...[
-          "项目目录：背景、过程与交付资料",
-          "清晰权限：阅读、评论、编辑与管理",
-          "持续积累：把每次协作变成可复用的知识",
+          sample("项目目录：背景、过程与交付资料"),
+          sample("清晰权限：阅读、评论、编辑与管理"),
+          sample("持续积累：把每次协作变成可复用的知识"),
         ].map((v, i) =>
           text(`knowledge-${i}`, v, 82, 286 + i * 88, 1100, 58, 25, "#617396"),
         ),
       ],
     },
     {
-      title: "从今天开始，一起完成",
+      title: sample("从今天开始，一起完成"),
       background: "#edf2ff",
       elements: [
         text(
           "closing-title",
-          "从今天开始，一起完成",
+          sample("从今天开始，一起完成"),
           82,
           180,
           1120,
@@ -504,7 +518,7 @@ pnpm dev
         ),
         text(
           "closing-body",
-          "建立团队知识库，写下第一份项目文档。",
+          sample("建立团队知识库，写下第一份项目文档。"),
           86,
           310,
           1080,
@@ -533,7 +547,7 @@ pnpm dev
         id: ppt.slideOrder[i]!,
         name: s.title,
         background: s.background ?? "#ffffff",
-        notes: "团队知识库演示文稿",
+        notes: sample("团队知识库演示文稿"),
         elementOrder: s.elements.map((e) => e.id),
         elements: Object.fromEntries(s.elements.map((e) => [e.id, e])),
       },
@@ -541,7 +555,7 @@ pnpm dev
   );
   await transact(db, (tx) => provisionSurface(tx, deck, ppt));
 
-  const board = await create("canvas", "项目画板");
+  const board = await create("canvas", sample("项目画板"));
   const label = (
     id: string,
     value: string,
@@ -572,7 +586,7 @@ pnpm dev
   await edit(board.id, [
     label(
       "board-title",
-      "从想法到交付",
+      sample("从想法到交付"),
       60,
       24,
       1100,
@@ -583,7 +597,7 @@ pnpm dev
     ),
     label(
       "board-subtitle",
-      "把流程、思路与行动放在同一张画板上",
+      sample("把流程、思路与行动放在同一张画板上"),
       60,
       96,
       1100,
@@ -591,7 +605,7 @@ pnpm dev
       18,
       "#617396",
     ),
-    label("flow-heading", "01  项目流程", 60, 168, 1100, 36, 20, blue, "bold"),
+    label("flow-heading", sample("01  项目流程"), 60, 168, 1100, 36, 20, blue, "bold"),
     {
       type: "createFlowchart",
       id: "project-flow",
@@ -600,7 +614,7 @@ pnpm dev
       nodes: [
         {
           id: "discover",
-          text: "发现问题",
+          text: sample("发现问题"),
           x: 0,
           y: 0,
           width: 210,
@@ -611,7 +625,7 @@ pnpm dev
         },
         {
           id: "design",
-          text: "形成方案",
+          text: sample("形成方案"),
           x: 296,
           y: 0,
           width: 210,
@@ -622,7 +636,7 @@ pnpm dev
         },
         {
           id: "build",
-          text: "协作执行",
+          text: sample("协作执行"),
           x: 592,
           y: 0,
           width: 210,
@@ -633,7 +647,7 @@ pnpm dev
         },
         {
           id: "review",
-          text: "交付复盘",
+          text: sample("交付复盘"),
           x: 888,
           y: 0,
           width: 210,
@@ -664,7 +678,7 @@ pnpm dev
         },
       ],
     },
-    label("mind-heading", "02  拆解思路", 60, 380, 560, 36, 20, blue, "bold"),
+    label("mind-heading", sample("02  拆解思路"), 60, 380, 560, 36, 20, blue, "bold"),
     {
       type: "createMindmap",
       id: "project-mind",
@@ -673,37 +687,34 @@ pnpm dev
       layout: "right",
       topic: {
         id: "mind-root",
-        text: "团队知识库",
+        text: sample("团队资料"),
         children: [
           {
             id: "mind-doc",
-            text: "内容沉淀",
-            children: [{ id: "mind-guide", text: "方案与记录" }],
+            text: sample("内容沉淀"),
           },
           {
             id: "mind-team",
-            text: "协同推进",
-            children: [{ id: "mind-action", text: "分工与反馈" }],
+            text: sample("协同推进"),
           },
           {
             id: "mind-result",
-            text: "持续复用",
-            children: [{ id: "mind-review", text: "复盘与分享" }],
+            text: sample("持续复用"),
           },
         ],
       },
     },
-    label("table-heading", "03  行动清单", 760, 380, 400, 36, 20, blue, "bold"),
+    label("table-heading", sample("03  行动清单"), 760, 380, 400, 36, 20, blue, "bold"),
     {
       type: "createTable",
       id: "actions",
       x: 760,
       y: 448,
       cells: [
-        ["下一步", "负责人", "时间"],
-        ["梳理项目背景", "小林", "周一"],
-        ["完善协作方案", "小周", "周三"],
-        ["评审与复盘", "团队", "周五"],
+        [sample("下一步"), sample("负责人"), sample("时间")],
+        [sample("梳理项目背景"), sample("小林"), sample("周一")],
+        [sample("完善协作方案"), sample("小周"), sample("周三")],
+        [sample("评审与复盘"), sample("团队"), sample("周五")],
       ],
       columnWidths: [190, 95, 95],
       rowHeights: [48, 52, 52, 52],
@@ -723,47 +734,151 @@ pnpm dev
     origin,
     storage: { ...storageRuntime(), root },
     ai: { memory: { driver: "sqlite", url: ":memory:" } },
+    ...(built ? { staticDirectory: resolve("apps/web/dist") } : {}),
   });
   await mkdir(output, { recursive: true });
-  await app.listen({ host: "127.0.0.1", port: 0 });
-  const address = app.server.address();
-  assert(address && typeof address !== "string");
-  web = await createServer({
-    configFile: resolve("apps/web/vite.config.ts"),
-    server: {
-      host: "127.0.0.1",
-      port,
-      strictPort: true,
-      proxy: {
-        "/api": { target: `http://127.0.0.1:${address.port}`, ws: true },
+  await db.updateTable("settings").set({ default_locale: locale }).where("id", "=", "system").execute();
+  await app.listen({ host: "127.0.0.1", port: built ? port : 0 });
+  if (!built) {
+    const address = app.server.address();
+    assert(address && typeof address !== "string");
+    web = await createServer({
+      configFile: resolve("apps/web/vite.config.ts"),
+      server: {
+        host: "127.0.0.1",
+        port,
+        strictPort: true,
+        proxy: {
+          "/api": { target: `http://127.0.0.1:${address.port}`, ws: true },
+        },
       },
-    },
-  });
-  await web.listen();
+    });
+    await web.listen();
+  }
   browser = await chromium.launch({ channel: "chrome", headless: true });
   const context = await browser.newContext({
     viewport: { width: 1600, height: 1000 },
-    locale: "zh-CN",
+    locale: lang,
     colorScheme: "light",
+    reducedMotion: "reduce",
+    serviceWorkers: "block",
   });
+  const errors: string[] = [];
+  const observe = (page: Page, name: string) => {
+    page.on("pageerror", error => errors.push(`${name}: ${error.message}`));
+  };
+  const waitForLanguage = (page: Page, code: Locale) =>
+    page.waitForFunction(tag => document.documentElement.lang === tag, htmlLang(code));
+  const alternate = locale === "en" ? "zh" : "en";
+  const loginPage = await context.newPage();
+  observe(loginPage, "login");
+  await loginPage.goto(origin);
+  const languageTrigger = loginPage.locator(".auth-login-language .select-trigger");
+  await languageTrigger.waitFor();
+  await waitForLanguage(loginPage, locale);
+  const username = loginPage.locator('input[autocomplete="username"]').first();
+  await username.fill("readmedemo");
+  async function chooseLogin(code: Locale) {
+    await languageTrigger.click();
+    assert.equal(await loginPage.getByRole("option").count(), locales.length);
+    await loginPage.getByRole("option", { name: localeNames[code], exact: true }).click();
+    await waitForLanguage(loginPage, code);
+  }
+  await chooseLogin(alternate);
+  await chooseLogin(locale);
+  assert.equal(await username.inputValue(), "readmedemo");
+  await loginPage.screenshot({ path: join(output, "login.png") });
+  await loginPage.setViewportSize({ width: 375, height: 800 });
+  assert.equal(await loginPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  await loginPage.screenshot({ path: join(output, "login-narrow.png") });
+  await loginPage.close();
   const login = await context.request.post(origin + "/api/v1/auth/login", {
     headers: { origin },
     data: { login: "readmedemo", password },
   });
   assert(login.ok());
-  const errors: string[] = [],
-    captures = [];
+  for (const doc of Object.values(docs)) {
+    const visit = await context.request.post(`${origin}/api/v1/resources/${doc.id}/visit`, { headers: { origin } });
+    assert(visit.ok());
+  }
+  async function chooseWorkspaceLanguage(page: Page, code: Locale) {
+    const picker = page.locator(".locale-switch").first();
+    await picker.locator("summary").click();
+    assert.equal(await picker.getByRole("option").count(), locales.length);
+    const saved = page.waitForResponse(async response => {
+      if (response.request().method() !== "PUT" || !response.url().endsWith("/api/v1/me/page-state") || !response.ok()) return false;
+      const result = await response.json();
+      return !result.conflict && result.item?.value === code;
+    });
+    await Promise.all([
+      saved,
+      picker.getByRole("option", { name: localeNames[code], exact: true }).click({ timeout: 10000 }),
+    ]);
+    await waitForLanguage(page, code);
+    const result = await context.request.get(origin + "/api/v1/me/page-state?key=ui.locale");
+    assert.equal((await result.json()).item?.value, code);
+  }
+  const workspace = await context.newPage();
+  observe(workspace, "workspace");
+  await workspace.goto(origin + "/#/home");
+  await waitForLanguage(workspace, locale);
+  await chooseWorkspaceLanguage(workspace, alternate);
+  await chooseWorkspaceLanguage(workspace, locale);
+  await workspace.reload();
+  await waitForLanguage(workspace, locale);
+  await workspace.getByRole("heading", { name: translate(locale, "workspace.greeting", { name: "Doca" }), exact: true }).waitFor();
+  const captures = [];
+  async function screenshot(page: Page, name: string) {
+    await page.evaluate(() => document.fonts.ready);
+    await page.mouse.move(1500, 960);
+    const png = join(output, `${name}.png`);
+    const jpg = join(output, `${name}.jpg`);
+    await page.screenshot({ path: png });
+    await sharp(png)
+      .jpeg({ quality: 88, mozjpeg: true, chromaSubsampling: "4:4:4" })
+      .toFile(jpg);
+    return { png, jpg };
+  }
+  await workspace.getByText(docs.rich_text!.title, { exact: true }).first().waitFor();
+  captures.push({ name: "workspace", ...await screenshot(workspace, "workspace") });
+  await workspace.close();
   for (const [format, name, selector] of [
     ["rich_text", "rich-text", ".sk-editable"],
     ["markdown", "markdown", ".cm-content"],
     ["spreadsheet", "spreadsheet", ".sheet-document .uos-office-toolbar"],
     ["presentation", "slides", ".eppt-workspace"],
-    ["canvas", "canvas", ".canvas-host"],
-  ]) {
+    ["canvas", "canvas", ".canvas-app"],
+  ] as const) {
     const page = await context.newPage();
-    page.on("pageerror", (error) => errors.push(`${format}: ${error.message}`));
-    await page.goto(origin + "/#/r/" + docs[format!]!.id);
-    await page.locator(selector!).first().waitFor({ timeout: 60000 });
+    observe(page, format);
+    const fixture = docs[format]!;
+    await page.goto(origin + "/#/r/" + fixture.id);
+    const editor = page.locator(selector).first();
+    await editor.waitFor({ timeout: 60000 });
+    const waitForEditorLanguage = (lang: string) => page.waitForFunction(({selector, lang}) => {
+      const root = document.querySelector(selector)?.closest("[lang]");
+      return root !== document.documentElement && root?.getAttribute("lang") === lang;
+    }, { selector, lang });
+    await waitForEditorLanguage(lang);
+    const editorLabels = () => editor.evaluate(element => {
+      const root = element.closest("[lang]")!;
+      const labels = [root, ...root.querySelectorAll("[aria-label], [title]")].flatMap(node =>
+        [node.getAttribute("aria-label"), node.getAttribute("title")].filter(Boolean));
+      return [...new Set(labels)].sort();
+    });
+    const localizedLabels = await editorLabels();
+    const node = await editor.elementHandle();
+    const before = await readAIDocument(db, { actor: owner }, fixture.id);
+    await chooseWorkspaceLanguage(page, alternate);
+    await waitForEditorLanguage(htmlLang(alternate));
+    assert.notDeepEqual(await editorLabels(), localizedLabels, `No controls changed language in ${format}`);
+    await chooseWorkspaceLanguage(page, locale);
+    await waitForEditorLanguage(lang);
+    assert(node && await node.evaluate(element => element.isConnected), `Locale change rebuilt ${format}`);
+    await node.dispose();
+    const after = await readAIDocument(db, { actor: owner }, fixture.id);
+    assert.equal(after.epochId, before.epochId);
+    assert.equal(after.seq, before.seq);
     if (format === "presentation") {
       // Choose the actual second slide in the native slide navigator.
       await page.locator(".eppt-thumbnail").nth(1).click();
@@ -772,18 +887,17 @@ pnpm dev
       await page.locator(".canvas-app").focus();
       await page.keyboard.press("Shift+Digit1");
     }
-    await page.evaluate(() => document.fonts.ready);
     await delay(1500);
-    await page.mouse.move(1500, 960);
-    const png = join(output, `${name}.png`),
-      jpg = join(output, `${name}.jpg`);
-    await page.screenshot({ path: png });
-    await sharp(png)
-      .jpeg({ quality: 88, mozjpeg: true, chromaSubsampling: "4:4:4" })
-      .toFile(jpg);
-    captures.push({ format, name, title: docs[format!]!.title, png, jpg });
+    captures.push({ format, name, title: fixture.title, epoch: after.epochId,
+      sequence: after.seq, labels: localizedLabels, ...await screenshot(page, name) });
     console.log(`CAPTURED ${name}`);
     await page.close();
+  }
+  if (process.env.DOCA_SCREENSHOT_DESKTOP === "1") {
+    const { captureDesktopScreenshots } = await import("./lib/desktop-screenshots.mjs");
+    captures.push(...await captureDesktopScreenshots({
+      context, origin, locale, documentId: guide.id, documentTitle: guide.title, screenshot,
+    }));
   }
   assert.deepEqual(errors, []);
   const pkg = JSON.parse(await readFile(resolve("package.json"), "utf8"));
@@ -792,6 +906,9 @@ pnpm dev
     JSON.stringify(
       {
         version: pkg.version,
+        locale,
+        languageTag: lang,
+        built,
         generatedAt: new Date().toISOString(),
         viewport: { width: 1600, height: 1000 },
         editorVersions: Object.fromEntries(
@@ -806,6 +923,10 @@ pnpm dev
       2,
     ) + "\n",
   );
+} catch (error) {
+  const page = browser?.contexts().at(-1)?.pages().at(-1);
+  if (page) await page.screenshot({ path: join(output, "failure.png"), timeout: 5000 }).catch(() => {});
+  throw error;
 } finally {
   await browser?.close();
   await web?.close();

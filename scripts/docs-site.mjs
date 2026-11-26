@@ -2,23 +2,31 @@ import { readFile, writeFile, mkdir, rm, cp, access } from "node:fs/promises";
 import { dirname, resolve, relative, posix } from "node:path";
 import { fileURLToPath } from "node:url";
 import { fromMarkdown } from "mdast-util-from-markdown";
-import { databaseInventory, documentLinks, expectedSkillReferences, headingIds, markdownFiles, repositoryTarget } from "./lib/documentation.mjs";
+import { databaseInventory, documentLinks, expectedSkillReferences, headingIds, headingText, markdownFiles, repositoryTarget } from "./lib/documentation.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const docs = resolve(root, "docs");
 const output = resolve(root, ".cache/docs-site");
 const navigation = JSON.parse(await readFile(resolve(docs, "site/navigation.json"), "utf8"));
-const languages = ["en", "zh-cn"];
-const pages = [{ id: "README", group: "", labels: ["Documentation", "文档"] }];
+const editions = JSON.parse(await readFile(resolve(docs, "site/languages.json"), "utf8"));
+const manifest = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
+const languages = Object.keys(editions);
+const currentRelease = `releases/${manifest.version}`;
+const pages = [{ id: "README", group: "", labels: {} }];
 for (const group of navigation) {
-  for (const [id, en, zh] of group.pages) pages.push({ id, group: group.id, labels: [en, zh] });
+  for (const [id, en, zh, translatedRelease] of group.pages) {
+    pages.push({ id, group: group.id, translatedRelease, labels: { en, "zh-cn": zh } });
+  }
 }
-const source = (page, lang) => `${page.id}${lang === "zh-cn" ? ".zh-CN" : ""}.md`;
+const hasEdition = (page, lang) =>
+  page.group !== "releases" || page.translatedRelease || lang === "en" || lang === "zh-cn";
+const source = (page, lang) => `${page.id}${editions[lang].suffix}.md`;
 const route = (page, lang) => `/${lang}/${page.group ? `${page.group}/` : ""}${page.id === "README" ? "" : posix.basename(page.id)}`;
 const sourcePages = new Map();
 const problems = [];
 for (const page of pages) {
   for (const lang of languages) {
+    if (!hasEdition(page, lang)) continue;
     const path = resolve(docs, source(page, lang));
     if (sourcePages.has(path)) throw new Error(`Duplicate documentation source: ${path}`);
     sourcePages.set(path, { page, lang });
@@ -55,12 +63,13 @@ for (const [path, { tree }] of documents) {
 for (const [target, expected] of await expectedSkillReferences(root)) {
   if (documents.get(resolve(root, "skills", target))?.markdown !== expected) problems.push(`Stale skill reference: skills/${target}; run node scripts/sync-docs-skills.mjs`);
 }
-const manifest = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
-if (navigation.find(group => group.id === "releases")?.pages[0]?.[0] !== `releases/${manifest.version}`) problems.push("The release navigation does not start with the current host version");
+if (navigation.find(group => group.id === "releases")?.pages[0]?.[0] !== currentRelease) problems.push("The release navigation does not start with the current host version");
 for (const lang of languages) {
-  const home = documents.get(resolve(docs, lang === "en" ? "README.md" : "README.zh-CN.md"))?.markdown;
-  if (!home?.includes(`releases/${manifest.version}${lang === "en" ? "" : ".zh-CN"}.md`)) problems.push(`The ${lang} documentation home does not link to the current release`);
-  const editor = documents.get(resolve(docs, lang === "en" ? "editor-integration.md" : "editor-integration.zh-CN.md"))?.markdown;
+  const suffix = editions[lang].suffix;
+  const home = documents.get(resolve(docs, `README${suffix}.md`))?.markdown;
+  const current = `${currentRelease}${suffix}.md`;
+  if (!home?.includes(current)) problems.push(`The ${lang} documentation home does not link to ${current}`);
+  const editor = documents.get(resolve(docs, `editor-integration${suffix}.md`))?.markdown;
   for (const name of ["slate", "markdown", "sheet", "canvas", "slides"]) {
     const pkg = `@smartdoca/${name}`;
     if (!editor?.includes(`| ${pkg} ${manifest.dependencies[pkg]} |`)) problems.push(`The ${lang} editor matrix disagrees with package.json: ${pkg}`);
@@ -80,12 +89,18 @@ for (const name of ["database.md", "database.zh-CN.md"]) {
     if (rows.get(table.name)?.join(",") !== table.fields.join(",")) problems.push(`${name} has stale fields for ${table.name}`);
   }
 }
-const publishedRoutes = new Set(pages.flatMap(page => languages.map(lang => route(page, lang))));
-for (const [name, lang] of [["README.md", "en"], ["README.zh-CN.md", "zh-cn"]]) {
+const publishedRoutes = new Set(Array.from(sourcePages.values(), ({ page, lang }) => route(page, lang)));
+for (const lang of languages) {
+  const name = `README${editions[lang].suffix}.md`;
   const markdown = await readFile(resolve(root, name), "utf8");
   const entrance = `https://workhold.github.io/doca/#/${lang}/`;
   const links = documentLinks(fromMarkdown(markdown));
   if (!links.some(({ href }) => href === entrance)) problems.push(`${name} is missing its ${lang} documentation entrance`);
+  const screenshots = ["workspace", "rich-text", "markdown", "spreadsheet", "slides", "canvas"];
+  for (const image of screenshots) {
+    const path = `docs/images/${lang}/${image}.jpg`;
+    if (!links.some(({ href }) => href === path)) problems.push(`${name} is missing its screenshot ${path}`);
+  }
   for (const { href } of links) {
     if (href.startsWith("https://workhold.github.io/doca/#/")) {
       const path = new URL(href).hash.slice(1).split("?")[0];
@@ -100,9 +115,11 @@ function checkFragment(path, destination, fragment) {
     problems.push(`${relative(root, path)} has a missing heading: ${relative(root, destination)}#${fragment}`);
   }
 }
+const languageLabels = new Set(["中文", "简體中文", ...Object.values(editions).map(edition => edition.name)]);
 const files = [];
 for (const page of pages) {
   for (const lang of languages) {
+    if (!hasEdition(page, lang)) continue;
     const path = resolve(docs, source(page, lang));
     const { markdown, tree } = documents.get(path);
     const replacements = [];
@@ -124,10 +141,11 @@ for (const page of pages) {
             if (target && node.type !== "image") {
               // Language-switch links select a language; ordinary links stay in the current language.
               const label = (node.children ?? []).map(child => child.value ?? "").join("").trim();
-              const switched = /^(English|中文|简体中文|简體中文)$/i.test(label);
-              const targetLang = switched ? target.lang : lang;
+              const targetLang = languageLabels.has(label) || !hasEdition(target.page, lang) ? target.lang : lang;
               checkFragment(path, resolve(docs, source(target.page, targetLang)), fragment.slice(1));
               replacement = `${route(target.page, targetLang)}${fragment}`;
+            } else if (node.type === "image" && repoPath.startsWith("docs/images/")) {
+              replacement = `assets/${repoPath.slice("docs/".length)}${fragment}`;
             } else {
               const base = node.type === "image" ? "https://raw.githubusercontent.com/workhold/doca/main/" : repository;
               replacement = `${base}${repoPath}${fragment}`;
@@ -150,11 +168,12 @@ for (const page of pages) {
 }
 if (problems.length) throw new Error(problems.join("\n"));
 if (process.argv[2] === "check") {
-  console.log(`Documentation verified: ${documents.size} repository documents, ${linkCount} repository links, ${pages.length} pages × 2 languages; headings, release/editor versions, ${inventory.length} schema tables and skill references agree.`);
+  console.log(`Documentation verified: ${documents.size} repository documents, ${linkCount} repository links, ${files.length} editions in ${languages.length} languages; headings, release/editor versions, ${inventory.length} schema tables and skill references agree.`);
 } else if (process.argv[2] === "build") {
   await rm(output, { recursive: true, force: true });
   await mkdir(output, { recursive: true });
   await cp(resolve(docs, "site/assets"), resolve(output, "assets"), { recursive: true });
+  await cp(resolve(docs, "images"), resolve(output, "assets/images"), { recursive: true, filter: path => !path.endsWith(".md") });
   await cp(resolve(docs, "site/index.html"), resolve(output, "index.html"));
   await writeFile(resolve(output, ".nojekyll"), "");
   for (const file of files) {
@@ -162,22 +181,36 @@ if (process.argv[2] === "check") {
     await writeFile(resolve(output, file.path), file.content);
   }
   for (const lang of languages) {
-    const zh = lang === "zh-cn";
-    const sidebar = [`- [${zh ? "文档首页" : "Documentation"}](/${lang}/)`];
+    const edition = editions[lang];
+    const sidebar = [`- [${edition.home}](/${lang}/)`];
     for (const group of navigation) {
-      sidebar.push(`- ${group[zh ? "zh" : "en"]}`);
-      for (const [id, en, chinese] of group.pages) {
-        const page = pages.find(page => page.id === id);
-        sidebar.push(`  - [${zh ? chinese : en}](${route(page, lang)})`);
+      sidebar.push(`- ${edition.groups[group.id]}`);
+      for (const page of pages.filter(page => page.group === group.id && hasEdition(page, lang))) {
+        const heading = documents.get(resolve(docs, source(page, lang))).tree.children.find(node => node.type === "heading");
+        const title = page.labels[lang] ?? (heading ? headingText(heading) : posix.basename(page.id));
+        sidebar.push(`  - [${title.replaceAll("[", "\\[").replaceAll("]", "\\]")}](${route(page, lang)})`);
+      }
+      if (group.id === "releases" && lang !== "en" && lang !== "zh-cn") {
+        const precedingRelease = pages.find(page => page.group === "releases" && page.id !== currentRelease);
+        if (precedingRelease) sidebar.push(`  - [${edition.archive}](${route(precedingRelease, "en")})`);
       }
     }
     await writeFile(resolve(output, lang, "_sidebar.md"), `${sidebar.join("\n")}\n`);
-    await writeFile(resolve(output, lang, "_navbar.md"), `- [English](/en/)\n- [简体中文](/zh-cn/)\n- [GitHub](https://github.com/workhold/doca)\n`);
+    const navbar = [`- ${edition.switchLanguage}`, ...languages.map(code => `  - [${editions[code].name}](/${code}/)`), "- [GitHub](https://github.com/workhold/doca)"];
+    await writeFile(resolve(output, lang, "_navbar.md"), `${navbar.join("\n")}\n`);
   }
   await writeFile(resolve(output, "README.md"), files.find(file => file.path === "en/README.md").content);
   await writeFile(resolve(output, "_404.md"), "# Page not found / 页面不存在\n\n[English](/en/) · [简体中文](/zh-cn/)\n");
-  await writeFile(resolve(output, "assets/pages.json"), JSON.stringify(pages.map(page => ({ en: route(page, "en"), zh: route(page, "zh-cn"), enSource: source(page, "en"), zhSource: source(page, "zh-cn") }))));
-  console.log(`Docsify site prepared: ${relative(root, output)} (${pages.length} bilingual pages).`);
+  const pageIndex = pages.map(page => Object.fromEntries(languages
+    .filter(lang => hasEdition(page, lang))
+    .map(lang => [lang, { route: route(page, lang), source: source(page, lang) }])));
+  const uiLanguages = Object.fromEntries(languages.map(lang => {
+    const { suffix, groups, ...ui } = editions[lang];
+    return [lang, ui];
+  }));
+  await writeFile(resolve(output, "assets/pages.json"), JSON.stringify(pageIndex));
+  await writeFile(resolve(output, "assets/languages.js"), `window.docaDocsLanguages = ${JSON.stringify(uiLanguages).replaceAll("<", "\\u003c")};\n`);
+  console.log(`Docsify site prepared: ${relative(root, output)} (${files.length} editions).`);
 } else {
   throw new Error("Usage: node scripts/docs-site.mjs check|build");
 }

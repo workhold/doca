@@ -57,7 +57,7 @@ jobs:
         run: pnpm install --frozen-lockfile --ignore-scripts
       - name: Test documentation checks
         run: pnpm test:docs
-      - name: Check repository documents and bilingual publication
+      - name: Check repository documents and language editions
         run: pnpm docs:check
       - name: Prepare the Docsify site
         run: pnpm docs:build

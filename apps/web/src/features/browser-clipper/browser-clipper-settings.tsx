@@ -1,3 +1,4 @@
+import { htmlLang } from "@doca/i18n";
 import { useEffect, useState } from "react";
 import {
   ArrowDownToLine,
@@ -222,7 +223,7 @@ export function BrowserClipperSettings() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   const date = (value: string) =>
-    new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en", {
+    new Intl.DateTimeFormat(htmlLang(locale), {
       dateStyle: "medium",
     }).format(new Date(value));
   const targetLabel = (profile: Profile) =>

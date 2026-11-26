@@ -5,6 +5,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import sharp from "sharp";
+import { locales } from "@doca/i18n";
 import { storageDefaults } from "../apps/server/src/adapters/storage.js";
 import { type DB, type Resource } from "@db/index.js";
 import { createApp } from "../apps/server/src/app/create-app.js";
@@ -550,6 +551,38 @@ describe("cloud baseline", () => {
       (await request("PUT", "/admin/settings", adminCookie, payload))
         .statusCode,
     ).toBe(409);
+  });
+  it("stores the supported language codes and retains an existing account preference", async () => {
+    const key = "ui.locale";
+    await db.insertInto("user_page_state").values({
+      user_id: aliceId,
+      key,
+      value: JSON.stringify("en"),
+      version: 7,
+      updated_at: new Date().toISOString(),
+    }).execute();
+    const settings = (await request("GET", "/admin/settings", adminCookie)).json();
+    for (const [version, locale] of locales.entries()) {
+      const account = await request("PUT", "/me/page-state", bob, { key, value: locale, version });
+      expect(account.statusCode, account.body).toBe(200);
+      expect(account.json()).toMatchObject({ conflict: false, item: { value: locale, version: version + 1 } });
+      const site = await request("PUT", "/admin/settings", adminCookie, {
+        revision: settings.revision + version,
+        siteName: settings.site_name,
+        registrationEnabled: Boolean(settings.registration),
+        defaultLocale: locale,
+        defaultTimezone: settings.default_timezone,
+      });
+      expect(site.statusCode, site.body).toBe(200);
+      expect((await request("GET", "/bootstrap")).json().defaultLocale).toBe(locale);
+    }
+    expect((await request("PUT", "/me/page-state", bob, {
+      key,
+      value: "ar",
+      version: locales.length,
+    })).statusCode).toBe(400);
+    const retained = await request("GET", `/me/page-state?key=${key}`, alice);
+    expect(retained.json().item).toMatchObject({ value: "en", version: 7 });
   });
   it("allows an existing short test password without weakening new password rules", async () => {
     await db

@@ -2,7 +2,7 @@ import { useNavigation, useRouter } from "expo-router";
 import { useLayoutEffect, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { Text } from "react-native-paper";
-import { localeLabel, locales } from "@doca/i18n";
+import { htmlLang, localeLabel, locales } from "@doca/i18n";
 import { useAuth } from "../src/auth";
 import { colors } from "../src/chrome";
 import { useI18n } from "../src/locale";
@@ -46,7 +46,14 @@ export default function Settings() {
       <Text style={styles.section}>{t("settings.language")}</Text>
       <View style={styles.card}>
         {locales.map((code) => (
-          <Pressable key={code} style={styles.row} onPress={() => void setLocale(code)}>
+          <Pressable
+            key={code}
+            style={styles.row}
+            accessibilityRole="radio"
+            accessibilityLanguage={htmlLang(code)}
+            accessibilityState={{ checked: locale === code }}
+            onPress={() => void setLocale(code)}
+          >
             <Text style={styles.name}>{t(localeLabel[code])}</Text>
             <Text style={styles.mark}>{locale === code ? t("mobile.settings.current") : ""}</Text>
           </Pressable>

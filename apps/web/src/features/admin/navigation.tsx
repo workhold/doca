@@ -1,3 +1,4 @@
+import { bilingualLocale } from "@doca/i18n";
 import { useEffect, useState } from "react";
 import { Button, Input, InputNumber, Modal, Select, Tabs, Tag } from "antd";
 import { Save, Send, RotateCcw, Settings2 } from "lucide-react";
@@ -24,7 +25,8 @@ type State = {
   entries: NavigationEntry[];
 };
 export function NavigationSettings() {
-  const { t, locale } = useI18n();
+  const { t, locale: interfaceLocale } = useI18n();
+  const locale = bilingualLocale(interfaceLocale);
   const [modal, contextHolder] = Modal.useModal();
   const [state, setState] = useState<State | null>(null),
     [error, setError] = useState(""),

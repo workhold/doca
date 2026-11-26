@@ -102,10 +102,11 @@ export function LocaleProvider({ children, initialLocale }: { children: ReactNod
   }, []);
   const setLocale = useCallback(async (next: Locale) => {
     if (!isLocale(next)) return;
+    const request = ++localeRequest.current;
     setLocaleState(next);
     try {
       const item = await writePageState("ui.locale", next);
-      if (item)
+      if (item && localeRequest.current === request)
         window.dispatchEvent(
           new CustomEvent("doca-page-state", { detail: item }),
         );

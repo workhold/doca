@@ -117,6 +117,8 @@
   outline-offset: 3px;
 }
 .locale-switch-menu {
+  max-height: min(360px, 70vh);
+  overflow-y: auto;
   position: absolute;
   top: calc(100% + 8px);
   right: 0;

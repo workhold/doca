@@ -1,4 +1,7 @@
+import { additionalMessages } from "./messages-locales.js";
+
 export const messages = {
+  ...additionalMessages,
   zh: {
     "updates.installed": "当前版本 v{version}",
     "updates.check": "检查更新",
@@ -18,6 +21,11 @@ export const messages = {
     imageProcessingFailed: "图片处理失败",
     imageAnimationTooLarge: "动图超出大小上限",
     selectProfile: "选择收录规则",
+    appendDocument: "追加到文档",
+    newDocument: "新建文档",
+    destinationUnavailable: "保存位置不可用",
+    personalDocuments: "个人文档",
+    notificationDetails: "打开扩展查看详情",
     extensionSettings: "插件设置",
     back: "返回",
     manageProfiles: "设置收录规则",
@@ -150,6 +158,11 @@ export const messages = {
     imageProcessingFailed: "image processing failed",
     imageAnimationTooLarge: "animation exceeds the size limit",
     selectProfile: "Choose a capture rule",
+    appendDocument: "Append",
+    newDocument: "New document",
+    destinationUnavailable: "Destination unavailable",
+    personalDocuments: "Personal documents",
+    notificationDetails: "Open extension for details",
     extensionSettings: "Extension settings",
     back: "Back",
     manageProfiles: "Manage capture rules",
@@ -286,8 +299,11 @@ export const messages = {
       "Open the target document in Doca once and retry.",
   },
 };
+export const isLocale = (locale) =>
+  typeof locale === "string" && Object.hasOwn(messages, locale);
+export const storedLocale = (locale) => (locale ? (isLocale(locale) ? locale : "en") : "zh");
 export const translate = (locale, key, params = {}) =>
-  (messages[locale]?.[key] || messages.en[key] || key).replace(
+  ((isLocale(locale) && messages[locale][key]) || messages.en[key] || key).replace(
     /\{(\w+)\}/g,
     (match, name) =>
       params[name] === undefined ? match : String(params[name]),

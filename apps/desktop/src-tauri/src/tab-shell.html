@@ -88,8 +88,11 @@
       let statusKey = "desktop.tabs.restoring";
 
       function languageCode(tag) {
-        const code = tag?.split("-")[0].toLowerCase();
-        return code === "zh" || code === "en" ? code : null;
+        if (typeof tag !== "string") return null;
+        const normalized = tag.trim().toLowerCase().replaceAll("_", "-");
+        if (/^zh-(hant|tw|hk|mo)(-|$)/.test(normalized)) return "zh-Hant";
+        const code = normalized.split("-")[0];
+        return Object.hasOwn(messages, code) ? code : null;
       }
       function t(key, values = {}) {
         return (messages[locale][key] ?? messages.en[key] ?? key)
@@ -112,7 +115,7 @@
         next ??= systemLocale;
         if (next === locale) return;
         locale = next;
-        document.documentElement.lang = locale === "zh" ? "zh-CN" : "en";
+        document.documentElement.lang = locale === "zh" ? "zh-CN" : locale;
         document.querySelectorAll("[data-text]").forEach(element => { element.textContent = t(element.dataset.text); });
         document.querySelectorAll("[data-hint]").forEach(element => { element.title = t(element.dataset.hint); });
         document.querySelectorAll("[data-label]").forEach(element => element.setAttribute("aria-label", t(element.dataset.label)));

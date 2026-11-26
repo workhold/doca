@@ -280,7 +280,7 @@ export default function CanvasDocument({
               setReferenceHighlight({
                 anchorId: "ai-reference-highlight",
                 anchor: a,
-                label: "AI 引用内容",
+                label: t("editor.citeAi"),
               });
               highlightTimer.current = setTimeout(
                 () => setReferenceHighlight(null),
@@ -288,10 +288,10 @@ export default function CanvasDocument({
               );
             },
             label: (a) =>
-              `画布区域 · ${model.resolveAnchor(a).elementIds.length} 个元素`,
+              t("editor.selection.canvas", { count: model.resolveAnchor(a).elementIds.length }),
           }
         : null,
-    [handle, model],
+    [handle, model, t],
   );
   const [showCommentMarks, setShowCommentMarks] = useState(false);
   const [highlightedComment, highlightComment] = useCommentHighlight(id, detail.comments);
@@ -304,14 +304,14 @@ export default function CanvasDocument({
             {
               anchorId: c.id,
               anchor: JSON.parse(c.anchor),
-              label: "查看内容评论",
+              label: t("comment.openRegion"),
             },
           ];
         } catch {
           return [];
         }
       }),
-    [detail.comments],
+    [detail.comments, t],
   );
   const resources = useMemo<CanvasEditorResources>(
     () => ({
@@ -358,7 +358,7 @@ export default function CanvasDocument({
         disabled={!handle}
         onError={setError}
         options={(["png", "svg"] as const).map((format) => ({
-          label: format.toUpperCase() + " 图片",
+          label: t("editor.canvas.imageFormat", { format: format.toUpperCase() }),
           run: async () => {
             if (!handle) return;
             const result = await handle.exportFile({
@@ -387,7 +387,7 @@ export default function CanvasDocument({
             void sync.exportRecovery().catch((e) => setError(e.message))
           }
         >
-          导出本地恢复文件
+          {t("editor.sync.exportRecovery")}
         </button>
       )}
       {model ? (
@@ -443,7 +443,7 @@ export default function CanvasDocument({
           )}
         />
       ) : (
-        <p className="empty">正在加载画布…</p>
+        <p className="empty">{t("common.loading")}</p>
       )}
       {handle && (
         <ModelFind

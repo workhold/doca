@@ -4,7 +4,7 @@ import {
   MAX_IMAGE_SOURCE_BYTES,
   captureImageInfo,
 } from "./image-processing.js";
-import { translate } from "./messages.js";
+import { isLocale, storedLocale, translate } from "./messages.js";
 
 // Source bytes stay in memory only; frozen tasks retain the existing URL manifest.
 const preparedImages = new Map();
@@ -553,7 +553,7 @@ async function checkForUpdates() {
   }
 }
 async function state(interactive = false) {
-  const locale = (await local.get("locale")).locale || "zh";
+  const locale = storedLocale((await local.get("locale")).locale);
   let config;
   try {
     config = await ensureLogin(interactive);
@@ -727,7 +727,7 @@ async function prepareCapture(capture, tabId) {
     capture.images.length > 100
   )
     throw Error("clipper_invalid_input");
-  const locale = (await local.get("locale")).locale || "zh";
+  const locale = storedLocale((await local.get("locale")).locale);
   // Extraction diagnostics are transient responses, never part of protocol v1
   // or the persisted frozen capture. Document placeholders carry their context.
   const { warnings: extractionWarnings = [], ...source } = capture;
@@ -997,7 +997,7 @@ async function handle(message, sender) {
       throw Error("clipper_invalid_input");
     return {
       position: preferences.dockPosition ?? null,
-      locale: preferences.locale || "zh",
+      locale: storedLocale(preferences.locale),
     };
   }
   if (message.type === "state") return state(fromUi && !!message.interactive);
@@ -1011,7 +1011,7 @@ async function handle(message, sender) {
     return state(true);
   }
   if (message.type === "locale") {
-    if (!["zh", "en"].includes(message.locale))
+    if (!isLocale(message.locale))
       throw Error("clipper_invalid_input");
     await local.set({ locale: message.locale });
     return state();
@@ -1384,11 +1384,11 @@ async function captureFromShortcut(command) {
     await session.set({ lastError: error.message });
     await chrome.action.setBadgeBackgroundColor({ color: "#b45309" });
     await chrome.action.setBadgeText({ text: "!" });
-    const locale = (await local.get("locale")).locale;
+    const locale = storedLocale((await local.get("locale")).locale);
     await chrome.action.setTitle({
       title:
         "Doca · " +
-        (locale === "en" ? "Open extension for details" : "打开扩展查看详情"),
+        translate(locale, "notificationDetails"),
     });
   }
 }

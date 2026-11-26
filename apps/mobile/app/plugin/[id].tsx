@@ -1,4 +1,5 @@
 import { useCallback, useRef } from "react";
+import { bilingualLocale } from "@doca/i18n";
 import { handlePluginNativeRequest } from "../../src/plugins/native";
 import { preparePluginAssistant } from "../../src/plugins/assistant";
 import { publishAssistantDraft } from "../../src/ai-launch";
@@ -62,7 +63,7 @@ export default function PluginPage() {
     url = `${session.origin}/#/m/auth?${new URLSearchParams({ ticket: ticket.data.ticket, to })}`;
   return (
     <>
-      <Stack.Screen options={{ title: entry.title[locale] }} />
+      <Stack.Screen options={{ title: entry.title[bilingualLocale(locale)] }} />
       <WebView
         ref={webview}
         onMessage={async (event) => {

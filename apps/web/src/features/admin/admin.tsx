@@ -7,7 +7,7 @@ import {
   loginMethodLabel,
   type LoginMethodLabel,
 } from "@web/shared/utils/system-labels.js";
-import { htmlLang } from "@doca/i18n";
+import { defaultLocale, htmlLang, localeLabel, locales } from "@doca/i18n";
 import { AIAdmin } from "@web/features/ai/ai-admin.js";
 import { UploadSettings } from "./upload-settings.js";
 import { RegistrationReviews } from "@web/features/admin/registration-reviews.js";
@@ -220,6 +220,7 @@ export function Admin({
   readonly activePluginIds: ReadonlySet<string>;
 }) {
   const { locale, t } = useI18n();
+  const loginMethodList = new Intl.ListFormat(htmlLang(locale), { type: "unit", style: "short" });
   const [accountTarget, setAccountTarget] = useState<string | null>(null),
     [accountPolicy, setAccountPolicy] = useState<AccountOptions | null>(null);
   const [handoverTarget, setHandoverTarget] = useState<Member | null>(null);
@@ -702,14 +703,11 @@ export function Admin({
                         </div>
                         <span
                           className="member-login"
-                          title={u.loginMethodDetails
-                            .map((method) => loginMethodLabel(method, t))
-                            .join(locale === "zh" ? "、" : ", ")}
+                          title={loginMethodList.format(u.loginMethodDetails
+                            .map((method) => loginMethodLabel(method, t)))}
                         >
-                          {u.loginMethodDetails
-                            .map((method) => loginMethodLabel(method, t))
-                            .join(locale === "zh" ? "、" : ", ") ||
-                            t("users.noMethods")}
+                          {loginMethodList.format(u.loginMethodDetails
+                            .map((method) => loginMethodLabel(method, t))) || t("users.noMethods")}
                         </span>
                         <span className="member-role">
                           {u.admin ? (
@@ -899,10 +897,13 @@ export function Admin({
                     {t("admin.defaultLocale")}
                     <Select
                       name="defaultLocale"
-                      defaultValue={settings.default_locale ?? "zh"}
+                      defaultValue={settings.default_locale ?? defaultLocale}
                     >
-                      <option value="zh">中文</option>
-                      <option value="en">English</option>
+                      {locales.map((code) => (
+                        <option key={code} value={code} lang={htmlLang(code)}>
+                          {t(localeLabel[code])}
+                        </option>
+                      ))}
                     </Select>
                     <small>{t("admin.defaultLocaleHint")}</small>
                   </label>

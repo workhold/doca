@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 import { expect, it } from "vitest";
 // @ts-expect-error jsdom is a runtime-only fixture dependency in this workspace.
 import { JSDOM } from "jsdom";
+// @ts-expect-error extension catalogs are runtime-only JavaScript.
+import { translate } from "../apps/browser-extension/messages.js";
 
 const read = (file: string) =>
   readFile(
@@ -148,14 +150,14 @@ async function fixture(
     },
   });
   dom.window.eval(await read("select.js"));
-  const messages = (await read("messages.js")).replaceAll("export ", "");
+  dom.window.translate = translate;
   const ui = (await read("ui.js"))
     .replace('import { translate } from "./messages.js";', "")
     .replace(
       'const loadAssistant = () => import("./generated/assistant.js");',
       "const loadAssistant = async () => { await globalThis.assistantFixtureReady; return { mountBrowserAssistant: globalThis.mountFixture }; };",
     );
-  await dom.window.eval("(async () => {" + messages + "\n" + ui + "})()");
+  await dom.window.eval("(async () => {" + ui + "})()");
   await flush();
   const doc = dom.window.document;
   const element = <T extends HTMLElement>(id: string) =>
