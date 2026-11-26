@@ -4,7 +4,7 @@ import { useI18n } from "@web/shared/i18n.js";
 import { workspacePublicOrigin } from "@web/shared/desktop-context.js";
 
 export function DesktopBackendSwitch({ onError }: { onError: (message: string) => void }) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const [busy, setBusy] = useState(false);
   if (!workspacePublicOrigin()) return null;
 
@@ -22,6 +22,7 @@ export function DesktopBackendSwitch({ onError }: { onError: (message: string) =
           const response = await fetch("/_doca/manager", {
             method: "POST",
             credentials: "same-origin",
+            headers: { "Accept-Language": locale },
           });
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
         } catch {

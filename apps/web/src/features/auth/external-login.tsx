@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { MessageKey } from "@doca/i18n";
 import { api } from "@web/shared/api.js";
 import { Feedback } from "@web/shared/components/feedback.js";
 import { useI18n } from "@web/shared/i18n.js";
@@ -19,12 +20,12 @@ export function ExternalLoginOptions() {
   const { t } = useI18n();
 
   const [items, setItems] = useState<LoginProvider[]>([]),
-    [error, setError] = useState(""),
+    [error, setError] = useState<MessageKey | { message: string }>(),
     [busy, setBusy] = useState(false);
   useEffect(() => {
     void api<{ items: LoginProvider[] }>("/auth/providers")
       .then((r) => setItems(r.items))
-      .catch(() => setError(t("authAdmin.loadFailed")));
+      .catch(() => setError("authAdmin.loadFailed"));
   }, []);
   return (
     <>
@@ -40,7 +41,7 @@ export function ExternalLoginOptions() {
                 onClick={() => {
                   setBusy(true);
                   void startExternalAuthentication(p.id, "login").catch((e) => {
-                    setError(e.message);
+                    setError({ message: e.message });
                     setBusy(false);
                   });
                 }}
@@ -52,7 +53,7 @@ export function ExternalLoginOptions() {
           </div>
         </div>
       )}
-      {error && <Feedback message={error} tone="error" />}
+      <Feedback message={typeof error === "string" ? t(error) : error?.message} tone="error" />
     </>
   );
 }

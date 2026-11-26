@@ -41,10 +41,23 @@ h1, h2, h3, p { margin-top: 0; }
 }
 .brand-symbol svg { width: 22px; height: 22px; }
 .desktop-topbar strong { font-size: 18px; font-weight: 650; }
-.edition {
+.locale-picker {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: var(--text-secondary);
   font-size: 12px;
+}
+.locale-picker select {
+  min-height: 36px;
+  padding: 6px 9px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
 }
 
 .shell { max-width: 680px; margin: 0 auto; padding: 26px 24px 36px; }
@@ -106,7 +119,7 @@ button {
 button:hover { background: var(--hover); }
 button:active { background: var(--selected); }
 button:disabled { opacity: .5; cursor: not-allowed; }
-button:focus-visible, input:focus-visible { outline: 2px solid #465fce70; outline-offset: 2px; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid #465fce70; outline-offset: 2px; }
 .primary { border-color: var(--brand); background: var(--brand); color: #fff; }
 .primary:hover { border-color: var(--brand-hover); background: var(--brand-hover); }
 .primary:active { border-color: var(--brand-pressed); background: var(--brand-pressed); }

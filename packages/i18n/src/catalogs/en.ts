@@ -2,6 +2,7 @@ import { browserClipperEn } from "./browser-clipper.js";
 import { desktopEn } from "./desktop.js";
 import { handoverEn } from "./resource-handover.js";
 import { groupsEn } from "./groups.js";
+import { localeNames } from "../locales.js";
 /** English copy is the source catalog. Every other locale must provide these keys. */
 export const en = {
   ...browserClipperEn,
@@ -2833,8 +2834,8 @@ export const en = {
   "settings.language": "Language",
   "settings.language.hint":
     "Changes interface text only. Documents, comments, and mail stay as written.",
-  "locale.zh": "中文",
-  "locale.en": "English",
+  "locale.zh": localeNames.zh,
+  "locale.en": localeNames.en,
   "mobile.settings.title": "Settings",
   "mobile.settings.currentServer": "Current server",
   "mobile.settings.signedOut": "Signed out",
@@ -3031,6 +3032,21 @@ export const en = {
     "Password reset. Other sessions were signed out. Sign in again.",
   "login.headline": "Keep knowledge",
   "login.headlineRest": "within reach.",
+  "login.demo.brief": "Launch brief",
+  "login.demo.checklist": "Release checklist",
+  "login.demo.intro": "Confirm the scope and get the next release ready.",
+  "login.demo.feedback": "Collect team feedback",
+  "login.demo.reviewNotes": "Review the release notes",
+  "login.demo.hoursTitle": "Project hours",
+  "login.demo.task": "Task",
+  "login.demo.hours": "Hours",
+  "login.demo.research": "Research",
+  "login.demo.design": "Design",
+  "login.demo.review": "Review",
+  "login.demo.total": "Total",
+  "login.demo.canvasTitle": "Planning board",
+  "login.demo.idea": "Idea",
+  "login.demo.plan": "Plan",
   "login.tagline": "Personal notes, lightly shared.",
   "login.taglineRest": "Your documents and libraries start here.",
   "login.account": "Sign in with account",
@@ -3060,6 +3076,14 @@ export const en = {
   "login.back": "Back to sign in",
   "login.forgot": "Forgot password",
   "login.scanTitle": "Scan to sign in",
+  "login.invalidCredentials": "Incorrect username or password.",
+  "login.qr.label": "Sign-in QR code",
+  "login.qr.loading": "Generating QR code…",
+  "login.qr.instruction": "Open the Doca app and choose Scan to sign in on the web in Settings.",
+  "login.qr.copy": "Copy QR code content",
+  "login.qr.copied": "Copied",
+  "login.qr.issueFailed": "Could not generate the QR code.",
+  "login.qr.statusFailed": "Could not check sign-in status.",
   "trash.previewTitle": "{title} · Trash preview",
   "trash.loadingPreview": "Loading preview…",
   "trash.noPreview": "Nothing to preview",

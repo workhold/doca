@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Doca · 工作空间</title>
+  <title>Doca</title>
   <style>
     :root { font: 14px/1.4 -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif; color: #252a35; background: #f5f6f8; }
     * { box-sizing: border-box; }
@@ -46,31 +46,34 @@
   </style>
 </head>
 <body>
-  <a class="skip" href="#content">跳转到页面</a>
-  <header class="chrome" aria-label="工作空间标签栏">
+  <a class="skip" href="#content" data-text="desktop.tabs.skipToPage"></a>
+  <header class="chrome" data-label="desktop.tabs.toolbar">
     <div id="tabs" class="tabs">
-      <div id="tab-list" class="tab-list" role="tablist" aria-label="页面标签"></div>
-      <button id="new-tab" class="tool" type="button" title="新建标签页 (⌘/Ctrl+T)" aria-label="新建标签页">+</button>
+      <div id="tab-list" class="tab-list" role="tablist" data-label="desktop.tabs.list"></div>
+      <button id="new-tab" class="tool" type="button" data-hint="desktop.tabs.newTabShortcut" data-label="desktop.tabs.newTab">+</button>
     </div>
     <div class="tools">
-      <button id="new-window" class="tool" type="button" title="新建窗口 (⌘/Ctrl+N)" aria-label="新建窗口">
+      <button id="new-window" class="tool" type="button" data-hint="desktop.tabs.newWindowShortcut" data-label="desktop.tabs.newWindow">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <rect x="3" y="8.5" width="13" height="12" rx="2.2" />
           <path d="M8 4.5h10.8A2.2 2.2 0 0 1 21 6.7v9.3" />
         </svg>
       </button>
-      <button id="backend" class="tool text" type="button" title="切换后端" aria-label="切换后端">切换后端</button>
+      <button id="backend" class="tool text" type="button" data-text="desktop.switchBackend" data-hint="desktop.switchBackend" data-label="desktop.switchBackend"></button>
     </div>
   </header>
   <main id="content" class="content" tabindex="-1">
-    <div id="status" class="status" role="status">正在恢复工作空间…</div>
+    <div id="status" class="status" role="status"></div>
   </main>
+  <script type="application/json" id="desktop-messages">__DOCA_DESKTOP_MESSAGES__</script>
   <script>
     (() => {
       const windowId = location.pathname.split("/").pop();
       const tabs = document.getElementById("tab-list");
       const content = document.getElementById("content");
       const status = document.getElementById("status");
+      const messages = JSON.parse(document.getElementById("desktop-messages").textContent);
+      const systemLocale = navigator.languages.map(languageCode).find(Boolean) || "en";
       const frames = new Map();
       const favicons = new Map();
       const pendingUpdates = new Map();
@@ -81,16 +84,64 @@
       let dragSession = null;
       let suppressTabClick = false;
       let suppressUpdates = false;
+      let locale;
+      let statusKey = "desktop.tabs.restoring";
+
+      function languageCode(tag) {
+        const code = tag?.split("-")[0].toLowerCase();
+        return code === "zh" || code === "en" ? code : null;
+      }
+      function t(key, values = {}) {
+        return (messages[locale][key] ?? messages.en[key] ?? key)
+          .replace(/\{([A-Za-z_][A-Za-z0-9_]*)\}/g, (token, name) => values[name] ?? token);
+      }
+      function tabLabel(tab) { return tab.title || t("desktop.tabs.newTab"); }
+      function labelTab(tab, select, close) {
+        const title = tabLabel(tab);
+        select.title = title;
+        select.querySelector(".tab-title").textContent = title;
+        close.setAttribute("aria-label", t("desktop.tabs.closeNamed", { title }));
+      }
+      function syncLocale() {
+        const active = frames.get(current?.activeTab);
+        let next;
+        try {
+          next = languageCode(active?.contentDocument?.documentElement.lang)
+            ?? languageCode(localStorage.getItem("doca.locale"));
+        } catch { /* The system locale also works without access to the active page or storage. */ }
+        next ??= systemLocale;
+        if (next === locale) return;
+        locale = next;
+        document.documentElement.lang = locale === "zh" ? "zh-CN" : "en";
+        document.querySelectorAll("[data-text]").forEach(element => { element.textContent = t(element.dataset.text); });
+        document.querySelectorAll("[data-hint]").forEach(element => { element.title = t(element.dataset.hint); });
+        document.querySelectorAll("[data-label]").forEach(element => element.setAttribute("aria-label", t(element.dataset.label)));
+        status.textContent = t(statusKey);
+        closeMenu();
+        for (const select of tabs.querySelectorAll(".tab-select")) {
+          const tab = tabById(select.dataset.tabId);
+          if (tab) labelTab(tab, select, select.nextElementSibling);
+        }
+        for (const [id, frame] of frames) frame.title = tabById(id)?.title || t("desktop.tabs.page");
+        document.title = tabById(current?.activeTab)?.title || t("desktop.workspaceTitle");
+      }
 
       function refresh() {
         return request(`/_doca/session?window=${encodeURIComponent(windowId)}`)
           .then(result => render(result.window))
-          .catch(error => showError(`无法恢复工作空间：${error.message}`));
+          .catch(error => showError("desktop.tabs.restoreFailed", error));
       }
       const updates = new EventSource("/_doca/events");
       updates.onmessage = () => { if (!busy && !dragSession && !suppressUpdates) void refresh(); };
-      function showError(message) {
-        status.textContent = message;
+      function showError(key, error) {
+        const code = error?.message ?? "";
+        if (code.startsWith("desktop.error.") && Object.hasOwn(messages.en, code)) {
+          statusKey = code;
+        } else {
+          console.error(key, error);
+          statusKey = key;
+        }
+        status.textContent = t(statusKey);
         status.classList.add("error");
         status.hidden = false;
       }
@@ -113,7 +164,7 @@
         if (busy) return;
         busy = true;
         try { await send(type, data); }
-        catch (error) { showError(`操作未完成：${error.message}`); }
+        catch (error) { showError("desktop.tabs.actionFailed", error); }
         finally { busy = false; }
       }
       async function closeTabs(tabIds) {
@@ -121,8 +172,8 @@
           if (!checkUnsaved(id)) return;
           try { await send("closeTab", { tabId: id }); }
           catch (error) {
-            if (!String(error.message).includes("标签页不存在")) {
-              showError(`操作未完成：${error.message}`);
+            if (error.message !== "desktop.error.tabMissing") {
+              showError("desktop.tabs.actionFailed", error);
               return;
             }
           }
@@ -244,6 +295,8 @@
             }, true);
             const titleNode = frame.contentDocument.querySelector("title");
             if (titleNode) new MutationObserver(() => queueUpdate(tab.id)).observe(titleNode, { childList: true, characterData: true, subtree: true });
+            new MutationObserver(syncLocale).observe(frame.contentDocument.documentElement, { attributeFilter: ["lang"] });
+            syncLocale();
             queueUpdate(tab.id);
           } catch { /* A non-Doca navigation cannot update the saved route. */ }
         };
@@ -255,7 +308,7 @@
         frame = document.createElement("iframe");
         frame.className = "page";
         frame.setAttribute("data-doca-workspace-tab", "");
-        frame.title = tab.title || "Doca 页面";
+        frame.title = tab.title || t("desktop.tabs.page");
         frame.src = "/" + tab.hash;
         frame.hidden = true;
         content.append(frame);
@@ -270,7 +323,7 @@
           const event = new Event("beforeunload", { cancelable: true });
           frame.contentWindow.dispatchEvent(event);
           if (event.defaultPrevented)
-            return confirm("此页面可能还有未保存的更改。确定关闭标签页？");
+            return confirm(t("desktop.tabs.unsaved"));
         } catch { /* The browser still controls an inaccessible page. */ }
         return true;
       }
@@ -373,7 +426,7 @@
           dragged.style.transition = "";
           send("reorderTab", { tabId: session.tabId, index: session.index })
             .then(() => { suppressTabClick = false; })
-            .catch(error => showError(`操作未完成：${error.message}`))
+            .catch(error => showError("desktop.tabs.actionFailed", error))
             .finally(() => { suppressUpdates = false; });
         }, 140);
       }
@@ -413,14 +466,14 @@
         menu = document.createElement("div");
         menu.className = "tab-menu";
         menu.setAttribute("role", "menu");
-        menu.setAttribute("aria-label", `标签页操作：${tab.title || "新标签页"}`);
+        menu.setAttribute("aria-label", t("desktop.tabs.menu", { title: tabLabel(tab) }));
         menu.append(
-          menuItem("复制标签页", { hint: "同一网址", run: () => act("openTab", { hash: tab.hash }) }),
-          menuItem("新窗口打开", { run: () => act("newWindow", { hash: tab.hash }) }),
-          menuItem("关闭", { run: () => closeTabs([tab.id]) }),
-          menuItem("关闭左侧标签页", { disabled: index <= 0, run: () => closeTabs(current.tabs.slice(0, index).map(item => item.id)) }),
-          menuItem("关闭右侧标签页", { disabled: index < 0 || index >= current.tabs.length - 1, run: () => closeTabs(current.tabs.slice(index + 1).map(item => item.id)) }),
-          menuItem("关闭全部标签页", { run: () => closeTabs(current.tabs.map(item => item.id)) }),
+          menuItem(t("desktop.tabs.duplicate"), { hint: t("desktop.tabs.sameAddress"), run: () => act("openTab", { hash: tab.hash }) }),
+          menuItem(t("desktop.tabs.openInNewWindow"), { run: () => act("newWindow", { hash: tab.hash }) }),
+          menuItem(t("desktop.tabs.close"), { run: () => closeTabs([tab.id]) }),
+          menuItem(t("desktop.tabs.closeLeft"), { disabled: index <= 0, run: () => closeTabs(current.tabs.slice(0, index).map(item => item.id)) }),
+          menuItem(t("desktop.tabs.closeRight"), { disabled: index < 0 || index >= current.tabs.length - 1, run: () => closeTabs(current.tabs.slice(index + 1).map(item => item.id)) }),
+          menuItem(t("desktop.tabs.closeAll"), { run: () => closeTabs(current.tabs.map(item => item.id)) }),
         );
         document.body.append(menu);
         const bounds = menu.getBoundingClientRect();
@@ -438,6 +491,7 @@
         const focusedTabId = document.activeElement?.dataset?.tabId;
         const focusedPage = document.activeElement?.classList?.contains("page");
         current = windowState;
+        syncLocale();
         status.hidden = true;
         status.classList.remove("error");
         tabs.replaceChildren();
@@ -455,13 +509,11 @@
           select.dataset.tabId = tab.id;
           select.setAttribute("aria-selected", String(tab.id === windowState.activeTab));
           select.setAttribute("aria-controls", `page-${tab.id}`);
-          select.title = tab.title;
           const icon = favicons.get(tab.id);
           select.innerHTML = icon
             ? '<img class="tab-favicon" alt="" /><span class="tab-title"></span>'
             : '<span class="tab-icon" aria-hidden="true">D</span><span class="tab-title"></span>';
           if (icon) select.querySelector(".tab-favicon").src = icon;
-          select.querySelector(".tab-title").textContent = tab.title || "新标签页";
           select.addEventListener("click", () => {
             if (suppressTabClick) { suppressTabClick = false; return; }
             act("selectTab", { tabId: tab.id });
@@ -473,7 +525,7 @@
           close.className = "tab-close";
           close.dataset.tabId = tab.id;
           close.textContent = "×";
-          close.setAttribute("aria-label", `关闭 ${tab.title || "新标签页"}`);
+          labelTab(tab, select, close);
           close.addEventListener("click", () => { if (checkUnsaved(tab.id)) act("closeTab", { tabId: tab.id }); });
           item.append(select, close);
           tabs.append(item);
@@ -488,10 +540,10 @@
               frame.contentWindow.dispatchEvent(new Event("doca-desktop-tab-visibility"));
             } catch { /* An external page owns its own lifecycle. */ }
           }
-          frame.title = tabById(id)?.title || "Doca 页面";
+          frame.title = tabById(id)?.title || t("desktop.tabs.page");
         }
         const active = tabById(windowState.activeTab);
-        document.title = active ? active.title : "Doca · 工作空间";
+        document.title = active?.title || t("desktop.workspaceTitle");
         if (focusedTabId) {
           const sameTab = [...tabs.querySelectorAll(".tab-select")].find(button => button.dataset.tabId === focusedTabId);
           const activeTab = [...tabs.querySelectorAll(".tab-select")].find(button => button.dataset.tabId === windowState.activeTab);
@@ -501,8 +553,9 @@
       document.getElementById("new-tab").addEventListener("click", () => act("newTab"));
       document.getElementById("new-window").addEventListener("click", () => act("newWindow"));
       document.getElementById("backend").addEventListener("click", async () => {
-        try { await request("/_doca/manager", { method: "POST" }); }
-        catch (error) { showError(`无法打开连接管理器：${error.message}`); }
+        syncLocale();
+        try { await request("/_doca/manager", { method: "POST", headers: { "Accept-Language": locale } }); }
+        catch (error) { showError("desktop.switchFailed", error); }
       });
       function handleShortcut(event) {
         if (!(event.metaKey || event.ctrlKey) || event.altKey) return;
@@ -520,6 +573,7 @@
         }
       }
       document.addEventListener("keydown", handleShortcut);
+      syncLocale();
       void refresh();
     })();
 </script>

@@ -19,7 +19,7 @@ impl Tab {
         Self {
             id: Uuid::new_v4().to_string(),
             hash: "#/home".into(),
-            title: "首页".into(),
+            title: "Doca".into(),
         }
     }
 }

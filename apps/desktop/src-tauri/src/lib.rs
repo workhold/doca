@@ -35,6 +35,7 @@ struct ActiveProxy {
 struct AppState {
     directory: PathBuf,
     settings: Mutex<settings::Settings>,
+    manager_locale: Mutex<Option<&'static str>>,
     operation: Mutex<()>,
     login: Mutex<()>,
     proxy: Mutex<Vec<ActiveProxy>>,
@@ -59,6 +60,7 @@ struct ProfilesView {
     active: String,
     endpoints: Vec<EndpointView>,
     workspace_open: bool,
+    manager_locale: Option<&'static str>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -492,15 +494,21 @@ async fn revoke_remote(directory: &Path, id: &str, origin: &str) -> Result<(), S
         .bearer_auth(token)
         .send()
         .await
-        .map_err(|e| format!("远端不可用，凭据仍已保留：{e}"))?;
+        .map_err(|error| {
+            eprintln!("doca-desktop: revoke request failed: {error}");
+            "desktop.error.revokeUnreachable"
+        })?;
     if !response.status().is_success() && response.status() != reqwest::StatusCode::UNAUTHORIZED {
-        return Err(format!(
-            "远端未确认退出，凭据仍已保留：{}",
+        eprintln!(
+            "doca-desktop: revoke request returned {}",
             response.status()
-        ));
+        );
+        return Err("desktop.error.revokeRejected".into());
     }
-    credentials::delete_token(directory, id)
-        .map_err(|e| format!("远端已退出，但无法删除桌面凭据：{e}"))
+    credentials::delete_token(directory, id).map_err(|error| {
+        eprintln!("doca-desktop: could not remove credential after revoke: {error}");
+        "desktop.error.credentialRemovalFailed".into()
+    })
 }
 
 #[tauri::command]
@@ -532,6 +540,7 @@ async fn get_profiles(
             .webview_windows()
             .keys()
             .any(|label| label.starts_with("workspace-")),
+        manager_locale: *state.manager_locale.lock().await,
     })
 }
 
@@ -544,7 +553,7 @@ async fn add_endpoint(
     let normalized = settings::canonical_origin(&origin)?;
     let name = name.trim().to_string();
     if name.is_empty() || name.len() > 80 {
-        return Err("请输入 1–80 字节的名称".into());
+        return Err("desktop.error.invalidName".into());
     }
     let mut stored = state.settings.lock().await;
     if stored
@@ -552,7 +561,7 @@ async fn add_endpoint(
         .iter()
         .any(|item| item.origin == normalized)
     {
-        return Err("此后端地址已经添加".into());
+        return Err("desktop.error.addressExists".into());
     }
     let mut next = stored.clone();
     next.endpoints.push(settings::Endpoint {
@@ -574,7 +583,7 @@ async fn rename_endpoint(
 ) -> Result<(), String> {
     let name = name.trim().to_string();
     if name.is_empty() || name.len() > 80 {
-        return Err("请输入 1–80 字节的名称".into());
+        return Err("desktop.error.invalidName".into());
     }
     let mut stored = state.settings.lock().await;
     let mut next = stored.clone();
@@ -582,7 +591,7 @@ async fn rename_endpoint(
         .endpoints
         .iter_mut()
         .find(|item| item.id == id)
-        .ok_or("地址不存在")?;
+        .ok_or("desktop.error.addressMissing")?;
     entry.name = name;
     settings::save(&state.directory.join("profiles.json"), &next)?;
     *stored = next;
@@ -598,7 +607,7 @@ async fn remove_endpoint(
     let _guard = state.operation.lock().await;
     let stored = state.settings.lock().await.clone();
     if !stored.endpoints.iter().any(|item| item.id == id) {
-        return Err("地址不存在".into());
+        return Err("desktop.error.addressMissing".into());
     }
     let origin = stored
         .endpoints
@@ -643,7 +652,7 @@ async fn sign_out(
         .endpoints
         .iter()
         .find(|item| item.id == id)
-        .ok_or("地址不存在")?;
+        .ok_or("desktop.error.addressMissing")?;
     revoke_remote(&state.directory, &id, &entry.origin).await?;
     // Close the workspace windows before clearing their session records:
     // close_scope_windows resolves window ids from those records, so clearing
@@ -678,7 +687,7 @@ async fn start_login(state: tauri::State<'_, AppState>, id: String) -> Result<()
         .iter()
         .find(|e| e.id == id)
         .cloned()
-        .ok_or("地址不存在")?;
+        .ok_or("desktop.error.addressMissing")?;
     let state_value = random_hex();
     let verifier = URL_SAFE_NO_PAD.encode(hex::decode(random_hex()).map_err(|e| e.to_string())?);
     let challenge = URL_SAFE_NO_PAD.encode(Sha256::digest(verifier.as_bytes()));
@@ -687,9 +696,12 @@ async fn start_login(state: tauri::State<'_, AppState>, id: String) -> Result<()
         .json(&serde_json::json!({"state": state_value, "challenge": challenge}))
         .send()
         .await
-        .map_err(|e| format!("无法连接后端：{e}"))?;
+        .map_err(|error| {
+            eprintln!("doca-desktop: sign-in request failed: {error}");
+            "desktop.error.backendUnreachable"
+        })?;
     if response.status() == reqwest::StatusCode::NOT_FOUND {
-        return Err("此后端尚不支持桌面登录，请升级服务端".into());
+        return Err("desktop.error.loginUnavailable".into());
     }
     if !response.status().is_success() {
         return Err(format!("后端拒绝桌面登录：{}", response.status()));
@@ -799,6 +811,7 @@ async fn handle_action(
     generation: Uuid,
     action: proxy::Action,
 ) -> Result<serde_json::Value, String> {
+    const TAB_MISSING: &str = "desktop.error.tabMissing";
     let state = app.state::<AppState>();
     let _guard = state.operation.lock().await;
     let (endpoint_id, account_id, gate_url) = {
@@ -834,7 +847,7 @@ async fn handle_action(
                     .find(|window| window.id == window_id)
                     .ok_or("工作空间窗口不存在")?;
                 if total >= session::MAX_TABS || window.tabs.len() >= session::MAX_TABS_PER_WINDOW {
-                    return Err("标签页数量已达上限".into());
+                    return Err("desktop.error.tabLimit".into());
                 }
                 let insert_at = window
                     .tabs
@@ -866,7 +879,7 @@ async fn handle_action(
                     .find(|window| window.id == window_id)
                     .ok_or("工作空间窗口不存在")?;
                 if total >= session::MAX_TABS || window.tabs.len() >= session::MAX_TABS_PER_WINDOW {
-                    return Err("标签页数量已达上限".into());
+                    return Err("desktop.error.tabLimit".into());
                 }
                 let insert_at = window
                     .tabs
@@ -891,7 +904,7 @@ async fn handle_action(
                     .find(|window| window.id == window_id)
                     .ok_or("工作空间窗口不存在")?;
                 if !window.tabs.iter().any(|tab| tab.id == tab_id) {
-                    return Err("标签页不存在".into());
+                    return Err(TAB_MISSING.into());
                 }
                 window.active_tab = tab_id;
                 Ok(())
@@ -911,7 +924,7 @@ async fn handle_action(
                     .tabs
                     .iter()
                     .position(|tab| tab.id == tab_id)
-                    .ok_or("标签页不存在")?;
+                    .ok_or(TAB_MISSING)?;
                 window.tabs.remove(tab_index);
                 if window.tabs.is_empty() {
                     workspace.windows.remove(index);
@@ -960,7 +973,7 @@ async fn handle_action(
             mutate_sessions(&state, |sessions| {
                 let workspace = scope_mut(sessions, &endpoint_id, &account_id)?;
                 if workspace.windows.len() >= session::MAX_WINDOWS {
-                    return Err("窗口数量已达上限".into());
+                    return Err("desktop.error.windowLimit".into());
                 }
                 workspace.windows.push(new_window.clone());
                 Ok(())
@@ -972,7 +985,7 @@ async fn handle_action(
                     .iter()
                     .find(|entry| entry.id == endpoint_id)
                     .map(|entry| format!("{} · {}", entry.name, entry.origin))
-                    .unwrap_or_else(|| "Doca · 工作空间".into())
+                    .unwrap_or_else(|| "Doca".into())
             };
             if let Err(error) = build_workspace_window(
                 app,
@@ -1020,7 +1033,7 @@ async fn handle_action(
                     .tabs
                     .iter_mut()
                     .find(|tab| tab.id == tab_id)
-                    .ok_or("标签页不存在")?;
+                    .ok_or(TAB_MISSING)?;
                 tab.hash = hash;
                 tab.title = title;
                 Ok(())
@@ -1043,7 +1056,7 @@ async fn handle_action(
                     .tabs
                     .iter()
                     .position(|tab| tab.id == tab_id)
-                    .ok_or("标签页不存在")?;
+                    .ok_or(TAB_MISSING)?;
                 let tab = window.tabs.remove(from);
                 let to = index.min(window.tabs.len());
                 window.tabs.insert(to, tab);
@@ -1316,8 +1329,17 @@ async fn open_profile_inner(
     let controller = tokio::spawn(async move {
         while let Some(message) = control_receiver.recv().await {
             match message {
-                proxy::Control::ShowManager => {
+                proxy::Control::ShowManager(locale) => {
                     if let Some(window) = control_app.get_webview_window("main") {
+                        if let Some(locale) = locale {
+                            let state = control_app.state::<AppState>();
+                            *state.manager_locale.lock().await = Some(locale);
+                            let _ = control_app.emit_to(
+                                tauri::EventTarget::webview_window("main"),
+                                "desktop-manager-locale",
+                                locale,
+                            );
+                        }
                         let _ = window.show();
                         let _ = window.unminimize();
                         let _ = window.set_focus();
@@ -1491,12 +1513,27 @@ pub fn run() {
             app.manage(AppState {
                 directory,
                 settings: Mutex::new(stored),
+                manager_locale: Mutex::new(None),
                 operation: Mutex::new(()),
                 login: Mutex::new(()),
                 proxy: Mutex::new(Vec::new()),
                 sessions: SyncMutex::new(sessions),
                 closing_all: AtomicBool::new(false),
             });
+            let manager = app
+                .config()
+                .app
+                .windows
+                .iter()
+                .find(|config| config.label == "main")
+                .ok_or_else(|| {
+                    std::io::Error::other("Missing connection manager window configuration")
+                })?;
+            WebviewWindowBuilder::from_config(app, manager)?
+                .on_document_title_changed(|window, title| {
+                    let _ = window.set_title(&title);
+                })
+                .build()?;
             let handle = app.handle().clone();
             app.deep_link().on_open_url(move |event| {
                 for url in event.urls() {

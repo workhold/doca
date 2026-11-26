@@ -317,6 +317,11 @@
     "zh": "发行记录",
     "pages": [
       [
+        "releases/0.2.46",
+        "0.2.46 · Desktop and sign-in languages",
+        "0.2.46 · 桌面端与登录页语言"
+      ],
+      [
         "releases/0.2.45",
         "0.2.45 · Library trackpad scrolling",
         "0.2.45 · 知识库触控板滚动"

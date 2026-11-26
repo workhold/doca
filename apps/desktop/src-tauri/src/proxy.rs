@@ -83,7 +83,7 @@ pub enum Action {
 }
 
 pub enum Control {
-    ShowManager,
+    ShowManager(Option<&'static str>),
     Action(Action, oneshot::Sender<Result<serde_json::Value, String>>),
     SaveFile {
         path: String,
@@ -154,7 +154,15 @@ async fn show_manager(State(config): State<Arc<ProxyConfig>>, headers: HeaderMap
     {
         return StatusCode::FORBIDDEN;
     }
-    if config.control.send(Control::ShowManager).is_err() {
+    let locale = match headers
+        .get(header::ACCEPT_LANGUAGE)
+        .and_then(|value| value.to_str().ok())
+    {
+        Some("en") => Some("en"),
+        Some("zh") => Some("zh"),
+        _ => None,
+    };
+    if config.control.send(Control::ShowManager(locale)).is_err() {
         return StatusCode::SERVICE_UNAVAILABLE;
     }
     StatusCode::NO_CONTENT
@@ -173,7 +181,13 @@ async fn tab_shell(
             (header::CACHE_CONTROL, "no-store"),
             (header::X_CONTENT_TYPE_OPTIONS, "nosniff"),
         ],
-        Html(include_str!("tab-shell.html")),
+        Html(
+            include_str!("tab-shell.html").replace(
+                "__DOCA_DESKTOP_MESSAGES__",
+                &include_str!("../../../../packages/i18n/src/catalogs/desktop.json")
+                    .replace('<', "\\u003c"),
+            ),
+        ),
     )
         .into_response()
 }
@@ -899,19 +913,11 @@ mod tests {
     #[tokio::test]
     async fn manager_action_requires_capability_and_exact_origin() {
         let (control, mut receiver) = mpsc::unbounded_channel();
-        let config = Arc::new(ProxyConfig {
-            origin: "http://127.0.0.1:43111".into(),
-            target: "https://doca.example.com".into(),
-            capability: "test-capability".into(),
-            bearer: "test-token".into(),
-            static_root: PathBuf::new(),
-            client: reqwest::Client::new(),
-            control,
-            updated: broadcast::channel(16).0,
-        });
+        let config = test_config(control);
         let mut headers = HeaderMap::new();
         headers.insert(header::HOST, "127.0.0.1:43111".parse().unwrap());
         headers.insert(header::ORIGIN, "http://127.0.0.1:43111".parse().unwrap());
+        headers.insert(header::ACCEPT_LANGUAGE, "en".parse().unwrap());
         assert_eq!(
             show_manager(State(config.clone()), headers.clone()).await,
             StatusCode::FORBIDDEN
@@ -930,11 +936,16 @@ mod tests {
         assert!(receiver.try_recv().is_err());
 
         headers.insert(header::ORIGIN, "http://127.0.0.1:43111".parse().unwrap());
-        assert_eq!(
-            show_manager(State(config), headers).await,
-            StatusCode::NO_CONTENT
-        );
-        assert!(matches!(receiver.try_recv(), Ok(Control::ShowManager)));
+        for (language, expected) in [("en", Some("en")), ("zh", Some("zh")), ("fr", None)] {
+            headers.insert(header::ACCEPT_LANGUAGE, language.parse().unwrap());
+            assert_eq!(
+                show_manager(State(config.clone()), headers.clone()).await,
+                StatusCode::NO_CONTENT
+            );
+            assert!(
+                matches!(receiver.try_recv(), Ok(Control::ShowManager(locale)) if locale == expected)
+            );
+        }
     }
 
     #[tokio::test]
@@ -1108,7 +1119,10 @@ mod tests {
             .await
             .into_response();
         assert_eq!(response.status(), StatusCode::BAD_GATEWAY);
-        assert!(matches!(events.try_recv(), Err(mpsc::error::TryRecvError::Empty)));
+        assert!(matches!(
+            events.try_recv(),
+            Err(mpsc::error::TryRecvError::Empty)
+        ));
 
         let request = Request::builder()
             .uri("/server-controlled-page")
