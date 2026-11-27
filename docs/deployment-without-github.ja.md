@@ -4,13 +4,13 @@
 
 [简体中文](deployment-without-github.zh-CN.md)
 
-ビジネスサーバーにはソースチェックアウト、Git、Node.js、またはpnpmは不要です。先にDocker Engine、Docker Composeプラグイン、Bash、OpenSSLをインストールし、デプロイファイルを転送し、イメージを準備し、Docaを起動し、管理者を初期化します。このガイドでは、SQLiteとローカルファイルストレージを使用した新しい単一サーバー上でDoca 0.3.0をインストールします。既存のインストールについては、再度確認が必要です。 [リリース要件](releases/0.3.0.ja.md) そして、彼らのデータベース、ファイル、設定、および認証キーマスターキーを保護する。
+ビジネスサーバーにはソースチェックアウト、Git、Node.js、またはpnpmは不要です。先にDocker Engine、Docker Composeプラグイン、Bash、OpenSSLをインストールし、デプロイファイルを転送し、イメージを準備し、Docaを起動し、管理者を初期化します。このガイドでは、SQLiteとローカルファイルストレージを使用した新しい単一サーバー上でDoca 0.3.1をインストールします。既存のインストールについては、再度確認が必要です。 [リリース要件](releases/0.3.1.ja.md) そして、彼らのデータベース、ファイル、設定、および認証キーマスターキーを保護する。
 
 <a id="fresh-installation-from-one-yaml"></a>
 
 ## YAMLからの新しいインストール
 
-`node scripts/pack-deployment.mjs` また出力する `doca-compose-vVERSION.yaml` およびそのチェックサム。YAMLを転送し、保存してください。 `compose.yaml` 永続的なデプロイディレクトリ内で編集する `DOCA_ORIGIN` そして、あなたが生成したもの `DOCA_CREDENTIAL_MASTER_KEY`それを保護する `chmod 600 compose.yaml`それから実行する `docker compose up -d`。いいえ `.env`seccomp JSONや外部の管理者スクリプトが必要です。対応する0.3.0のイメージを使用してください。スタンドアロン版のYAMLとチェックサムもGitHub Releaseに添付されています。
+`node scripts/pack-deployment.mjs` また出力する `doca-compose-vVERSION.yaml` およびそのチェックサム。YAMLを転送し、保存してください。 `compose.yaml` 永続的なデプロイディレクトリ内で編集する `DOCA_ORIGIN` そして、あなたが生成したもの `DOCA_CREDENTIAL_MASTER_KEY`それを保護する `chmod 600 compose.yaml`それから実行する `docker compose up -d`。いいえ `.env`seccomp JSONや外部の管理者スクリプトが必要です。対応する0.3.1のイメージを使用してください。スタンドアロン版のYAMLとチェックサムもGitHub Releaseに添付されています。
 
 サービスが正常になった後、実行する `docker compose exec doca bash docker/admin.sh bootstrap`；使用 `reset-password` パスワードリセットのためです。パスワードの入力は隠され、YAMLに記載されません。この例は新しいSQLite/local-storageインストールの場合のみです。既存のサイトは、プロジェクト名、ボリューム、キーが保持されます。バックアップには保護されたYAMLが含まれます。リバースプロキシの要件は、以下で説明されている通りです。
 
@@ -27,22 +27,22 @@ cd doca
 node scripts/pack-deployment.mjs
 ```
 
-以下のアーカイブ名と画像タグは0.3.0を例として使用しています。パッカーが出力するファイル名と、生成されたComposeファイルで指定される画像を使用してください。
+以下のアーカイブ名と画像タグは0.3.1を例として使用しています。パッカーが出力するファイル名と、生成されたComposeファイルで指定される画像を使用してください。
 
-移転 `doca-deploy-v0.3.0.tar.gz` そして、それ `.sha256` エンタープライズファイルサービス、内部ダウンロードURL、またはリムーバブルストレージを通じてチェックサムを確認する。パッカーは公開されたデプロイファイルのみを読み取り、ローカルファイルは含まない。 `.env`ユーザーデータやコンテナイメージです。対応するタグのGitHub Releaseには、バンドルとチェックサムが含まれています。
+移転 `doca-deploy-v0.3.1.tar.gz` そして、それ `.sha256` エンタープライズファイルサービス、内部ダウンロードURL、またはリムーバブルストレージを通じてチェックサムを確認する。パッカーは公開されたデプロイファイルのみを読み取り、ローカルファイルは含まない。 `.env`ユーザーデータやコンテナイメージです。対応するタグのGitHub Releaseには、バンドルとチェックサムが含まれています。
 
 ビジネスサーバーの同じディレクトリに両方のファイルを置き、確認し、抽出します。
 
 ```sh
-sha256sum -c doca-deploy-v0.3.0.tar.gz.sha256
-tar -xzf doca-deploy-v0.3.0.tar.gz
-cd doca-deploy-v0.3.0
+sha256sum -c doca-deploy-v0.3.1.tar.gz.sha256
+tar -xzf doca-deploy-v0.3.1.tar.gz
+cd doca-deploy-v0.3.1
 ```
 
-macOSでは、使用する `shasum -a 256 -c doca-deploy-v0.3.0.tar.gz.sha256`このディレクトリから続くデプロイコマンドを実行してください：
+macOSでは、使用する `shasum -a 256 -c doca-deploy-v0.3.1.tar.gz.sha256`このディレクトリから続くデプロイコマンドを実行してください：
 
 ```text
-doca-deploy-v0.3.0/
+doca-deploy-v0.3.1/
   compose.yaml
   docker.env.example
   README.zh-CN.md
@@ -64,7 +64,7 @@ doca-deploy-v0.3.0/
 ```yaml
 services:
   doca:
-    image: docker.io/smartdoca/doca:0.3.0
+    image: docker.io/smartdoca/doca:0.3.1
     pull_policy: missing
     restart: unless-stopped
     init: true
@@ -155,21 +155,21 @@ docker compose pull doca
 サプライヤーはレジストリにアクセスできるマシン上で画像アーカイブを作成する。まず、対象のCPUアーキテクチャを確認する。この例ではLinux x86-64を使用している。`linux/amd64`); ARM64の場合は、使用する `linux/arm64` 送信されたファイルに適切にラベルを付けましょう：
 
 ```sh
-docker pull --platform linux/amd64 docker.io/smartdoca/doca:0.3.0
-docker image inspect docker.io/smartdoca/doca:0.3.0 --format '{{.Os}}/{{.Architecture}}'
-docker save -o doca-image-v0.3.0-linux-amd64.tar docker.io/smartdoca/doca:0.3.0
-sha256sum doca-image-v0.3.0-linux-amd64.tar > doca-image-v0.3.0-linux-amd64.tar.sha256
+docker pull --platform linux/amd64 docker.io/smartdoca/doca:0.3.1
+docker image inspect docker.io/smartdoca/doca:0.3.1 --format '{{.Os}}/{{.Architecture}}'
+docker save -o doca-image-v0.3.1-linux-amd64.tar docker.io/smartdoca/doca:0.3.1
+sha256sum doca-image-v0.3.1-linux-amd64.tar > doca-image-v0.3.1-linux-amd64.tar.sha256
 ```
 
 画像を転送する `.tar` チェックサムと一緒に。ビジネスサーバーのディレクトリから：
 
 ```sh
-sha256sum -c doca-image-v0.3.0-linux-amd64.tar.sha256
-docker load -i doca-image-v0.3.0-linux-amd64.tar
-docker image inspect docker.io/smartdoca/doca:0.3.0 --format '{{.Os}}/{{.Architecture}}'
+sha256sum -c doca-image-v0.3.1-linux-amd64.tar.sha256
+docker load -i doca-image-v0.3.1-linux-amd64.tar
+docker image inspect docker.io/smartdoca/doca:0.3.1 --format '{{.Os}}/{{.Architecture}}'
 ```
 
-ロードされたタグが正しいか確認する `smartdoca/doca:0.3.0` アーキテクチャがターゲットに合致したら、デプロイディレクトリに戻ります。内部レジストリも別の配布方法です。サプライヤーが同じリリースイメージを配布し、ビジネスチームがComposeを変更します。 `image` プルインする前に、その内部レジストリアドレスに保存してください。バンドル、イメージ、初期化スクリプトを同じリリースに保持します。
+ロードされたタグが正しいか確認する `smartdoca/doca:0.3.1` アーキテクチャがターゲットに合致したら、デプロイディレクトリに戻ります。内部レジストリも別の配布方法です。サプライヤーが同じリリースイメージを配布し、ビジネスチームがComposeを変更します。 `image` プルインする前に、その内部レジストリアドレスに保存してください。バンドル、イメージ、初期化スクリプトを同じリリースに保持します。
 
 <a id="_4-start-and-initialize-the-database"></a>
 <a id="4-start-and-initialize-the-database"></a>
@@ -192,7 +192,7 @@ docker compose ps
 curl -fsS -H 'Host: docs.example.com' http://127.0.0.1:39120/health
 ```
 
-期待する `{"status":"ok","version":"0.3.0"}`内部の例については、使用してください。 `Host: doca.internal`バレルループバックリクエストはホスト検証に失敗する。起動失敗を調査する `docker compose logs --tail=100 doca`.
+期待する `{"status":"ok","version":"0.3.1"}`内部の例については、使用してください。 `Host: doca.internal`バレルループバックリクエストはホスト検証に失敗する。起動失敗を調査する `docker compose logs --tail=100 doca`.
 
 <a id="_5-initialize-the-administrator"></a>
 <a id="5-initialize-the-administrator"></a>
@@ -221,4 +221,4 @@ bash scripts/reset-admin-password.sh
 
 使用する `docker compose restart` 通常の再起動のため。デプロイディレクトリとComposeプロジェクト名を保持しておくことで、同じものが使えます `doca_data` ボリュームが使用されているため、どちらを変更しても誤って別の空のサイトが作成される可能性があります。永続ボリューム内のすべてのデータベースやファイルストレージ、および保護されたものをバックアップしてください。 `.env` そしてマスターキー。 `docker compose down -v` ボリュームを削除し、通常の再起動やアップグレードには使用できない。
 
-レビューをする [リリース要件](releases/0.3.0.ja.md) アップグレードする前に、対応するバンドルと画像を提供してください。このガイドでは新しいサイトを初期化するだけで、既存のデータは変換されません。パスワードログインやローカル文書サービスにはGitHubアクセスは不要ですが、AI、外部ログイン、プラグインのインストール、クラウドストレージ用の外部サービスは依然としてアクセス可能でなければなりません。ターゲットホストでの文書レンダリングを別途確認してください。アプリケーションの健康状態だけではPDF、キャンバス、Officeのレンダリングの正確性は確立されません。詳細は [Dockerドキュメントのレンダリング](docker-rendering.ja.md).
+レビューをする [リリース要件](releases/0.3.1.ja.md) アップグレードする前に、対応するバンドルと画像を提供してください。このガイドでは新しいサイトを初期化するだけで、既存のデータは変換されません。パスワードログインやローカル文書サービスにはGitHubアクセスは不要ですが、AI、外部ログイン、プラグインのインストール、クラウドストレージ用の外部サービスは依然としてアクセス可能でなければなりません。ターゲットホストでの文書レンダリングを別途確認してください。アプリケーションの健康状態だけではPDF、キャンバス、Officeのレンダリングの正確性は確立されません。詳細は [Dockerドキュメントのレンダリング](docker-rendering.ja.md).

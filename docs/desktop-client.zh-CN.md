@@ -6,7 +6,7 @@
 
 ## 安装与连接
 
-从 [Doca 0.3.0](https://github.com/workhold/doca/releases/tag/v0.3.0) 下载 macOS（DMG）或 Windows（NSIS/MSI）安装包。当前安装包未做签名与公证。macOS 首次打开可使用右键 →「打开」，Windows 可能出现 SmartScreen 提示。
+从 [Doca 0.3.1](https://github.com/workhold/doca/releases/tag/v0.3.1) 下载 macOS（DMG）或 Windows（NSIS/MSI）安装包。当前安装包未做签名与公证。macOS 首次打开可使用右键 →「打开」，Windows 可能出现 SmartScreen 提示。
 
 ![桌面客户端连接管理器：添加远端服务](images/zh-cn/desktop-manager-add.jpg)
 

@@ -4,7 +4,7 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-Hant.md) · [日本語](README.ja.md) · [Français](README.fr.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Русский](README.ru.md)
 
-Doca est un espace de travail pour gérer des documents et des connaissances, conçu pour les particuliers et les petites équipes. Ces guides couvrent l’installation, l’utilisation, l’exploitation et les extensions. Consultez les [Notes de version 0.3.0](releases/0.3.0.fr.md) avant d’installer ou de mettre à jour Doca.
+Doca est un espace de travail pour gérer des documents et des connaissances, conçu pour les particuliers et les petites équipes. Ces guides couvrent l’installation, l’utilisation, l’exploitation et les extensions. Consultez les [Notes de version 0.3.1](releases/0.3.1.fr.md) avant d’installer ou de mettre à jour Doca.
 
 [Site officiel](https://i.smartdoca.cc) · [Démo en ligne](https://d.smartdoca.cc) · [Catalogue de plugins](https://store.smartdoca.cc)
 
@@ -70,7 +70,7 @@ Doca est un espace de travail pour gérer des documents et des connaissances, co
 - [Contrat de stockage des plugins](plugin-horizontal-scaling.fr.md)
 - [Contrat de collaboration](collaboration-sdk-contract.fr.md)
 - [Échange de fichiers](editor-file-exchange-contract.fr.md)
-- [Notes de version](releases/0.3.0.fr.md)
+- [Notes de version](releases/0.3.1.fr.md)
 - [Maintenance de la documentation](documentation.fr.md)
 - [Études et rapports de vérification](research.fr.md)
 

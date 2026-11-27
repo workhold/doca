@@ -4,7 +4,7 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-Hant.md) · [日本語](README.ja.md) · [Français](README.fr.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Русский](README.ru.md)
 
-Doca は個人や小規模チームで文書とナレッジを管理するためのワークスペースです。ここでは導入、利用、運用、拡張方法を説明します。インストールや更新の前に[リリースノート 0.3.0](releases/0.3.0.ja.md)をご確認ください。
+Doca は個人や小規模チームで文書とナレッジを管理するためのワークスペースです。ここでは導入、利用、運用、拡張方法を説明します。インストールや更新の前に[リリースノート 0.3.1](releases/0.3.1.ja.md)をご確認ください。
 
 [公式サイト](https://i.smartdoca.cc) · [オンラインデモ](https://d.smartdoca.cc) · [プラグインストア](https://store.smartdoca.cc)
 
@@ -70,7 +70,7 @@ Doca は個人や小規模チームで文書とナレッジを管理するため
 - [プラグインのストレージ仕様](plugin-horizontal-scaling.ja.md)
 - [共同編集の仕様](collaboration-sdk-contract.ja.md)
 - [ファイル交換](editor-file-exchange-contract.ja.md)
-- [リリースノート](releases/0.3.0.ja.md)
+- [リリースノート](releases/0.3.1.ja.md)
 - [ドキュメントの保守](documentation.ja.md)
 - [調査・検証記録](research.ja.md)
 

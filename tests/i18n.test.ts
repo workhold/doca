@@ -1,6 +1,18 @@
 import { expect, it } from "vitest";
-import { catalogs, en, htmlLang, interpolate, locales, lookupTemplate, matchLocale, translate } from "@doca/i18n";
+import {
+  catalogs,
+  en,
+  htmlLang,
+  interpolate,
+  locales,
+  lookupTemplate,
+  matchLocale,
+  navigationTitle,
+  translate,
+  type MessageKey,
+} from "@doca/i18n";
 import { normalizePageStateValue } from "@core/modules/page-state.js";
+import { builtinNavigation } from "../packages/web-plugin-registry/src/index.js";
 
 it.each(locales)("keeps the %s catalog aligned with the English keys and placeholders", (locale) => {
   const catalog = catalogs[locale];
@@ -53,4 +65,38 @@ it.each([
   ["ru", "Поиск"],
 ] as const)("translates a common control in %s", (locale, label) => {
   expect(translate(locale, "common.search")).toBe(label);
+});
+
+it.each(locales)("localizes the built-in admin navigation in %s", (locale) => {
+  const keys: Record<string, MessageKey> = {
+    "doca.admin.overview": "admin.overview",
+    "doca.admin.login": "admin.login",
+    "doca.admin.users": "admin.users",
+    "doca.admin.registration": "admin.registration",
+    "doca.admin.access": "admin.access",
+    "doca.admin.ai": "admin.ai",
+    "doca.admin.mcp": "mcp.adminTitle",
+    "doca.admin.file-recognition": "admin.recognition",
+    "doca.admin.platform": "admin.platform",
+    "doca.admin.uploads": "admin.uploads",
+    "doca.admin.plugins": "plugins.title",
+    "doca.admin.navigation": "navigation.title",
+    "doca.admin.hooks": "admin.hooks",
+  };
+  const entries = builtinNavigation.filter((entry) => entry.defaults.includes("web.admin"));
+  expect(entries.map((entry) => entry.id).sort()).toEqual(Object.keys(keys).sort());
+  for (const entry of entries) {
+    const expected = locale === "zh" || locale === "en"
+      ? entry.title[locale]
+      : translate(locale, keys[entry.id]!);
+    expect(navigationTitle(locale, entry), entry.id).toBe(expected);
+  }
+});
+
+it("respects explicit titles and bilingual plugin contributions in admin navigation", () => {
+  const title = { zh: "管理目录", en: "Administration directory" };
+  const users = builtinNavigation.find((entry) => entry.id === "doca.admin.users")!;
+  expect(navigationTitle("ko", users, title)).toBe(title.en);
+  expect(navigationTitle("zh", users, title)).toBe(title.zh);
+  expect(navigationTitle("ko", { id: "example.admin", title })).toBe(title.en);
 });

@@ -765,9 +765,15 @@ body.ai-panel-resizing {
 .ai-management-heading,
 .ai-section-heading {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   gap: 16px;
+}
+.ai-management-heading > div,
+.ai-section-heading > div {
+  flex: 1 1 20rem;
+  overflow-wrap: anywhere;
 }
 .ai-management-heading h2,
 .ai-section-heading h3 {
@@ -783,6 +789,17 @@ body.ai-panel-resizing {
   justify-content: center;
   gap: 6px;
 }
+.ai-management-heading > button,
+.ai-section-heading > button,
+.ai-card-footer > button,
+.ai-management .platform-settings-tabs > button {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.ai-management button > svg {
+  flex-shrink: 0;
+}
 .ai-management-status {
   display: flex;
   flex-wrap: wrap;
@@ -797,7 +814,6 @@ body.ai-panel-resizing {
 }
 .ai-status {
   display: inline-flex;
-  white-space: nowrap;
   border-radius: 20px;
   background: #f1f2f4;
   padding: 3px 8px;
@@ -848,6 +864,7 @@ body.ai-panel-resizing {
 }
 .ai-config-card {
   min-width: 0;
+  overflow-wrap: anywhere;
   border: 1px solid var(--border, #e5e7eb);
   border-radius: 14px;
   background: var(--surface, white);
@@ -875,8 +892,10 @@ body.ai-panel-resizing {
 .ai-card-title h4 {
   margin: 0;
   flex: 1;
-  overflow-wrap: anywhere;
   font-size: 15px;
+}
+.ai-card-title .ant-switch {
+  flex-shrink: 0;
 }
 .ai-card-symbol {
   display: inline-grid;
@@ -890,8 +909,9 @@ body.ai-panel-resizing {
 }
 .ai-vendor-select {
   display: grid !important;
-  grid-template-columns: 36px 1fr auto;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
   text-align: left;
+  white-space: normal;
   background: none;
   border: 0;
   padding: 0;
@@ -901,9 +921,6 @@ body.ai-panel-resizing {
 .ai-vendor-select:hover {
   background: none;
 }
-.ai-vendor-select strong {
-  overflow-wrap: anywhere;
-}
 .ai-vendor-select small,
 .ai-vendor-select .ai-card-url,
 .ai-vendor-select .ai-muted {
@@ -912,12 +929,10 @@ body.ai-panel-resizing {
 .ai-card-url {
   font-size: 12px;
   color: var(--muted, #858b96);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .ai-card-footer {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 8px;

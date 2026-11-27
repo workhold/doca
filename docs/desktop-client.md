@@ -6,7 +6,7 @@ The desktop client in `apps/desktop` uses Tauri 2. It packages the Doca Web fron
 
 ## Install and connect
 
-Download the macOS (DMG) or Windows (NSIS/MSI) installer from the [Doca 0.3.0 release](https://github.com/workhold/doca/releases/tag/v0.3.0). Current builds are unsigned and lack notarization. On macOS, right-click the app and choose **Open** the first time. Windows may show a SmartScreen prompt.
+Download the macOS (DMG) or Windows (NSIS/MSI) installer from the [Doca 0.3.1 release](https://github.com/workhold/doca/releases/tag/v0.3.1). Current builds are unsigned and lack notarization. On macOS, right-click the app and choose **Open** the first time. Windows may show a SmartScreen prompt.
 
 ![Desktop client connection manager: add a remote service](images/en/desktop-manager-add.jpg)
 

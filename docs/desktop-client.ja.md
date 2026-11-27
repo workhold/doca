@@ -8,7 +8,7 @@ Doca デスクトップクライアントは Tauri 2 を使用しています。
 
 ## インストールと接続
 
-[Doca 0.3.0 のリリースページ](https://github.com/workhold/doca/releases/tag/v0.3.0)から、macOS 用（DMG）または Windows 用（NSIS／MSI）のインストーラーをダウンロードしてください。このビルドには署名と公証がありません。macOS では初回起動時にアプリを右クリックして**開く**を選びます。Windows では SmartScreen が確認を求める場合があります。
+[Doca 0.3.1 のリリースページ](https://github.com/workhold/doca/releases/tag/v0.3.1)から、macOS 用（DMG）または Windows 用（NSIS／MSI）のインストーラーをダウンロードしてください。このビルドには署名と公証がありません。macOS では初回起動時にアプリを右クリックして**開く**を選びます。Windows では SmartScreen が確認を求める場合があります。
 
 ![接続マネージャーのリモートサービス追加画面](images/ja/desktop-manager-add.jpg)
 

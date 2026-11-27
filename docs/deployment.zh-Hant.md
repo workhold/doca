@@ -36,7 +36,7 @@ cp docker.env.example .env
 
 檔案儲存還需要 `DOCA_FILE_STORE_ID` 和 `DOCA_FILE_STORES_JSON`，示例見 `docker.env.example`。後端路徑和金鑰透過環境變數提供，管理頁只讀展示。見[檔案儲存](storage.zh-Hant.md)。
 
-當前宿主使用資料庫代際 `doca-2026-10-12-book-payload-storage-v1`。對已釋出 0.1.22 的 `doca-2026-10-09-history-storage-v1`，啟動時以最新 DDL 檢查並對齊結構、記錄新代際；舊 SQL 知識冊成果等全部業務行原樣保留，不增加正文轉換、單獨清理或舊正文適配。殘留舊知識冊記錄可能需人工處理，已有 0.1.23 物件儲存資料保留。見[資料庫結構演進](database-schema-evolution.zh-Hant.md)及[當前發行要求](releases/0.3.0.zh-Hant.md)。0.1.13 的準確基線 `doca-2026-10-08-knowledge-books-v2` 仍需按下方步驟顯式升級歷史儲存。保留原資料庫、私有物件、配置和憑證主金鑰。
+當前宿主使用資料庫代際 `doca-2026-10-12-book-payload-storage-v1`。對已釋出 0.1.22 的 `doca-2026-10-09-history-storage-v1`，啟動時以最新 DDL 檢查並對齊結構、記錄新代際；舊 SQL 知識冊成果等全部業務行原樣保留，不增加正文轉換、單獨清理或舊正文適配。殘留舊知識冊記錄可能需人工處理，已有 0.1.23 物件儲存資料保留。見[資料庫結構演進](database-schema-evolution.zh-Hant.md)及[當前發行要求](releases/0.3.1.zh-Hant.md)。0.1.13 的準確基線 `doca-2026-10-08-knowledge-books-v2` 仍需按下方步驟顯式升級歷史儲存。保留原資料庫、私有物件、配置和憑證主金鑰。
 
 `DOCA_ORIGIN` 是使用者在瀏覽器裡開啟的地址。包括生產環境在內，均支援 HTTP 和 HTTPS。不要加子路徑、查詢引數或片段；根路徑末尾斜槓會被規範化。
 

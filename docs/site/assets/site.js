@@ -50,7 +50,7 @@
     },
     search: {
       paths: "auto",
-      namespace: "doca-docs-0.3.0",
+      namespace: "doca-docs-0.3.1",
       pathNamespaces: languages.map(code => "/" + code),
       placeholder: localizedConfig("search", editions.en.search),
       noData: localizedConfig("noResults", editions.en.noResults),

@@ -4,13 +4,13 @@
 
 [简体中文](deployment-without-github.zh-CN.md)
 
-Le serveur d’entreprise n’a pas besoin de checkout source, de Git, de Node.js ou de pnpm. Installez d’abord Docker Engine, le plugin Docker Compose, Bash et OpenSSL, puis transférez les fichiers de déploiement, préparez l’image, lancez Doca et initialisez l’administrateur. Ce guide installe Doca 0.3.0 sur un serveur unique neuf avec SQLite et stockage de fichiers local. Les installations existantes doivent consulter… [exigences de libération](releases/0.3.0.fr.md) et préserver leurs bases de données, fichiers, configuration et clé maîtresse des identifiants.
+Le serveur d’entreprise n’a pas besoin de checkout source, de Git, de Node.js ou de pnpm. Installez d’abord Docker Engine, le plugin Docker Compose, Bash et OpenSSL, puis transférez les fichiers de déploiement, préparez l’image, lancez Doca et initialisez l’administrateur. Ce guide installe Doca 0.3.1 sur un serveur unique neuf avec SQLite et stockage de fichiers local. Les installations existantes doivent consulter… [exigences de libération](releases/0.3.1.fr.md) et préserver leurs bases de données, fichiers, configuration et clé maîtresse des identifiants.
 
 <a id="fresh-installation-from-one-yaml"></a>
 
 ## Installation récente à partir d’un YAML
 
-`node scripts/pack-deployment.mjs` également en sortie `doca-compose-vVERSION.yaml` et son checksum. Transférez le YAML, enregistrez-le sous `compose.yaml` Dans un répertoire de déploiement permanent, éditer `DOCA_ORIGIN` et votre génération `DOCA_CREDENTIAL_MASTER_KEY`, le protéger avec `chmod 600 compose.yaml`, puis exécuter `docker compose up -d`. Non `.env`Un fichier JSON ou un script d’administrateur externe est nécessaire. Utilisez l’image 0.3.0 correspondante ; les fichiers YAML autonomes et les checksums sont également attachés à la version de GitHub.
+`node scripts/pack-deployment.mjs` également en sortie `doca-compose-vVERSION.yaml` et son checksum. Transférez le YAML, enregistrez-le sous `compose.yaml` Dans un répertoire de déploiement permanent, éditer `DOCA_ORIGIN` et votre génération `DOCA_CREDENTIAL_MASTER_KEY`, le protéger avec `chmod 600 compose.yaml`, puis exécuter `docker compose up -d`. Non `.env`Un fichier JSON ou un script d’administrateur externe est nécessaire. Utilisez l’image 0.3.1 correspondante ; les fichiers YAML autonomes et les checksums sont également attachés à la version de GitHub.
 
 Après que la situation est saine, courir `docker compose exec doca bash docker/admin.sh bootstrap`; utiliser `reset-password` Pour réinitialiser le mot de passe. La saisie du mot de passe est cachée et ne figure pas dans le YAML. Cet exemple est uniquement destiné aux installations récentes de SQLite/local-storage. Les sites existants conservent leur nom de projet, leurs volumes et leurs clés. Les sauvegardes incluent le YAML protégé. Les exigences de reverse-proxy restent telles que définies ci-dessous.
 
@@ -27,22 +27,22 @@ cd doca
 node scripts/pack-deployment.mjs
 ```
 
-Les noms des archives et les étiquettes d’image ci-dessous utilisent 0.3.0 comme exemple. Utilisez les noms de fichiers générés par le packager et l’image spécifiée dans le fichier Compose créé.
+Les noms des archives et les étiquettes d’image ci-dessous utilisent 0.3.1 comme exemple. Utilisez les noms de fichiers générés par le packager et l’image spécifiée dans le fichier Compose créé.
 
-Transfert `doca-deploy-v0.3.0.tar.gz` et son `.sha256` Vérification via un service de fichiers d'entreprise, une URL de téléchargement interne ou un stockage amovible. Le packer ne lit que les fichiers de déploiement publics et ne contient aucun fichier local. `.env`données utilisateur, ou image de conteneur. La version de GitHub pour la étiquette correspondante inclut le bundle et le checksum.
+Transfert `doca-deploy-v0.3.1.tar.gz` et son `.sha256` Vérification via un service de fichiers d'entreprise, une URL de téléchargement interne ou un stockage amovible. Le packer ne lit que les fichiers de déploiement publics et ne contient aucun fichier local. `.env`données utilisateur, ou image de conteneur. La version de GitHub pour la étiquette correspondante inclut le bundle et le checksum.
 
 Placer les deux fichiers dans le même dossier sur le serveur d'entreprise, vérifier et extraire :
 
 ```sh
-sha256sum -c doca-deploy-v0.3.0.tar.gz.sha256
-tar -xzf doca-deploy-v0.3.0.tar.gz
-cd doca-deploy-v0.3.0
+sha256sum -c doca-deploy-v0.3.1.tar.gz.sha256
+tar -xzf doca-deploy-v0.3.1.tar.gz
+cd doca-deploy-v0.3.1
 ```
 
-Sur macOS, utilisez `shasum -a 256 -c doca-deploy-v0.3.0.tar.gz.sha256`Exécutez les commandes de déploiement suivantes depuis ce dossier :
+Sur macOS, utilisez `shasum -a 256 -c doca-deploy-v0.3.1.tar.gz.sha256`Exécutez les commandes de déploiement suivantes depuis ce dossier :
 
 ```text
-doca-deploy-v0.3.0/
+doca-deploy-v0.3.1/
   compose.yaml
   docker.env.example
   README.zh-CN.md
@@ -64,7 +64,7 @@ Pour un transfert de texte, enregistrez cette configuration à un seul serveur. 
 ```yaml
 services:
   doca:
-    image: docker.io/smartdoca/doca:0.3.0
+    image: docker.io/smartdoca/doca:0.3.1
     pull_policy: missing
     restart: unless-stopped
     init: true
@@ -155,21 +155,21 @@ docker compose pull doca
 Le fournisseur prépare un archivage d’images sur une machine ayant accès au registre. Vérifiez d’abord l’architecture de la CPU cible. Cet exemple utilise Linux x86-64.`linux/amd64`); pour ARM64, utilisez `linux/arm64` Et étiquetez les fichiers livrés en conséquence :
 
 ```sh
-docker pull --platform linux/amd64 docker.io/smartdoca/doca:0.3.0
-docker image inspect docker.io/smartdoca/doca:0.3.0 --format '{{.Os}}/{{.Architecture}}'
-docker save -o doca-image-v0.3.0-linux-amd64.tar docker.io/smartdoca/doca:0.3.0
-sha256sum doca-image-v0.3.0-linux-amd64.tar > doca-image-v0.3.0-linux-amd64.tar.sha256
+docker pull --platform linux/amd64 docker.io/smartdoca/doca:0.3.1
+docker image inspect docker.io/smartdoca/doca:0.3.1 --format '{{.Os}}/{{.Architecture}}'
+docker save -o doca-image-v0.3.1-linux-amd64.tar docker.io/smartdoca/doca:0.3.1
+sha256sum doca-image-v0.3.1-linux-amd64.tar > doca-image-v0.3.1-linux-amd64.tar.sha256
 ```
 
 Transférer l’image `.tar` et le checksum ensemble. D’après leur répertoire sur le serveur d’entreprise :
 
 ```sh
-sha256sum -c doca-image-v0.3.0-linux-amd64.tar.sha256
-docker load -i doca-image-v0.3.0-linux-amd64.tar
-docker image inspect docker.io/smartdoca/doca:0.3.0 --format '{{.Os}}/{{.Architecture}}'
+sha256sum -c doca-image-v0.3.1-linux-amd64.tar.sha256
+docker load -i doca-image-v0.3.1-linux-amd64.tar
+docker image inspect docker.io/smartdoca/doca:0.3.1 --format '{{.Os}}/{{.Architecture}}'
 ```
 
-Confirmer que l’étiquette chargée est correcte `smartdoca/doca:0.3.0` Et si l’architecture correspond au cible, alors retourner au dossier de déploiement. Un registre interne est une autre option de livraison : le fournisseur met à jour la même image de version, et l’équipe métier modifie Compose. `image` À l’adresse de registre interne avant de tirer. Conservez le bundle, l’image et les scripts d’initialisation sur la même version.
+Confirmer que l’étiquette chargée est correcte `smartdoca/doca:0.3.1` Et si l’architecture correspond au cible, alors retourner au dossier de déploiement. Un registre interne est une autre option de livraison : le fournisseur met à jour la même image de version, et l’équipe métier modifie Compose. `image` À l’adresse de registre interne avant de tirer. Conservez le bundle, l’image et les scripts d’initialisation sur la même version.
 
 <a id="_4-start-and-initialize-the-database"></a>
 <a id="4-start-and-initialize-the-database"></a>
@@ -192,7 +192,7 @@ Attendez. `docker compose ps` pour montrer `healthy`Un contrôle manuel doit uti
 curl -fsS -H 'Host: docs.example.com' http://127.0.0.1:39120/health
 ```
 
-Attendez `{"status":"ok","version":"0.3.0"}`Pour l’exemple interne, utilisez `Host: doca.internal`Les demandes de loopback invalides échouent à la validation du hôte. Examinez les échecs de démarrage. `docker compose logs --tail=100 doca`.
+Attendez `{"status":"ok","version":"0.3.1"}`Pour l’exemple interne, utilisez `Host: doca.internal`Les demandes de loopback invalides échouent à la validation du hôte. Examinez les échecs de démarrage. `docker compose logs --tail=100 doca`.
 
 <a id="_5-initialize-the-administrator"></a>
 <a id="5-initialize-the-administrator"></a>
@@ -221,4 +221,4 @@ Cela ne crée pas de compte. Si la base de données est verrouillée, exécutez.
 
 Utilisez `docker compose restart` pour les redémarrages ordinaires. Conservez le dossier de déploiement et le nom du projet Compose afin que tout soit identique `doca_data` Le volume est utilisé ; changer l’un ou l’autre peut accidentellement déclencher la création d’un site vide distinct. Faire une sauvegarde de toutes les bases de données et des stockages de fichiers dans le volume persistant, ainsi que des données protégées. `.env` et clé maîtresse. `docker compose down -v` Supprime le volume et ne doit pas être utilisé pour une restauration ou une mise à niveau ordinaire.
 
-Réexaminer [exigences de libération](releases/0.3.0.fr.md) Avant l’upgrade, fournissez un bundle et une image correspondants. Ce guide initialise des sites neufs et ne convertit pas les données existantes. Le login par mot de passe et les services de documents locaux n’ont pas besoin d’accès GitHub ; les services externes configurés pour l’IA, le login externe, l’installation d’extension ou le stockage en cloud doivent néanmoins être accessibles. Vérifiez séparément la rédaction des documents sur l’hôte cible : la santé de l’application seule ne garantit pas la qualité de rédaction des PDF, du Canvas et de Office. Voir [Rénder de documents Docker](docker-rendering.fr.md).
+Réexaminer [exigences de libération](releases/0.3.1.fr.md) Avant l’upgrade, fournissez un bundle et une image correspondants. Ce guide initialise des sites neufs et ne convertit pas les données existantes. Le login par mot de passe et les services de documents locaux n’ont pas besoin d’accès GitHub ; les services externes configurés pour l’IA, le login externe, l’installation d’extension ou le stockage en cloud doivent néanmoins être accessibles. Vérifiez séparément la rédaction des documents sur l’hôte cible : la santé de l’application seule ne garantit pas la qualité de rédaction des PDF, du Canvas et de Office. Voir [Rénder de documents Docker](docker-rendering.fr.md).

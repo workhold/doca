@@ -4,7 +4,7 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-Hant.md) · [日本語](README.ja.md) · [Français](README.fr.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Русский](README.ru.md)
 
-Doca는 개인과 소규모 팀이 문서와 지식을 관리하는 작업 공간입니다. 이 문서에서는 설치, 사용, 운영, 확장 방법을 안내합니다. 설치하거나 업데이트하기 전에 [릴리스 노트 0.3.0](releases/0.3.0.ko.md)를 확인하세요.
+Doca는 개인과 소규모 팀이 문서와 지식을 관리하는 작업 공간입니다. 이 문서에서는 설치, 사용, 운영, 확장 방법을 안내합니다. 설치하거나 업데이트하기 전에 [릴리스 노트 0.3.1](releases/0.3.1.ko.md)를 확인하세요.
 
 [공식 웹사이트](https://i.smartdoca.cc) · [온라인 데모](https://d.smartdoca.cc) · [플러그인 마켓](https://store.smartdoca.cc)
 
@@ -70,7 +70,7 @@ Doca는 개인과 소규모 팀이 문서와 지식을 관리하는 작업 공�
 - [플러그인 저장소 규약](plugin-horizontal-scaling.ko.md)
 - [공동 편집 규약](collaboration-sdk-contract.ko.md)
 - [파일 교환](editor-file-exchange-contract.ko.md)
-- [릴리스 노트](releases/0.3.0.ko.md)
+- [릴리스 노트](releases/0.3.1.ko.md)
 - [문서 관리](documentation.ko.md)
 - [조사 및 검증 기록](research.ko.md)
 

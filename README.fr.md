@@ -37,7 +37,7 @@ Captures réalisées dans une instance isolée de Doca 0.3.0. L’interface et l
 Prévoyez Docker Engine, Docker Compose et une URL HTTP(S) pour le site. Téléchargez le fichier Compose, renseignez `DOCA_ORIGIN` et générez une clé maîtresse dédiée pour les identifiants avant de démarrer. Le premier démarrage initialise le compte administrateur.
 
 ```sh
-curl -fL https://github.com/workhold/doca/releases/download/v0.3.0/doca-compose-v0.3.0.yaml -o compose.yaml
+curl -fL https://github.com/workhold/doca/releases/download/v0.3.1/doca-compose-v0.3.1.yaml -o compose.yaml
 ```
 
 ```sh

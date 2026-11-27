@@ -37,7 +37,7 @@ Doca — рабочее пространство с открытым исход�
 Подготовьте Docker Engine, Docker Compose и адрес сайта по HTTP(S). Скачайте файл Compose, задайте `DOCA_ORIGIN` и сгенерируйте отдельный мастер-ключ учётных данных. Затем запустите сервис. Учётная запись администратора инициализируется при первом запуске.
 
 ```sh
-curl -fL https://github.com/workhold/doca/releases/download/v0.3.0/doca-compose-v0.3.0.yaml -o compose.yaml
+curl -fL https://github.com/workhold/doca/releases/download/v0.3.1/doca-compose-v0.3.1.yaml -o compose.yaml
 ```
 
 ```sh

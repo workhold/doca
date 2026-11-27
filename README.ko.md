@@ -37,7 +37,7 @@ Doca는 개인과 소규모 팀을 위한 오픈 소스 문서 및 지식 관리
 Docker Engine, Docker Compose 및 사이트의 HTTP(S) 주소를 준비합니다. Compose 파일을 내려받고 `DOCA_ORIGIN`과 새로 생성한 자격 증명용 마스터 키를 설정한 뒤 실행합니다. 처음 실행할 때 관리자 계정이 초기화됩니다.
 
 ```sh
-curl -fL https://github.com/workhold/doca/releases/download/v0.3.0/doca-compose-v0.3.0.yaml -o compose.yaml
+curl -fL https://github.com/workhold/doca/releases/download/v0.3.1/doca-compose-v0.3.1.yaml -o compose.yaml
 ```
 
 ```sh
