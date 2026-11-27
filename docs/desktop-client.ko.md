@@ -8,7 +8,7 @@ Doca 데스크톱 클라이언트는 Tauri 2를 사용합니다. Doca 웹 화면
 
 ## 설치 및 연결
 
-[Doca 0.3.0 릴리스](https://github.com/workhold/doca/releases/tag/v0.3.0)에서 macOS용(DMG) 또는 Windows용(NSIS 또는 MSI) 설치 파일을 다운로드하세요. 이 빌드는 서명 및 공증 없이 배포됩니다. macOS에서는 처음 실행할 때 앱을 마우스 오른쪽 버튼으로 클릭한 뒤 **열기**를 선택합니다. Windows에서 SmartScreen 메시지가 표시될 수 있습니다.
+[Doca 0.3.1 릴리스](https://github.com/workhold/doca/releases/tag/v0.3.1)에서 macOS용(DMG) 또는 Windows용(NSIS 또는 MSI) 설치 파일을 다운로드하세요. 이 빌드는 서명 및 공증 없이 배포됩니다. macOS에서는 처음 실행할 때 앱을 마우스 오른쪽 버튼으로 클릭한 뒤 **열기**를 선택합니다. Windows에서 SmartScreen 메시지가 표시될 수 있습니다.
 
 ![원격 서버를 추가하는 연결 관리자](images/ko/desktop-manager-add.jpg)
 

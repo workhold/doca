@@ -4,7 +4,7 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-Hant.md) · [日本語](README.ja.md) · [Français](README.fr.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Русский](README.ru.md)
 
-Doca 是為個人和小型團隊設計的文件與知識工作區。這份文件涵蓋安裝、使用、部署與擴充。安裝或升級前，請先閱讀[版本說明 0.3.0](releases/0.3.0.zh-Hant.md)。
+Doca 是為個人和小型團隊設計的文件與知識工作區。這份文件涵蓋安裝、使用、部署與擴充。安裝或升級前，請先閱讀[版本說明 0.3.1](releases/0.3.1.zh-Hant.md)。
 
 [網站](https://i.smartdoca.cc) · [線上展示](https://d.smartdoca.cc) · [外掛市集](https://store.smartdoca.cc)
 
@@ -70,7 +70,7 @@ Doca 是為個人和小型團隊設計的文件與知識工作區。這份文件
 - [外掛儲存規範](plugin-horizontal-scaling.zh-Hant.md)
 - [協作規範](collaboration-sdk-contract.zh-Hant.md)
 - [檔案交換](editor-file-exchange-contract.zh-Hant.md)
-- [版本說明](releases/0.3.0.zh-Hant.md)
+- [版本說明](releases/0.3.1.zh-Hant.md)
 - [文件維護](documentation.zh-Hant.md)
 - [研究與驗收記錄](research.zh-Hant.md)
 

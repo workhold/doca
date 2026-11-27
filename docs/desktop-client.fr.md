@@ -8,7 +8,7 @@ Le client de bureau Doca utilise Tauri 2. Il embarque l’interface Web de Doca 
 
 ## Installation et connexion
 
-Téléchargez le programme d’installation pour macOS (DMG) ou Windows (NSIS ou MSI) depuis la [page de Doca 0.3.0](https://github.com/workhold/doca/releases/tag/v0.3.0). Ces exécutables sont distribués sans signature ni notarisation. Sur macOS, faites un clic droit puis sélectionnez **Ouvrir** au premier lancement. Windows peut afficher une invitation SmartScreen.
+Téléchargez le programme d’installation pour macOS (DMG) ou Windows (NSIS ou MSI) depuis la [page de Doca 0.3.1](https://github.com/workhold/doca/releases/tag/v0.3.1). Ces exécutables sont distribués sans signature ni notarisation. Sur macOS, faites un clic droit puis sélectionnez **Ouvrir** au premier lancement. Windows peut afficher une invitation SmartScreen.
 
 ![Formulaire d’ajout d’un serveur distant](images/fr/desktop-manager-add.jpg)
 

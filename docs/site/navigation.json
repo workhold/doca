@@ -317,6 +317,12 @@
     "zh": "发行记录",
     "pages": [
       [
+        "releases/0.3.1",
+        "0.3.1 · Administration translations and layout",
+        "0.3.1 · 管理后台翻译与布局",
+        true
+      ],
+      [
         "releases/0.3.0",
         "0.3.0 · Eight interface languages",
         "0.3.0 · 八种界面语言",

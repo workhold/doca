@@ -1,6 +1,6 @@
 [package]
 name = "doca-desktop"
-version = "0.3.0"
+version = "0.3.1"
 description = "Doca desktop client"
 authors = ["Doca"]
 edition = "2021"

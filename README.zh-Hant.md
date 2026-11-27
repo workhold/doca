@@ -37,7 +37,7 @@ Doca 是面向個人和小型團隊的開放原始碼文件與知識管理工作
 請準備 Docker Engine、Docker Compose 以及網站的 HTTP(S) 公開位址。下載 Compose 檔案，填寫 `DOCA_ORIGIN` 並產生專用的憑證主金鑰，再啟動服務。首次啟動會初始化管理員。
 
 ```sh
-curl -fL https://github.com/workhold/doca/releases/download/v0.3.0/doca-compose-v0.3.0.yaml -o compose.yaml
+curl -fL https://github.com/workhold/doca/releases/download/v0.3.1/doca-compose-v0.3.1.yaml -o compose.yaml
 ```
 
 ```sh

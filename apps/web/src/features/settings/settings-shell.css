@@ -340,9 +340,24 @@
   }
 }
 @media (max-width: 580px) {
-  .settings-shell-header {
-    padding: 0 16px;
-    gap: 12px;
+  .settings-shell > header.settings-shell-header {
+    height: auto;
+    flex-wrap: wrap;
+    padding: 8px 16px;
+    gap: 8px 12px;
+  }
+  .settings-shell-header .settings-back {
+    flex: 1 1 9rem;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .settings-back > svg {
+    flex-shrink: 0;
+  }
+  .settings-shell-header .global-header-tools {
+    max-width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
   }
   .settings-shell-label {
     display: none;
@@ -362,6 +377,9 @@
     border-right: 0;
     border-bottom: 1px solid #e4e7ed;
     gap: 4px;
+  }
+  .settings-shell .admin-nav {
+    max-height: 40dvh;
   }
   .settings-identity,
   .personal-settings-nav > p,

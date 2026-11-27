@@ -8,7 +8,7 @@ Doca 桌面用戶端使用 Tauri 2，內建 Doca 網頁前端和連線管理員�
 
 ## 安裝與連線
 
-從 [Doca 0.3.0 發行版本](https://github.com/workhold/doca/releases/tag/v0.3.0) 下載 macOS（DMG）或 Windows（NSIS／MSI）安裝程式。此版本尚未簽署或公證。首次在 macOS 啟動時，以右鍵按一下應用程式並選擇**打開**。Windows 可能顯示 SmartScreen 提示。
+從 [Doca 0.3.1 發行版本](https://github.com/workhold/doca/releases/tag/v0.3.1) 下載 macOS（DMG）或 Windows（NSIS／MSI）安裝程式。此版本尚未簽署或公證。首次在 macOS 啟動時，以右鍵按一下應用程式並選擇**打開**。Windows 可能顯示 SmartScreen 提示。
 
 ![連線管理員的新增伺服器表單](images/zh-hant/desktop-manager-add.jpg)
 

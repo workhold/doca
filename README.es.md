@@ -37,7 +37,7 @@ Capturas de una instalación aislada de Doca 0.3.0 con la interfaz y los documen
 Necesitas Docker Engine, Docker Compose y una dirección HTTP(S) para el sitio. Descarga el archivo Compose, configura `DOCA_ORIGIN` y genera una clave maestra de credenciales exclusiva antes de arrancar. El primer arranque inicializa la cuenta de administración.
 
 ```sh
-curl -fL https://github.com/workhold/doca/releases/download/v0.3.0/doca-compose-v0.3.0.yaml -o compose.yaml
+curl -fL https://github.com/workhold/doca/releases/download/v0.3.1/doca-compose-v0.3.1.yaml -o compose.yaml
 ```
 
 ```sh

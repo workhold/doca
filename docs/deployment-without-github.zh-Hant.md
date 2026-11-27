@@ -4,13 +4,13 @@
 
 [English](deployment-without-github.md)
 
-業務伺服器無需拉取原始碼，也無需安裝 Git、Node.js 或 pnpm。準備好 Docker Engine、Docker Compose 外掛、Bash 和 OpenSSL 後，複製部署檔案、準備映象、啟動並初始化管理員即可。本指南用於全新單機安裝 Doca 0.3.0，採用 SQLite 和本地檔案儲存；已有部署先閱讀[發行要求](releases/0.3.0.zh-Hant.md)，保留原資料庫、檔案、配置和憑證主金鑰。
+業務伺服器無需拉取原始碼，也無需安裝 Git、Node.js 或 pnpm。準備好 Docker Engine、Docker Compose 外掛、Bash 和 OpenSSL 後，複製部署檔案、準備映象、啟動並初始化管理員即可。本指南用於全新單機安裝 Doca 0.3.1，採用 SQLite 和本地檔案儲存；已有部署先閱讀[發行要求](releases/0.3.1.zh-Hant.md)，保留原資料庫、檔案、配置和憑證主金鑰。
 
 <a id="单-yaml-全新安装"></a>
 
 ## 單 YAML 全新安裝
 
-`node scripts/pack-deployment.mjs` 另輸出 `doca-compose-v版本.yaml` 和校驗檔案。交付此 YAML，儲存為固定部署目錄下的 `compose.yaml`，在檔案中填寫 `DOCA_ORIGIN` 與自行生成的 `DOCA_CREDENTIAL_MASTER_KEY`，執行 `chmod 600 compose.yaml` 後執行 `docker compose up -d`。無需 `.env`、seccomp JSON 或外部初始化指令碼。使用匹配的 0.3.0 映象；GitHub Release 也提供該獨立 YAML 與校驗檔案。
+`node scripts/pack-deployment.mjs` 另輸出 `doca-compose-v版本.yaml` 和校驗檔案。交付此 YAML，儲存為固定部署目錄下的 `compose.yaml`，在檔案中填寫 `DOCA_ORIGIN` 與自行生成的 `DOCA_CREDENTIAL_MASTER_KEY`，執行 `chmod 600 compose.yaml` 後執行 `docker compose up -d`。無需 `.env`、seccomp JSON 或外部初始化指令碼。使用匹配的 0.3.1 映象；GitHub Release 也提供該獨立 YAML 與校驗檔案。
 
 服務健康後執行 `docker compose exec doca bash docker/admin.sh bootstrap`；重置密碼用 `docker compose exec doca bash docker/admin.sh reset-password`。密碼在終端隱藏輸入，不寫進 YAML。該示例僅用於全新 SQLite/本地儲存安裝，已有站點繼續使用原專案名、持久卷和金鑰；備份須包含受保護的 YAML。反向代理要求與下文一致。
 
@@ -27,22 +27,22 @@ cd doca
 node scripts/pack-deployment.mjs
 ```
 
-下文用 0.3.0 的檔名和映象標籤舉例。實際以打包命令輸出的檔名和生成的 Compose 映象為準。
+下文用 0.3.1 的檔名和映象標籤舉例。實際以打包命令輸出的檔名和生成的 Compose 映象為準。
 
-把生成的 `doca-deploy-v0.3.0.tar.gz` 和同名 `.sha256` 校驗檔案，透過企業檔案服務、內網下載地址或移動儲存轉交給業務方。打包只讀取公開部署檔案。對應標籤的 GitHub Release 附帶部署包和校驗檔案。
+把生成的 `doca-deploy-v0.3.1.tar.gz` 和同名 `.sha256` 校驗檔案，透過企業檔案服務、內網下載地址或移動儲存轉交給業務方。打包只讀取公開部署檔案。對應標籤的 GitHub Release 附帶部署包和校驗檔案。
 
 在業務伺服器上將兩個檔案放到同一目錄，校驗並解壓：
 
 ```sh
-sha256sum -c doca-deploy-v0.3.0.tar.gz.sha256
-tar -xzf doca-deploy-v0.3.0.tar.gz
-cd doca-deploy-v0.3.0
+sha256sum -c doca-deploy-v0.3.1.tar.gz.sha256
+tar -xzf doca-deploy-v0.3.1.tar.gz
+cd doca-deploy-v0.3.1
 ```
 
-macOS 校驗可用 `shasum -a 256 -c doca-deploy-v0.3.0.tar.gz.sha256`。部署目錄如下，後續命令均在此目錄執行：
+macOS 校驗可用 `shasum -a 256 -c doca-deploy-v0.3.1.tar.gz.sha256`。部署目錄如下，後續命令均在此目錄執行：
 
 ```text
-doca-deploy-v0.3.0/
+doca-deploy-v0.3.1/
   compose.yaml
   docker.env.example
   README.zh-CN.md
@@ -64,7 +64,7 @@ doca-deploy-v0.3.0/
 ```yaml
 services:
   doca:
-    image: docker.io/smartdoca/doca:0.3.0
+    image: docker.io/smartdoca/doca:0.3.1
     pull_policy: missing
     restart: unless-stopped
     init: true
@@ -155,21 +155,21 @@ docker compose pull doca
 由交付方在可拉取映象的機器上準備映象檔案。先確認業務伺服器的 CPU 架構；以下以 Linux x86-64（`linux/amd64`）為例，ARM64 伺服器把平臺改為 `linux/arm64`，並在交付檔名中相應標明：
 
 ```sh
-docker pull --platform linux/amd64 docker.io/smartdoca/doca:0.3.0
-docker image inspect docker.io/smartdoca/doca:0.3.0 --format '{{.Os}}/{{.Architecture}}'
-docker save -o doca-image-v0.3.0-linux-amd64.tar docker.io/smartdoca/doca:0.3.0
-sha256sum doca-image-v0.3.0-linux-amd64.tar > doca-image-v0.3.0-linux-amd64.tar.sha256
+docker pull --platform linux/amd64 docker.io/smartdoca/doca:0.3.1
+docker image inspect docker.io/smartdoca/doca:0.3.1 --format '{{.Os}}/{{.Architecture}}'
+docker save -o doca-image-v0.3.1-linux-amd64.tar docker.io/smartdoca/doca:0.3.1
+sha256sum doca-image-v0.3.1-linux-amd64.tar > doca-image-v0.3.1-linux-amd64.tar.sha256
 ```
 
 把映象 `.tar` 和校驗檔案一起轉交。業務方在這兩個檔案所在目錄執行：
 
 ```sh
-sha256sum -c doca-image-v0.3.0-linux-amd64.tar.sha256
-docker load -i doca-image-v0.3.0-linux-amd64.tar
-docker image inspect docker.io/smartdoca/doca:0.3.0 --format '{{.Os}}/{{.Architecture}}'
+sha256sum -c doca-image-v0.3.1-linux-amd64.tar.sha256
+docker load -i doca-image-v0.3.1-linux-amd64.tar
+docker image inspect docker.io/smartdoca/doca:0.3.1 --format '{{.Os}}/{{.Architecture}}'
 ```
 
-確認匯入的標籤是 `smartdoca/doca:0.3.0`，架構與目標伺服器一致，再回到部署目錄。內網映象倉庫也是可選交付方式：交付方推送同版本映象，業務方將 Compose 的 `image` 改為內網映象完整地址並拉取；部署包、映象和初始化指令碼保持同一版本。
+確認匯入的標籤是 `smartdoca/doca:0.3.1`，架構與目標伺服器一致，再回到部署目錄。內網映象倉庫也是可選交付方式：交付方推送同版本映象，業務方將 Compose 的 `image` 改為內網映象完整地址並拉取；部署包、映象和初始化指令碼保持同一版本。
 
 <a id="_4-启动与数据库初始化"></a>
 <a id="4-启动与数据库初始化"></a>
@@ -192,7 +192,7 @@ docker compose ps
 curl -fsS -H 'Host: docs.example.com' http://127.0.0.1:39120/health
 ```
 
-應返回 `{"status":"ok","version":"0.3.0"}`。內網站點改用 `Host: doca.internal`。裸迴環請求會被 Host 校驗拒絕。啟動失敗可執行 `docker compose logs --tail=100 doca` 檢視日誌。
+應返回 `{"status":"ok","version":"0.3.1"}`。內網站點改用 `Host: doca.internal`。裸迴環請求會被 Host 校驗拒絕。啟動失敗可執行 `docker compose logs --tail=100 doca` 檢視日誌。
 
 <a id="_5-初始化管理员"></a>
 <a id="5-初始化管理员"></a>
@@ -221,4 +221,4 @@ bash scripts/reset-admin-password.sh
 
 日常重啟使用 `docker compose restart`，保留部署目錄和 Compose 專案名，以繼續使用同一個 `doca_data` 卷；不要透過改目錄或專案名意外啟動另一個空站點。備份覆蓋持久卷中的全部資料庫、檔案儲存以及受保護的 `.env` 和主金鑰。`docker compose down -v` 會刪除卷，不用於普通重啟或升級。
 
-後續升級先確認[發行要求](releases/0.3.0.zh-Hant.md)，交付匹配版本的部署包和映象；本流程只初始化全新站點，不轉換已有資料。基礎密碼登入和本地文件服務無需 GitHub；AI、外部登入、外掛安裝及雲端儲存等配置的外部服務仍需業務網路可達。文件匯出還需在目標宿主機驗證渲染器，應用健康不等於 PDF、畫板和 Office 渲染效果已驗證，見 [Docker 文件渲染器](docker-rendering.zh-Hant.md)。
+後續升級先確認[發行要求](releases/0.3.1.zh-Hant.md)，交付匹配版本的部署包和映象；本流程只初始化全新站點，不轉換已有資料。基礎密碼登入和本地文件服務無需 GitHub；AI、外部登入、外掛安裝及雲端儲存等配置的外部服務仍需業務網路可達。文件匯出還需在目標宿主機驗證渲染器，應用健康不等於 PDF、畫板和 Office 渲染效果已驗證，見 [Docker 文件渲染器](docker-rendering.zh-Hant.md)。
