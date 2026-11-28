@@ -1,6 +1,6 @@
 # Deploy without GitHub access
 
-[简体中文](deployment-without-github.zh-CN.md)
+**English** · [简体中文](deployment-without-github.zh-CN.md) · [繁體中文](deployment-without-github.zh-Hant.md) · [日本語](deployment-without-github.ja.md) · [Français](deployment-without-github.fr.md) · [한국어](deployment-without-github.ko.md) · [Español](deployment-without-github.es.md) · [Русский](deployment-without-github.ru.md)
 
 The business server does not need a source checkout, Git, Node.js, or pnpm. Install Docker Engine, the Docker Compose plugin, Bash, and OpenSSL beforehand, then transfer deployment files, prepare the image, start Doca, and initialize the administrator. This guide installs Doca 0.3.1 on a fresh single server with SQLite and local file storage. Existing installations must review the [release requirements](releases/0.3.1.md) and preserve their databases, files, configuration, and credential master key.
 

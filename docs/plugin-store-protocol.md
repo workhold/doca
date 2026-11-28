@@ -1,6 +1,6 @@
 # Doca plugin store protocol v1
 
-[中文](plugin-store-protocol.zh-CN.md)
+**English** · [简体中文](plugin-store-protocol.zh-CN.md) · [繁體中文](plugin-store-protocol.zh-Hant.md) · [日本語](plugin-store-protocol.ja.md) · [Français](plugin-store-protocol.fr.md) · [한국어](plugin-store-protocol.ko.md) · [Español](plugin-store-protocol.es.md) · [Русский](plugin-store-protocol.ru.md)
 
 Updated 2026-09-30, with current mandatory fields and navigation notes below. **Remote store implementations use this protocol.** It supersedes the earlier full-catalog/store-hosted-ZIP draft; that draft is not an accepted endpoint contract.
 

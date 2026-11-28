@@ -1,6 +1,6 @@
 # 插件公共读取与多位置展示
 
-[English](plugin-extensions.md)
+[English](plugin-extensions.md) · **简体中文** · [繁體中文](plugin-extensions.zh-Hant.md) · [日本語](plugin-extensions.ja.md) · [Français](plugin-extensions.fr.md) · [한국어](plugin-extensions.ko.md) · [Español](plugin-extensions.es.md) · [Русский](plugin-extensions.ru.md)
 
 本文描述公共读取服务及可复用的 Web 操作、视图和挂载位置。读取与界面扩展最初进入 SDK `0.1.4` 源码，文档元素进入 `0.1.6`。当前宿主使用 SDK `0.1.9`，插件应声明匹配的 `sdkRange`，例如 `^0.1.9`。使用前检查实际宿主和 SDK 制品；源码实现不等于 npm 制品或部署实例已更新。
 

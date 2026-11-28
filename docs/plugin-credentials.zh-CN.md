@@ -1,6 +1,6 @@
 # 插件托管凭证
 
-[English](plugin-credentials.md)
+[English](plugin-credentials.md) · **简体中文** · [繁體中文](plugin-credentials.zh-Hant.md) · [日本語](plugin-credentials.ja.md) · [Français](plugin-credentials.fr.md) · [한국어](plugin-credentials.ko.md) · [Español](plugin-credentials.es.md) · [Русский](plugin-credentials.ru.md)
 
 发行版本：宿主 0.1.10、SDK 0.1.9（包含此前源码 0.1.8 的凭证接口）。SDK 0.1.7 没有此接口。邮箱插件应声明 SDK 范围 `^0.1.9`，通过服务端公开 token 使用凭证，不导入宿主源码或自行持久化密码。
 

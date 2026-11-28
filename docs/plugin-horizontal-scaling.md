@@ -1,8 +1,8 @@
 # Plugin horizontal scaling and managed storage contract
 
-0.1.26 uses a [shared plugin business database](plugin-database-isolation.md), separate from core, with automatic namespaces. It replaces the per-plugin databases released in 0.1.25. Upgrade requires normal uninstall on the previous host and reinstall; plugin data is not migrated.
+**English** · [简体中文](plugin-horizontal-scaling.zh-CN.md) · [繁體中文](plugin-horizontal-scaling.zh-Hant.md) · [日本語](plugin-horizontal-scaling.ja.md) · [Français](plugin-horizontal-scaling.fr.md) · [한국어](plugin-horizontal-scaling.ko.md) · [Español](plugin-horizontal-scaling.es.md) · [Русский](plugin-horizontal-scaling.ru.md)
 
-[中文](plugin-horizontal-scaling.zh-CN.md)
+0.1.26 uses a [shared plugin business database](plugin-database-isolation.md), separate from core, with automatic namespaces. It replaces the per-plugin databases released in 0.1.25. Upgrade requires normal uninstall on the previous host and reinstall; plugin data is not migrated.
 
 Status: approved contract, 2026-10-02; source host 0.1.10 / SDK 0.1.8, with no publication/production acceptance implied. All persistence is host-managed; plugins never distinguish local/remote backends. Package declaration checks and environment cleanup are implemented. Managed SQL/private objects are now exported; credentials are exported in SDK source 0.1.8; workspaces remain a gap. No old business data was read, converted or deleted.
 

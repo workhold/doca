@@ -1,6 +1,6 @@
 # 常见问题与排障
 
-[English](faq.md)
+[English](faq.md) · **简体中文** · [繁體中文](faq.zh-Hant.md) · [日本語](faq.ja.md) · [Français](faq.fr.md) · [한국어](faq.ko.md) · [Español](faq.es.md) · [Русский](faq.ru.md)
 
 ## 有没有默认管理员密码？
 

@@ -1,8 +1,8 @@
 # 插件水平扩展与托管存储规范
 
-0.1.26 使用与核心库分开的[插件共享业务数据库](plugin-database-isolation.zh-CN.md)，自动创建插件命名空间，取代 0.1.25 的每插件独立库。升级须先在旧宿主正常卸载，再重装，不迁移插件数据。
+[English](plugin-horizontal-scaling.md) · **简体中文** · [繁體中文](plugin-horizontal-scaling.zh-Hant.md) · [日本語](plugin-horizontal-scaling.ja.md) · [Français](plugin-horizontal-scaling.fr.md) · [한국어](plugin-horizontal-scaling.ko.md) · [Español](plugin-horizontal-scaling.es.md) · [Русский](plugin-horizontal-scaling.ru.md)
 
-[English](plugin-horizontal-scaling.md)
+0.1.26 使用与核心库分开的[插件共享业务数据库](plugin-database-isolation.zh-CN.md)，自动创建插件命名空间，取代 0.1.25 的每插件独立库。升级须先在旧宿主正常卸载，再重装，不迁移插件数据。
 
 状态：2026-10-02 已确认规范。源码基线为宿主 0.1.10、SDK 0.1.8；不代表 npm 发布或生产验收。所有持久化依赖宿主，插件不感知本地/远端后端。包声明校验与环境配置清理已实现；托管 SQL 与内部对象已导出；凭证已在 SDK 源码 0.1.8 导出，临时工作服务尚未导出。本次没有读取、转换或删除旧业务数据。
 

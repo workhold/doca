@@ -1,6 +1,6 @@
 # HTTP API
 
-[中文](api.zh-CN.md)
+**English** · [简体中文](api.zh-CN.md) · [繁體中文](api.zh-Hant.md) · [日本語](api.ja.md) · [Français](api.fr.md) · [한국어](api.ko.md) · [Español](api.es.md) · [Русский](api.ru.md)
 
 This is an index of principal host 0.2.23 routes. The running `/api/openapi.json` describes registered routes and schemas; server code defines authorization, unannotated fields, and behavior limits. Former interfaces are retained in [research](research.md) and cannot be assumed available today.
 

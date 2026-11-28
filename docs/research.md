@@ -1,6 +1,6 @@
 # Research and acceptance records
 
-[中文](research.zh-CN.md)
+**English** · [简体中文](research.zh-CN.md) · [繁體中文](research.zh-Hant.md) · [日本語](research.ja.md) · [Français](research.fr.md) · [한국어](research.ko.md) · [Español](research.es.md) · [Русский](research.ru.md)
 
 Implementation notes, proposals and historical acceptance records have distinct version scopes. A proposal, an old restriction or a past test does not establish current behavior; use the public guides, contract implementation inventories and matching release notes. Original records retain their language, dates and verification scope. Links outside the public navigation open repository sources.
 

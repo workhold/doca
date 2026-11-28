@@ -1,6 +1,6 @@
 # Monitoring and telemetry
 
-[简体中文](plugin-monitoring.zh-CN.md)
+**English** · [简体中文](plugin-monitoring.zh-CN.md) · [繁體中文](plugin-monitoring.zh-Hant.md) · [日本語](plugin-monitoring.ja.md) · [Français](plugin-monitoring.fr.md) · [한국어](plugin-monitoring.ko.md) · [Español](plugin-monitoring.es.md) · [Русский](plugin-monitoring.ru.md)
 
 Implemented in SDK source **0.1.11**. Import `monitoringServiceToken` (`monitoring.v1`), `telemetryServiceToken` (`telemetry.v1`) and their types from `@smartdoca/plugin-sdk/monitoring`. SDK 0.1.11 npm verification is recorded in the publication section below; production deployment remains separate.
 

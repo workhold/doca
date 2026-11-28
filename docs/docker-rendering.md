@@ -1,6 +1,6 @@
 # Docker document renderers
 
-[简体中文](docker-rendering.zh-CN.md)
+**English** · [简体中文](docker-rendering.zh-CN.md) · [繁體中文](docker-rendering.zh-Hant.md) · [日本語](docker-rendering.ja.md) · [Français](docker-rendering.fr.md) · [한국어](docker-rendering.ko.md) · [Español](docker-rendering.es.md) · [Русский](docker-rendering.ru.md)
 
 The rebuilt image exports rich-text/Markdown PDFs with WeasyPrint 70.0 and creates AI canvas PNGs with Node, native Canvas and resvg. It ships no Chromium or Playwright runtime and needs no host seccomp JSON, extra browser shared memory, or browser user-namespace configuration. Build the new image before using the changed Compose file; previously published images do not gain this renderer automatically.
 

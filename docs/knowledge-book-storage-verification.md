@@ -1,6 +1,6 @@
 # Knowledge-book storage verification and operations
 
-[简体中文](knowledge-book-storage-verification.zh-CN.md)
+**English** · [简体中文](knowledge-book-storage-verification.zh-CN.md) · [繁體中文](knowledge-book-storage-verification.zh-Hant.md) · [日本語](knowledge-book-storage-verification.ja.md) · [Français](knowledge-book-storage-verification.fr.md) · [한국어](knowledge-book-storage-verification.ko.md) · [Español](knowledge-book-storage-verification.es.md) · [Русский](knowledge-book-storage-verification.ru.md)
 
 The complete plan was explicitly approved on 2026-10-12. Implementation and isolated verification completed on 2026-10-13; that verification did not convert a user database or deploy production. See the [implementation plan](knowledge-book-payload-storage-plan.md).
 

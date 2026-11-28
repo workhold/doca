@@ -1,6 +1,6 @@
 # Knowledge-book generation performance and batch checkpoints
 
-[简体中文](knowledge-book-generation-performance.zh-CN.md)
+**English** · [简体中文](knowledge-book-generation-performance.zh-CN.md) · [繁體中文](knowledge-book-generation-performance.zh-Hant.md) · [日本語](knowledge-book-generation-performance.ja.md) · [Français](knowledge-book-generation-performance.fr.md) · [한국어](knowledge-book-generation-performance.ko.md) · [Español](knowledge-book-generation-performance.es.md) · [Русский](knowledge-book-generation-performance.ru.md)
 
 2026-10-19. The user explicitly approved the new checkpoint table and private persistence format. Implementation was validated with isolated data in that acceptance run, which did not deploy production. The reported 150,000-character, eight-hour production run was not available locally; these tests do not establish its specific causes or predict production duration.
 

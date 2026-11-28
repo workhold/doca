@@ -1,6 +1,6 @@
 # MCP 服务
 
-[English](mcp.md)
+[English](mcp.md) · **简体中文** · [繁體中文](mcp.zh-Hant.md) · [日本語](mcp.ja.md) · [Français](mcp.fr.md) · [한국어](mcp.ko.md) · [Español](mcp.es.md) · [Русский](mcp.ru.md)
 
 Doca 通过 `POST /api/v1/mcp` 向外部客户端提供助手工具和 SKILL 手册。个人设置 → MCP 管理以本人权限执行的服务；管理后台 → 公司 MCP 服务用于系统集成，每次操作必须明确传入目标 `userId`。公司服务的创建者须仍是有效管理员；代其他用户操作时，资源权限来自目标用户。
 

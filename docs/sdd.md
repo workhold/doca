@@ -1,6 +1,6 @@
 # Specification-driven development
 
-[中文](sdd.zh-CN.md)
+**English** · [简体中文](sdd.zh-CN.md) · [繁體中文](sdd.zh-Hant.md) · [日本語](sdd.ja.md) · [Français](sdd.fr.md) · [한국어](sdd.ko.md) · [Español](sdd.es.md) · [Русский](sdd.ru.md)
 
 This workflow applies to new work throughout Doca. GitHub Spec Kit 1.0.4 supplies the checked-in Codex skills, scripts and templates; installation and upgrade details are in [.specify/README.md](../.specify/README.md). [AGENTS.md](../AGENTS.md), the [constitution](../.specify/memory/constitution.md) and existing technical contracts govern its use. Start with the [module index](sdd-module-index.md) to locate current source, contracts and reusable checks.
 

@@ -1,6 +1,6 @@
 # MCP services
 
-[简体中文](mcp.zh-CN.md)
+**English** · [简体中文](mcp.zh-CN.md) · [繁體中文](mcp.zh-Hant.md) · [日本語](mcp.ja.md) · [Français](mcp.fr.md) · [한국어](mcp.ko.md) · [Español](mcp.es.md) · [Русский](mcp.ru.md)
 
 Doca exposes its assistant tools and SKILL manuals to external clients through `POST /api/v1/mcp`. Personal settings → MCP manages services that act as the signed-in user. Admin → Company MCP services manages integrations that explicitly name the effective `userId` on every operation. Company tokens require an active administrator creator; they do not inherit that creator's resource permissions when operating as another user.
 

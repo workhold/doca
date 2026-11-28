@@ -1,6 +1,6 @@
 # Realtime collaboration and saving
 
-[中文](collaboration.zh-CN.md)
+**English** · [简体中文](collaboration.zh-CN.md) · [繁體中文](collaboration.zh-Hant.md) · [日本語](collaboration.ja.md) · [Français](collaboration.fr.md) · [한국어](collaboration.ko.md) · [Español](collaboration.es.md) · [Русский](collaboration.ru.md)
 
 This page describes host 0.2.23 behavior. Target component APIs and remaining work are in the [collaboration contract](collaboration-sdk-contract.md); former single-process and temporary-package records are in [research](research.md).
 

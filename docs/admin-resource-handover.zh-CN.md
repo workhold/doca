@@ -1,6 +1,6 @@
 # 管理员资源交接
 
-[English](admin-resource-handover.md)
+[English](admin-resource-handover.md) · **简体中文** · [繁體中文](admin-resource-handover.zh-Hant.md) · [日本語](admin-resource-handover.ja.md) · [Français](admin-resource-handover.fr.md) · [한국어](admin-resource-handover.ko.md) · [Español](admin-resource-handover.es.md) · [Русский](admin-resource-handover.ru.md)
 
 系统管理员在「后台管理 → 用户管理」找到已停用账号，点击「资源交接」。选择接收人和资源，预览实际变更后确认。接收人必须是另一个正常使用的账号，原账号交接后保持停用。普通用户没有此入口，三个交接接口也独立校验管理员当前身份。
 

@@ -1,6 +1,6 @@
 # 知识册大篇幅生成：性能改动与批次续跑
 
-[English](knowledge-book-generation-performance.md)
+[English](knowledge-book-generation-performance.md) · **简体中文** · [繁體中文](knowledge-book-generation-performance.zh-Hant.md) · [日本語](knowledge-book-generation-performance.ja.md) · [Français](knowledge-book-generation-performance.fr.md) · [한국어](knowledge-book-generation-performance.ko.md) · [Español](knowledge-book-generation-performance.es.md) · [Русский](knowledge-book-generation-performance.ru.md)
 
 2026-10-19。批次检查点已获得用户明确同意并实施，当次使用隔离数据验证，未部署生产。
 

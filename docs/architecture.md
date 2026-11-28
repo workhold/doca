@@ -1,6 +1,6 @@
 # Architecture and implementation boundaries
 
-[中文](architecture.zh-CN.md)
+**English** · [简体中文](architecture.zh-CN.md) · [繁體中文](architecture.zh-Hant.md) · [日本語](architecture.ja.md) · [Français](architecture.fr.md) · [한국어](architecture.ko.md) · [Español](architecture.es.md) · [Русский](architecture.ru.md)
 
 Baseline: host 0.2.23 / SDK 0.1.11, documentation checked against source on 2026-10-28. This describes implemented assembly and boundaries; deployment-specific services and device behavior need separate acceptance. Start with [capabilities and limits](features.md).
 

@@ -1,6 +1,6 @@
 # Host-managed plugin credentials
 
-[中文](plugin-credentials.zh-CN.md)
+**English** · [简体中文](plugin-credentials.zh-CN.md) · [繁體中文](plugin-credentials.zh-Hant.md) · [日本語](plugin-credentials.ja.md) · [Français](plugin-credentials.fr.md) · [한국어](plugin-credentials.ko.md) · [Español](plugin-credentials.es.md) · [Русский](plugin-credentials.ru.md)
 
 Release: host 0.1.10 and SDK 0.1.9, including the credential API previously added in SDK source 0.1.8. SDK 0.1.7 does not export it. Mail plugins should declare `^0.1.9` and consume the public server token rather than importing host source or persisting passwords themselves.
 

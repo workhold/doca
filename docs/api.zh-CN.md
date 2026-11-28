@@ -1,6 +1,6 @@
 # HTTP API
 
-[English](api.md)
+[English](api.md) · **简体中文** · [繁體中文](api.zh-Hant.md) · [日本語](api.ja.md) · [Français](api.fr.md) · [한국어](api.ko.md) · [Español](api.es.md) · [Русский](api.ru.md)
 
 本页为宿主 0.2.23 的主要接口索引。运行中的 `/api/openapi.json` 提供已注册路由及 schema，服务端代码是授权、未标注字段和行为限制的最终依据。旧接口记录见[研发资料](research.zh-CN.md)，不能据此调用当前发行版。
 

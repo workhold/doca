@@ -1,6 +1,6 @@
 # 插件接入首页最近访问
 
-[English](plugin-activity.md)
+[English](plugin-activity.md) · **简体中文** · [繁體中文](plugin-activity.zh-Hant.md) · [日本語](plugin-activity.ja.md) · [Français](plugin-activity.fr.md) · [한국어](plugin-activity.ko.md) · [Español](plugin-activity.es.md) · [Русский](plugin-activity.ru.md)
 
 2026-09-30。本接口已在仓库实现，公开导出位于 `@smartdoca/plugin-sdk/platform`。使用包含本接口的 SDK 构建产物和对应宿主；这里不代表已经发布了新的 npm 版本。
 

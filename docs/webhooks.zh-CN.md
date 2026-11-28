@@ -1,6 +1,6 @@
 # Webhook 投递
 
-[English](webhooks.md)
+[English](webhooks.md) · **简体中文** · [繁體中文](webhooks.zh-Hant.md) · [日本語](webhooks.ja.md) · [Français](webhooks.fr.md) · [한국어](webhooks.ko.md) · [Español](webhooks.es.md) · [Русский](webhooks.ru.md)
 
 管理员在 Hook 页面登记回调地址、订阅事件和额外请求头。业务事务只把事件写入 outbox，提交后由后台 POST。请求不占用当前操作。
 

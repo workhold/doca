@@ -1,6 +1,6 @@
 # 桌面客户端
 
-[English](desktop-client.md)
+[English](desktop-client.md) · **简体中文** · [繁體中文](desktop-client.zh-Hant.md) · [日本語](desktop-client.ja.md) · [Français](desktop-client.fr.md) · [한국어](desktop-client.ko.md) · [Español](desktop-client.es.md) · [Русский](desktop-client.ru.md)
 
 `apps/desktop` 中的桌面客户端基于 Tauri 2，打包 Doca Web 前端和与 Web 风格一致的连接管理器，连接到你自行部署的远端 Doca 服务。多个后端可同时保持连接，每个工作空间窗口绑定一个后端账号。安装包不包含 Node 可执行文件、业务后端或本地数据库运行时。服务端需为 0.2.37 或更高版本，以支持下文的桌面授权接口。
 

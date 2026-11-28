@@ -1,6 +1,6 @@
 # User guide
 
-[中文](user-guide.zh-CN.md)
+**English** · [简体中文](user-guide.zh-CN.md) · [繁體中文](user-guide.zh-Hant.md) · [日本語](user-guide.ja.md) · [Français](user-guide.fr.md) · [한국어](user-guide.ko.md) · [Español](user-guide.es.md) · [Русский](user-guide.ru.md)
 
 Read [capabilities and limits](features.md) for the default host and independent plugin boundary. Complete the [quick start](quickstart.md), sign in, and create your first document or library. An administrator manages the site; ownership and collaboration grants determine access to individual resources.
 

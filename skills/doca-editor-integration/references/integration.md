@@ -1,6 +1,6 @@
 # Editor integration and file exchange
 
-[中文](https://github.com/workhold/doca/blob/main/docs/editor-integration.zh-CN.md)
+**English** · [简体中文](https://github.com/workhold/doca/blob/main/docs/editor-integration.zh-CN.md) · [繁體中文](https://github.com/workhold/doca/blob/main/docs/editor-integration.zh-Hant.md) · [日本語](https://github.com/workhold/doca/blob/main/docs/editor-integration.ja.md) · [Français](https://github.com/workhold/doca/blob/main/docs/editor-integration.fr.md) · [한국어](https://github.com/workhold/doca/blob/main/docs/editor-integration.ko.md) · [Español](https://github.com/workhold/doca/blob/main/docs/editor-integration.es.md) · [Русский](https://github.com/workhold/doca/blob/main/docs/editor-integration.ru.md)
 
 This is the integration source document for all five editors; subpackages consume its portable [skill reference](https://github.com/workhold/doca/blob/main/skills/doca-editor-integration/references/integration.md). Use actual installed exports; target interfaces and gaps are not existing APIs. Realtime requirements follow the [collaboration contract](https://github.com/workhold/doca/blob/main/docs/collaboration-sdk-contract.md).
 

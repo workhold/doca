@@ -1,6 +1,6 @@
 # 插件共享业务数据库
 
-[English](plugin-database-isolation.md)
+[English](plugin-database-isolation.md) · **简体中文** · [繁體中文](plugin-database-isolation.zh-Hant.md) · [日本語](plugin-database-isolation.ja.md) · [Français](plugin-database-isolation.fr.md) · [한국어](plugin-database-isolation.ko.md) · [Español](plugin-database-isolation.es.md) · [Русский](plugin-database-isolation.ru.md)
 
 所有插件共用一个宿主管理的业务数据库，与核心数据库分开。PostgreSQL 只需为整套部署配置一次数据库和账号，宿主自动创建每个插件的 schema 和业务表。SQLite 无需配置，自动创建一个共享文件。插件继续使用原有 `storage.sql.v1` SDK、version 1 结构声明和 `dataVersion`，不接触连接串、驱动或文件路径。
 

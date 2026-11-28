@@ -1,5 +1,7 @@
 # Plugin development
 
+**English** · [简体中文](plugin-development.zh-CN.md) · [繁體中文](plugin-development.zh-Hant.md) · [日本語](plugin-development.ja.md) · [Français](plugin-development.fr.md) · [한국어](plugin-development.ko.md) · [Español](plugin-development.es.md) · [Русский](plugin-development.ru.md)
+
 The Tauri desktop client connects to a remote Doca host. Plugins run on that host through its installation directory and public SDK; the client adds no desktop-only source-path bridge. See [desktop client](desktop-client.md).
 
 Current source uses SDK **0.2.0**, with `ai.v2` / `ai.continuations.v2`. Tool contexts always carry `jobId`; `sessionId` is present only for real conversations. Rebuild plugins for `sdkRange: "^0.2.0"`; previous SDK ranges and AI service contracts are rejected without adapters. This source change is not an npm publication or deployment. See [MCP execution separation](mcp.md#execution-history-and-upgrade).
@@ -12,8 +14,6 @@ External AI clients use [MCP services](mcp.md). Tools must explicitly declare MC
 0.1.26 uses a [shared plugin business database](plugin-database-isolation.md), separate from core, with automatic namespaces. It replaces the per-plugin databases released in 0.1.25. Upgrade requires normal uninstall on the previous host and reinstall; plugin data is not migrated.
 
 Documentation baseline: host 0.2.23 / SDK 0.1.11, checked on 2026-10-28. SDK 0.1.11 publication is recorded below; production deployment and native-device acceptance remain separate. This is the primary development guide, including current content, native and installation contracts. Linked documents provide full protocols and historical acceptance records. Any compatibility adapter, old-format conversion or database migration requires prior agreement with the project owner.
-
-[中文](plugin-development.zh-CN.md)
 
 The full target, including parts that are not implemented, is the [SDK contract](plugin-sdk-contract.md). Do not keep obsolete membership, moderation, or source-loading compatibility layers.
 

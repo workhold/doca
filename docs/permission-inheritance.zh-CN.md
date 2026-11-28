@@ -1,6 +1,6 @@
 # 文档与知识库权限继承
 
-[English](permission-inheritance.md)
+[English](permission-inheritance.md) · **简体中文** · [繁體中文](permission-inheritance.zh-Hant.md) · [日本語](permission-inheritance.ja.md) · [Français](permission-inheritance.fr.md) · [한국어](permission-inheritance.ko.md) · [Español](permission-inheritance.es.md) · [Русский](permission-inheritance.ru.md)
 
 本文只描述当前权限模型。个人授权保存在 `grants`，组授权独立保存在 `resource_group_grants`，根据当前有效成员关系计算，不生成个人授权行。公开链接定义保存在 `share_links`，链接撤销事件保存在 `share_link_revocations`。组邀请、搜索范围、交接与清理见[用户组](user-groups.zh-CN.md)。
 

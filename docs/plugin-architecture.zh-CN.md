@@ -1,6 +1,6 @@
 # 插件架构
 
-[English](plugin-architecture.md)
+[English](plugin-architecture.md) · **简体中文** · [繁體中文](plugin-architecture.zh-Hant.md) · [日本語](plugin-architecture.ja.md) · [Français](plugin-architecture.fr.md) · [한국어](plugin-architecture.ko.md) · [Español](plugin-architecture.es.md) · [Русский](plugin-architecture.ru.md)
 
 [SDK 契约](plugin-sdk-contract.zh-CN.md) 定义核心与业务边界，[开发规范](plugin-development.zh-CN.md) 列出当前可用接口。
 

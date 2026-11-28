@@ -161,6 +161,8 @@ Open `http://127.0.0.1:39130`. Initialize the administrator with `bash scripts/b
 
 ## Documentation
 
+[English](https://workhold.github.io/doca/#/en/) · [简体中文](https://workhold.github.io/doca/#/zh-cn/) · [繁體中文](https://workhold.github.io/doca/#/zh-hant/) · [日本語](https://workhold.github.io/doca/#/ja/) · [Français](https://workhold.github.io/doca/#/fr/) · [한국어](https://workhold.github.io/doca/#/ko/) · [Español](https://workhold.github.io/doca/#/es/) · [Русский](https://workhold.github.io/doca/#/ru/)
+
 - [User guide](https://workhold.github.io/doca/#/en/getting-started/user-guide)
 - [Browser assistant](docs/browser-assistant.md) · [MCP services](docs/mcp.md) · [Desktop client](docs/desktop-client.md)
 - [Deployment and configuration](https://workhold.github.io/doca/#/en/operations/deployment)
@@ -169,7 +171,7 @@ Open `http://127.0.0.1:39130`. Initialize the administrator with `bash scripts/b
 - [Release notes](https://workhold.github.io/doca/#/en/releases/0.3.1)
 - [Documentation source](docs/README.md)
 
-For a documentation preview, run `pnpm docs:dev` and open `http://127.0.0.1:39140/#/en/`. `pnpm docs:check` verifies bilingual coverage and local links. GitHub Pages setup is in [documentation maintenance](docs/documentation.md).
+For a documentation preview, run `pnpm docs:dev` and open `http://127.0.0.1:39140/#/en/`. `pnpm docs:check` verifies language editions and local links. See the GitHub Pages setup in [documentation maintenance](docs/documentation.md).
 
 ## Contact the author
 

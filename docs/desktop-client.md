@@ -1,6 +1,6 @@
 # Doca desktop client
 
-[简体中文](desktop-client.zh-CN.md)
+**English** · [简体中文](desktop-client.zh-CN.md) · [繁體中文](desktop-client.zh-Hant.md) · [日本語](desktop-client.ja.md) · [Français](desktop-client.fr.md) · [한국어](desktop-client.ko.md) · [Español](desktop-client.es.md) · [Русский](desktop-client.ru.md)
 
 The desktop client in `apps/desktop` uses Tauri 2. It packages the Doca Web frontend and a connection manager styled to match the Web application, and connects to remote Doca hosts that you deploy. Several backends can stay connected at once, and each workspace window binds to one backend account. The package contains no Node executable, business host or local database runtime. A host must run 0.2.37 or newer to support the desktop authorization routes described below.
 

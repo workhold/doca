@@ -1,6 +1,6 @@
 # 数据库参考
 
-[English](database.md)
+[English](database.md) · **简体中文** · [繁體中文](database.zh-Hant.md) · [日本語](database.ja.md) · [Français](database.fr.md) · [한국어](database.ko.md) · [Español](database.es.md) · [Русский](database.ru.md)
 
 当前兼容代际为 `doca-2026-10-12-book-payload-storage-v1`。[create-schema.ts](../packages/db/src/create-schema.ts) 定义建表、索引、外键和检查约束；[schema.ts](../packages/db/src/schema.ts) 定义 Kysely 类型；[connection.ts](../packages/db/src/connection.ts) 管理连接；[transactions.ts](../packages/db/src/transactions.ts) 管理事务和冲突重试。
 

@@ -1,6 +1,6 @@
 # Webhook delivery
 
-[中文](webhooks.zh-CN.md)
+**English** · [简体中文](webhooks.zh-CN.md) · [繁體中文](webhooks.zh-Hant.md) · [日本語](webhooks.ja.md) · [Français](webhooks.fr.md) · [한국어](webhooks.ko.md) · [Español](webhooks.es.md) · [Русский](webhooks.ru.md)
 
 An administrator registers a callback URL, the events it receives, and any extra request headers. The business transaction only writes an outbox row. After commit, a background worker POSTs the event. The request does not block the action that caused it.
 

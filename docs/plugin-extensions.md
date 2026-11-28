@@ -1,6 +1,6 @@
 # Public reads and UI extensions
 
-[中文](plugin-extensions.zh-CN.md)
+**English** · [简体中文](plugin-extensions.zh-CN.md) · [繁體中文](plugin-extensions.zh-Hant.md) · [日本語](plugin-extensions.ja.md) · [Français](plugin-extensions.fr.md) · [한국어](plugin-extensions.ko.md) · [Español](plugin-extensions.es.md) · [Русский](plugin-extensions.ru.md)
 
 This reference covers public read services and reusable Web commands, views, and placements. The original read/UI additions entered SDK source `0.1.4`; document elements entered `0.1.6`. For the current host, use SDK `0.1.9` and declare a matching `sdkRange` such as `^0.1.9`. Check the installed host and built SDK artifacts before relying on an API; a source implementation does not prove that an npm artifact or deployment has been updated.
 

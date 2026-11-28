@@ -1,6 +1,6 @@
 # 浏览器助手
 
-[English](browser-assistant.md)
+[English](browser-assistant.md) · **简体中文** · [繁體中文](browser-assistant.zh-Hant.md) · [日本語](browser-assistant.ja.md) · [Français](browser-assistant.fr.md) · [한국어](browser-assistant.ko.md) · [Español](browser-assistant.es.md) · [Русский](browser-assistant.ru.md)
 
 浏览器助手将网页选区或当前页面已加载的内容与图片保存到 Doca，并提供个人 AI 对话侧栏。入口为个人菜单 → **浏览器助手**，或 `/#/browser-assistant`。
 

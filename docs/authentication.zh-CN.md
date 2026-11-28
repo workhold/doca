@@ -1,6 +1,6 @@
 # 身份认证、注册审批与账号绑定
 
-[English](authentication.md)
+[English](authentication.md) · **简体中文** · [繁體中文](authentication.zh-Hant.md) · [日本語](authentication.ja.md) · [Français](authentication.fr.md) · [한국어](authentication.ko.md) · [Español](authentication.es.md) · [Русский](authentication.ru.md)
 
 适用于当前无空间、无组织架构的轻量 Doca。本文同时说明本地账号、外部身份源、注册审批和登录方式切换规则。
 

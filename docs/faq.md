@@ -1,6 +1,6 @@
 # FAQ and troubleshooting
 
-[中文](faq.zh-CN.md)
+**English** · [简体中文](faq.zh-CN.md) · [繁體中文](faq.zh-Hant.md) · [日本語](faq.ja.md) · [Français](faq.fr.md) · [한국어](faq.ko.md) · [Español](faq.es.md) · [Русский](faq.ru.md)
 
 ## Is there a default administrator password?
 

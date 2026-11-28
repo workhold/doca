@@ -1,6 +1,6 @@
 # Plugin templates and materials
 
-[中文](creation-resources.zh-CN.md)
+**English** · [简体中文](creation-resources.zh-CN.md) · [繁體中文](creation-resources.zh-Hant.md) · [日本語](creation-resources.ja.md) · [Français](creation-resources.fr.md) · [한국어](creation-resources.ko.md) · [Español](creation-resources.es.md) · [Русский](creation-resources.ru.md)
 
 Contract baseline: SDK `0.1.9`, contracts `0.1.7`. Document creation, public plugin clients, host pickers, and AI use the same resource services. Verify actual package exports and deployment versions before integration. External services and devices need separate acceptance.
 

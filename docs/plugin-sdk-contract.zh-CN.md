@@ -1,13 +1,13 @@
 # Doca 插件 SDK 与核心边界
 
+[English](plugin-sdk-contract.md) · **简体中文** · [繁體中文](plugin-sdk-contract.zh-Hant.md) · [日本語](plugin-sdk-contract.ja.md) · [Français](plugin-sdk-contract.fr.md) · [한국어](plugin-sdk-contract.ko.md) · [Español](plugin-sdk-contract.es.md) · [Русский](plugin-sdk-contract.ru.md)
+
 当前源码使用 SDK **0.2.0**，AI 服务为 `ai.v2` / `ai.continuations.v2`。工具上下文始终提供 `jobId`，只有真实聊天执行才提供 `sessionId`。插件须重新构建并声明 `sdkRange: "^0.2.0"`；旧 SDK 范围和旧 AI 服务契约直接拒绝，不提供适配。本次源码变更不代表 npm 发布或部署。参见 [MCP 执行隔离](mcp.zh-CN.md#执行记录与升级)。
 
 SDK 不兼容或必需依赖不可用只隔离受影响的业务插件，宿主与其他插件继续启动；管理页显示不可用原因和升级提示。原安装意愿、归档、业务数据和凭据保留，不转换旧包或执行旧 SDK 代码。新在线安装仍拒绝不兼容包。停机放入的完整安装目录按原始身份保存后做相同隔离。
 
 
 0.1.26 使用与核心库分开的[插件共享业务数据库](plugin-database-isolation.zh-CN.md)，自动创建插件命名空间，取代 0.1.25 的每插件独立库。升级须先在旧宿主正常卸载，再重装，不迁移插件数据。
-
-[English](plugin-sdk-contract.md)
 
 文档基线：宿主 0.2.23 / SDK 0.1.11，2026-10-28 按源码核对。SDK 0.1.11 的 npm 发布记录见下文，生产部署和移动真机验收另行确认。插件持久化全部由宿主管理，插件负责业务模型和授权。本文定义接下来重构的验收标准，不表示所有接口已经实现。当前实现差距见第 12 节。开发教程和部署文档不得把本文的目标接口写成现有导出。
 

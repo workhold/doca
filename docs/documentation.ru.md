@@ -53,8 +53,14 @@ pnpm docs:dev
 
 Предполагаемые входы:
 
-- Английский: <https://workhold.github.io/doca/#/en/>
-- Китайский: <https://workhold.github.io/doca/#/zh-cn/>
+- [English](https://workhold.github.io/doca/#/en/)
+- [简体中文](https://workhold.github.io/doca/#/zh-cn/)
+- [繁體中文](https://workhold.github.io/doca/#/zh-hant/)
+- [日本語](https://workhold.github.io/doca/#/ja/)
+- [Français](https://workhold.github.io/doca/#/fr/)
+- [한국어](https://workhold.github.io/doca/#/ko/)
+- [Español](https://workhold.github.io/doca/#/es/)
+- [Русский](https://workhold.github.io/doca/#/ru/)
 
 Эти адреса становятся доступными после успешного развертывания рабочего процесса. Ссылки в файле README ведут на соответствующие страницы на языке. Сайт использует стандартный домен GitHub Pages и не требует никаких настроек DNS для кастомного домена или файла CNAME в репозитории.
 

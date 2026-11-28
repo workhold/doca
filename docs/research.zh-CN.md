@@ -1,6 +1,6 @@
 # 研发与验收资料
 
-[English](research.md)
+[English](research.md) · **简体中文** · [繁體中文](research.zh-Hant.md) · [日本語](research.ja.md) · [Français](research.fr.md) · [한국어](research.ko.md) · [Español](research.es.md) · [Русский](research.ru.md)
 
 专项说明、设计提案和历史验收各有适用版本。提案、过期版本限制和历史通过结果不能直接证明当前行为；当前以公开指南、契约实现清单和对应发行说明为准。以下原始资料保留原语言、日期和验收范围，未进入公开导航的链接打开仓库源码。
 

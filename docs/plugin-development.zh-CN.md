@@ -1,5 +1,7 @@
 # Doca 插件开发规范
 
+[English](plugin-development.md) · **简体中文** · [繁體中文](plugin-development.zh-Hant.md) · [日本語](plugin-development.ja.md) · [Français](plugin-development.fr.md) · [한국어](plugin-development.ko.md) · [Español](plugin-development.es.md) · [Русский](plugin-development.ru.md)
+
 当前源码使用 SDK **0.2.0**，AI 服务为 `ai.v2` / `ai.continuations.v2`。工具上下文始终提供 `jobId`，只有真实聊天执行才提供 `sessionId`。插件须重新构建并声明 `sdkRange: "^0.2.0"`；旧 SDK 范围和旧 AI 服务契约直接拒绝，不提供适配。本次源码变更不代表 npm 发布或部署。参见 [MCP 执行隔离](mcp.zh-CN.md#执行记录与升级)。
 
 SDK 不兼容或必需依赖不可用只隔离受影响的业务插件，宿主与其他插件继续启动；管理页显示不可用原因和升级提示。原安装意愿、归档、业务数据和凭据保留，不转换旧包或执行旧 SDK 代码。新在线安装仍拒绝不兼容包。停机放入的完整安装目录按原始身份保存后做相同隔离。
@@ -10,8 +12,6 @@ SDK 不兼容或必需依赖不可用只隔离受影响的业务插件，宿主�
 0.1.26 使用与核心库分开的[插件共享业务数据库](plugin-database-isolation.zh-CN.md)，自动创建插件命名空间，取代 0.1.25 的每插件独立库。升级须先在旧宿主正常卸载，再重装，不迁移插件数据。
 
 文档基线：宿主 0.2.23 / SDK 0.1.11，2026-10-28 按源码核对。SDK 0.1.11 的 npm 发布记录见下文，生产部署和移动真机验收另行确认。本文是插件开发的主入口，包含当前内容、App 和安装约定；链接文档补充完整类型、协议和历史验收记录。任何新增或修改兼容策略、旧格式转换或数据库迁移，必须先与项目负责人对齐方案。
-
-[English](plugin-development.md)
 
 完整目标及尚未实现部分见 [SDK 契约](plugin-sdk-contract.zh-CN.md)。新增设计不得保留已退出的会员、审核或源码加载路径；现有兼容行为的处理遵循仓库事先确认规则。
 

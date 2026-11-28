@@ -1,6 +1,6 @@
 # User groups and group permissions
 
-[简体中文](user-groups.zh-CN.md)
+**English** · [简体中文](user-groups.zh-CN.md) · [繁體中文](user-groups.zh-Hant.md) · [日本語](user-groups.ja.md) · [Français](user-groups.fr.md) · [한국어](user-groups.ko.md) · [Español](user-groups.es.md) · [Русский](user-groups.ru.md)
 
 The sidebar below Shared folders lists joined groups with their avatar, name and owner. Members see the complete roster and roles. Internal group IDs are not displayed as page information.
 

@@ -1,6 +1,6 @@
 # 文档插件元素（SDK 0.1.6 源码增量）
 
-[English](plugin-editor-elements.md)
+[English](plugin-editor-elements.md) · **简体中文** · [繁體中文](plugin-editor-elements.zh-Hant.md) · [日本語](plugin-editor-elements.ja.md) · [Français](plugin-editor-elements.fr.md) · [한국어](plugin-editor-elements.ko.md) · [Español](plugin-editor-elements.es.md) · [Русский](plugin-editor-elements.ru.md)
 
 2026-10-02 在宿主源码 0.1.8、SDK 0.1.6、契约包 0.1.6 和 Web registry 0.1.3 中实现。本文记录源码导出与隔离验收，不代表 npm 发布、生产安装或原生设备验收。既定存储策略是精确版本支持：未知类型或版本显示错误占位，保留原始 JSON。不提供适配器、自动转换、迁移或数据重置，现有内部文档引用读取规则保持原状。
 

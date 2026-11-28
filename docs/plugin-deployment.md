@@ -1,8 +1,8 @@
 # Install and deploy plugins
 
-0.1.26 uses a [shared plugin business database](plugin-database-isolation.md), separate from core, with automatic namespaces. It replaces the per-plugin databases released in 0.1.25. Upgrade requires normal uninstall on the previous host and reinstall; plugin data is not migrated.
+**English** · [简体中文](plugin-deployment.zh-CN.md) · [繁體中文](plugin-deployment.zh-Hant.md) · [日本語](plugin-deployment.ja.md) · [Français](plugin-deployment.fr.md) · [한국어](plugin-deployment.ko.md) · [Español](plugin-deployment.es.md) · [Русский](plugin-deployment.ru.md)
 
-[中文](plugin-deployment.zh-CN.md)
+0.1.26 uses a [shared plugin business database](plugin-database-isolation.md), separate from core, with automatic namespaces. It replaces the per-plugin databases released in 0.1.25. Upgrade requires normal uninstall on the previous host and reinstall; plugin data is not migrated.
 
 The approved [managed storage contract](plugin-horizontal-scaling.md) requires `doca.storage: "host"` and host-owned persistence. Static rejection, managed SQL and private objects are implemented. Credentials are exported in SDK source 0.1.8; temporary workspaces and cluster task draining remain gaps. Plugins do not choose local/remote backends or receive business-data directories.
 

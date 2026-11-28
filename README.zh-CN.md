@@ -159,6 +159,8 @@ pnpm dev
 
 ## 文档
 
+[English](https://workhold.github.io/doca/#/en/) · [简体中文](https://workhold.github.io/doca/#/zh-cn/) · [繁體中文](https://workhold.github.io/doca/#/zh-hant/) · [日本語](https://workhold.github.io/doca/#/ja/) · [Français](https://workhold.github.io/doca/#/fr/) · [한국어](https://workhold.github.io/doca/#/ko/) · [Español](https://workhold.github.io/doca/#/es/) · [Русский](https://workhold.github.io/doca/#/ru/)
+
 - [使用指南](https://workhold.github.io/doca/#/zh-cn/getting-started/user-guide)
 - [浏览器助手](docs/browser-assistant.zh-CN.md) · [MCP 服务](docs/mcp.zh-CN.md) · [桌面客户端](docs/desktop-client.zh-CN.md)
 - [部署与配置](https://workhold.github.io/doca/#/zh-cn/operations/deployment)
@@ -167,7 +169,7 @@ pnpm dev
 - [发行记录](https://workhold.github.io/doca/#/zh-cn/releases/0.3.1)
 - [文档源码](docs/README.zh-CN.md)
 
-预览文档时，执行 `pnpm docs:dev` 并打开 `http://127.0.0.1:39140/#/zh-cn/`。`pnpm docs:check` 校验双语覆盖和本地链接。GitHub Pages 设置见[文档维护](docs/documentation.zh-CN.md)。
+预览文档时，执行 `pnpm docs:dev` 并打开 `http://127.0.0.1:39140/#/zh-cn/`。`pnpm docs:check` 校验语言版本和本地链接。GitHub Pages 设置见[文档维护](docs/documentation.zh-CN.md)。
 
 ## 联系作者
 

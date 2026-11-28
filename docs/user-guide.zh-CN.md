@@ -1,6 +1,6 @@
 # 使用指南
 
-[English](user-guide.md)
+[English](user-guide.md) · **简体中文** · [繁體中文](user-guide.zh-Hant.md) · [日本語](user-guide.ja.md) · [Français](user-guide.fr.md) · [한국어](user-guide.ko.md) · [Español](user-guide.es.md) · [Русский](user-guide.ru.md)
 
 先阅读[功能与边界](features.zh-CN.md)，了解默认部署和独立插件的区别。完成[快速开始](quickstart.zh-CN.md)并登录，即可创建第一篇文档或知识库。管理员管理站点，资源的所有权和协作授权决定具体内容的访问权限。
 

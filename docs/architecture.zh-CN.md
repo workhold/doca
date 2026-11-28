@@ -1,6 +1,6 @@
 # 架构与实现边界
 
-[English](architecture.md)
+[English](architecture.md) · **简体中文** · [繁體中文](architecture.zh-Hant.md) · [日本語](architecture.ja.md) · [Français](architecture.fr.md) · [한국어](architecture.ko.md) · [Español](architecture.es.md) · [Русский](architecture.ru.md)
 
 基线：宿主 0.2.23 / SDK 0.1.11，2026-10-28 按源码核对文档。本文说明已实现的组装与边界，外部服务和设备行为需单独验收。先看[功能与边界](features.zh-CN.md)。
 

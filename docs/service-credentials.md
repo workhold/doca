@@ -1,6 +1,6 @@
 # Platform service credentials
 
-[中文](service-credentials.zh-CN.md)
+**English** · [简体中文](service-credentials.zh-CN.md) · [繁體中文](service-credentials.zh-Hant.md) · [日本語](service-credentials.ja.md) · [Français](service-credentials.fr.md) · [한국어](service-credentials.ko.md) · [Español](service-credentials.es.md) · [Русский](service-credentials.ru.md)
 
 Open Admin → Platform settings → Service credentials. The current host-managed platform record covers:
 

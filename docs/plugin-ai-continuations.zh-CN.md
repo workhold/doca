@@ -1,5 +1,7 @@
 # 后台任务完成后续跑 AI
 
+[English](plugin-ai-continuations.md) · **简体中文** · [繁體中文](plugin-ai-continuations.zh-Hant.md) · [日本語](plugin-ai-continuations.ja.md) · [Français](plugin-ai-continuations.fr.md) · [한국어](plugin-ai-continuations.ko.md) · [Español](plugin-ai-continuations.es.md) · [Русский](plugin-ai-continuations.ru.md)
+
 当前 SDK 源码 **0.2.0** 已导出 `@smartdoca/plugin-sdk/ai` 中的 `aiContinuationsServiceToken`，服务名为 `ai.continuations.v2`。所有安装的服务端插件都可申请这项能力，知识册使用同一个宿主机制。源码实现不代表已发布 npm 或部署上线。
 
 插件声明 `sdkRange: "^0.2.0"`，把 token 放入必需注入。缺少服务的宿主拒绝初始化，没有通过旧 AI 服务契约的适配，也不会推断历史业务任务的等待关系。

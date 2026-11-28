@@ -1,6 +1,6 @@
 # Single instance and horizontal scaling
 
-[中文](horizontal-scaling.zh-CN.md)
+**English** · [简体中文](horizontal-scaling.zh-CN.md) · [繁體中文](horizontal-scaling.zh-Hant.md) · [日本語](horizontal-scaling.ja.md) · [Français](horizontal-scaling.fr.md) · [한국어](horizontal-scaling.ko.md) · [Español](horizontal-scaling.es.md) · [Русский](horizontal-scaling.ru.md)
 
 Doca keeps a single-instance mode with no extra infrastructure. SQLite, a local upload directory, and an in-process realtime bus fit a person, a small team, or a trial. Configure PostgreSQL, shared object storage, and Redis only when more than one application replica is running. Both modes use the same business protocol. There is no built-in SQLite-to-PostgreSQL data transfer or dual-write path. Supported database upgrades follow the [database upgrade contract](database-schema-evolution.md).
 

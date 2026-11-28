@@ -1,6 +1,6 @@
 # 实时协同与保存
 
-[English](collaboration.md)
+[English](collaboration.md) · **简体中文** · [繁體中文](collaboration.zh-Hant.md) · [日本語](collaboration.ja.md) · [Français](collaboration.fr.md) · [한국어](collaboration.ko.md) · [Español](collaboration.es.md) · [Русский](collaboration.ru.md)
 
 本页描述宿主 0.2.23 实现。组件目标 API 与待实现事项见[协同契约](collaboration-sdk-contract.zh-CN.md)，早期单进程和临时包记录见[研发资料](research.zh-CN.md)。
 

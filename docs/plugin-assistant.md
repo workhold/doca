@@ -1,6 +1,6 @@
 # Launch the AI assistant from a plugin
 
-[中文](plugin-assistant.zh-CN.md)
+**English** · [简体中文](plugin-assistant.zh-CN.md) · [繁體中文](plugin-assistant.zh-Hant.md) · [日本語](plugin-assistant.ja.md) · [Français](plugin-assistant.fr.md) · [한국어](plugin-assistant.ko.md) · [Español](plugin-assistant.es.md) · [Русский](plugin-assistant.ru.md)
 
 SDK source 0.1.7 introduced `PluginWebHost.ai.open(input)`. Web opens the full personal assistant; an App plugin WebView opens the native conversation. Source verification does not establish npm publication or an updated App. This is a client launch API; server background execution has a separate contract.
 

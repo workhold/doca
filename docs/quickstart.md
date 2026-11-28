@@ -1,6 +1,6 @@
 # Quick start
 
-[中文](quickstart.zh-CN.md)
+**English** · [简体中文](quickstart.zh-CN.md) · [繁體中文](quickstart.zh-Hant.md) · [日本語](quickstart.ja.md) · [Français](quickstart.fr.md) · [한국어](quickstart.ko.md) · [Español](quickstart.es.md) · [Русский](quickstart.ru.md)
 
 This guide installs the image specified by compose.yaml on main on one server, SQLite, and local file storage. You need Git, Docker Engine, the Docker Compose plugin, and a domain pointing at the server. A reverse proxy on that server can serve HTTPS or trusted internal HTTP. You do not need Node.js or pnpm to run the image.
 

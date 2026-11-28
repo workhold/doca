@@ -1,5 +1,5 @@
 import { readFile, writeFile, mkdir, rm, cp, access } from "node:fs/promises";
-import { dirname, resolve, relative, posix } from "node:path";
+import { dirname, resolve, relative, posix, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { fromMarkdown } from "mdast-util-from-markdown";
 import { databaseInventory, documentLinks, expectedSkillReferences, headingIds, headingText, markdownFiles, repositoryTarget } from "./lib/documentation.mjs";
@@ -90,21 +90,25 @@ for (const name of ["database.md", "database.zh-CN.md"]) {
   }
 }
 const publishedRoutes = new Set(Array.from(sourcePages.values(), ({ page, lang }) => route(page, lang)));
+const pagesUrl = "https://workhold.github.io/doca/#";
 for (const lang of languages) {
   const name = `README${editions[lang].suffix}.md`;
   const markdown = await readFile(resolve(root, name), "utf8");
-  const entrance = `https://workhold.github.io/doca/#/${lang}/`;
+  const homeLanguages = lang === "en" || lang === "zh-cn" ? languages : [lang];
+  const homeRoutes = homeLanguages.map(code => `/${code}/`);
   const links = documentLinks(fromMarkdown(markdown));
-  if (!links.some(({ href }) => href === entrance)) problems.push(`${name} is missing its ${lang} documentation entrance`);
+  for (const home of homeRoutes) {
+    if (!links.some(({ href }) => href === pagesUrl + home)) problems.push(`${name} is missing the documentation entrance ${home}`);
+  }
   const screenshots = ["workspace", "rich-text", "markdown", "spreadsheet", "slides", "canvas"];
   for (const image of screenshots) {
     const path = `docs/images/${lang}/${image}.jpg`;
     if (!links.some(({ href }) => href === path)) problems.push(`${name} is missing its screenshot ${path}`);
   }
   for (const { href } of links) {
-    if (href.startsWith("https://workhold.github.io/doca/#/")) {
+    if (href.startsWith(`${pagesUrl}/`)) {
       const path = new URL(href).hash.slice(1).split("?")[0];
-      if (!publishedRoutes.has(path) || !path.startsWith(`/${lang}/`)) {
+      if (!publishedRoutes.has(path) || (!path.startsWith(`/${lang}/`) && !homeRoutes.includes(path))) {
         problems.push(`${name} has an invalid ${lang} documentation link: ${href}`);
       }
     }
@@ -122,6 +126,18 @@ for (const page of pages) {
     if (!hasEdition(page, lang)) continue;
     const path = resolve(docs, source(page, lang));
     const { markdown, tree } = documents.get(path);
+    if ((lang === "en" || lang === "zh-cn") && languages.every(code => hasEdition(page, code))) {
+      const title = tree.children.findIndex(node => node.type === "heading" && node.depth === 1);
+      const languageLinks = title >= 0 ? tree.children[title + 1] : undefined;
+      for (const code of languages.filter(code => code !== lang)) {
+        const sibling = relative(dirname(path), resolve(docs, source(page, code))).split(sep).join("/");
+        const url = pagesUrl + route(page, code);
+        const found = languageLinks?.type === "paragraph" && languageLinks.children.some(node =>
+          node.type === "link" && headingText(node) === editions[code].name && (node.url === sibling || node.url === url),
+        );
+        if (!found) problems.push(`${relative(root, path)} needs a ${code} edition link immediately after the title`);
+      }
+    }
     const replacements = [];
     async function visit(node) {
       if (["link", "image", "definition"].includes(node.type)) {

@@ -1,6 +1,6 @@
 # 文件交换接入约定
 
-[English](editor-file-exchange-contract.md)
+[English](editor-file-exchange-contract.md) · **简体中文** · [繁體中文](editor-file-exchange-contract.zh-Hant.md) · [日本語](editor-file-exchange-contract.ja.md) · [Français](editor-file-exchange-contract.fr.md) · [한국어](editor-file-exchange-contract.ko.md) · [Español](editor-file-exchange-contract.es.md) · [Русский](editor-file-exchange-contract.ru.md)
 
 适用 Doca 各编辑器的文件导入、导出和包升级。基础内容与可接受的样式优先，不要求完整 Office 还原；部分能力有损可以接受，但不能静默丢弃重要内容。这里规定职责与验收，不意味着每个包已实现全部接口。
 

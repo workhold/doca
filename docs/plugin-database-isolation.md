@@ -1,6 +1,6 @@
 # Shared plugin business database
 
-[简体中文](plugin-database-isolation.zh-CN.md)
+**English** · [简体中文](plugin-database-isolation.zh-CN.md) · [繁體中文](plugin-database-isolation.zh-Hant.md) · [日本語](plugin-database-isolation.ja.md) · [Français](plugin-database-isolation.fr.md) · [한국어](plugin-database-isolation.ko.md) · [Español](plugin-database-isolation.es.md) · [Русский](plugin-database-isolation.ru.md)
 
 All plugins share one host-managed business database, separate from the core database. PostgreSQL needs one database/account configuration for the deployment; the host automatically creates each plugin's schema and tables. SQLite needs no configuration and automatically creates one shared file. Plugins continue to use the unchanged `storage.sql.v1` SDK, schema version 1 and `dataVersion`, without connection strings, drivers or filesystem paths.
 

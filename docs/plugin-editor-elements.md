@@ -1,5 +1,7 @@
 # Plugin document elements (SDK 0.1.6 source)
 
+**English** · [简体中文](plugin-editor-elements.zh-CN.md) · [繁體中文](plugin-editor-elements.zh-Hant.md) · [日本語](plugin-editor-elements.ja.md) · [Français](plugin-editor-elements.fr.md) · [한국어](plugin-editor-elements.ko.md) · [Español](plugin-editor-elements.es.md) · [Русский](plugin-editor-elements.ru.md)
+
 Implemented on 2026-10-02 in host source 0.1.8, SDK 0.1.6, contracts 0.1.6 and Web registry 0.1.3. This records source exports and isolated acceptance, not npm publication, production installation or native-device acceptance. The agreed storage policy is exact-version support: unknown types and versions display an error placeholder and retain their original JSON. No adapter, automatic conversion, migration or data reset is introduced. Existing internal document-reference readers are unchanged.
 
 ## Public registration

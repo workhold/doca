@@ -1,6 +1,6 @@
 # Administrator resource handover
 
-[中文](admin-resource-handover.zh-CN.md)
+**English** · [简体中文](admin-resource-handover.zh-CN.md) · [繁體中文](admin-resource-handover.zh-Hant.md) · [日本語](admin-resource-handover.ja.md) · [Français](admin-resource-handover.fr.md) · [한국어](admin-resource-handover.ko.md) · [Español](admin-resource-handover.es.md) · [Русский](admin-resource-handover.ru.md)
 
 In **Administration → Users**, an active system administrator opens **Hand over resources** for a disabled account, selects an active recipient and resource entries, then reviews and confirms the actual changes. The source account stays disabled. Ordinary users cannot use any of the three endpoints.
 

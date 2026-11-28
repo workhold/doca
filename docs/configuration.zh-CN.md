@@ -1,6 +1,6 @@
 # 配置说明
 
-[English](configuration.md)
+[English](configuration.md) · **简体中文** · [繁體中文](configuration.zh-Hant.md) · [日本語](configuration.ja.md) · [Français](configuration.fr.md) · [한국어](configuration.ko.md) · [Español](configuration.es.md) · [Русский](configuration.ru.md)
 
 Compose 使用 `docker.env.example`，源码开发使用 `.env.example`，复制到仓库根目录 `.env`。两份示例的来源地址和数据库路径不同；文件存储均示例为容器持久数据卷中的 `/data/storage`。源码开发时把存储 root 改为本机可写的绝对路径，不要混用来源地址，也不要提交密钥。
 
