@@ -1,6 +1,6 @@
 # 平台服务凭据
 
-[English](service-credentials.md)
+[English](service-credentials.md) · **简体中文** · [繁體中文](service-credentials.zh-Hant.md) · [日本語](service-credentials.ja.md) · [Français](service-credentials.fr.md) · [한국어](service-credentials.ko.md) · [Español](service-credentials.es.md) · [Русский](service-credentials.ru.md)
 
 入口：管理员后台 → 平台设置 → 服务凭据。当前宿主持有的平台配置包含：
 

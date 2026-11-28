@@ -1,6 +1,6 @@
 # Plugin recent activity
 
-[中文](plugin-activity.zh-CN.md)
+**English** · [简体中文](plugin-activity.zh-CN.md) · [繁體中文](plugin-activity.zh-Hant.md) · [日本語](plugin-activity.ja.md) · [Français](plugin-activity.fr.md) · [한국어](plugin-activity.ko.md) · [Español](plugin-activity.es.md) · [Русский](plugin-activity.ru.md)
 
 Implemented on 2026-09-30 and publicly exported from `@smartdoca/plugin-sdk/platform`. Use an SDK artifact and host containing this interface. Source availability alone does not establish a new npm publication.
 

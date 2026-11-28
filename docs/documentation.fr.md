@@ -53,8 +53,14 @@ Le `.github/workflows/docs.yml` Le workflow vérifie la documentation dans les p
 
 Les entrées prévues sont :
 
-- Anglais : <https://workhold.github.io/doca/#/en/>
-- Chinois : <https://workhold.github.io/doca/#/zh-cn/>
+- [English](https://workhold.github.io/doca/#/en/)
+- [简体中文](https://workhold.github.io/doca/#/zh-cn/)
+- [繁體中文](https://workhold.github.io/doca/#/zh-hant/)
+- [日本語](https://workhold.github.io/doca/#/ja/)
+- [Français](https://workhold.github.io/doca/#/fr/)
+- [한국어](https://workhold.github.io/doca/#/ko/)
+- [Español](https://workhold.github.io/doca/#/es/)
+- [Русский](https://workhold.github.io/doca/#/ru/)
 
 Ces adresses deviennent disponibles après que le workflow est déployé avec succès. Les liens dans le fichier README renvoient aux entrées linguistiques correspondantes. Le site utilise le domaine par défaut GitHub Pages et ne nécessite aucun fichier DNS de domaine personnalisé ou de CNAME pour le répertoire de stockage.
 

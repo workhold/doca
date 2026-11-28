@@ -1,6 +1,6 @@
 # Capabilities and limits
 
-[中文](features.zh-CN.md)
+**English** · [简体中文](features.zh-CN.md) · [繁體中文](features.zh-Hant.md) · [日本語](features.ja.md) · [Français](features.fr.md) · [한국어](features.ko.md) · [Español](features.es.md) · [Русский](features.ru.md)
 
 This page was checked against current source for host **0.2.25** and plugin SDK **0.1.11** on 2026-10-29. Before installing business plugins, the host provides the core capabilities below. Each independent plugin documents its own features, versions, and acceptance results.
 

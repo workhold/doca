@@ -1,6 +1,6 @@
 # Public resources, discovery, and collections
 
-[中文](public-resource-discovery.zh-CN.md)
+**English** · [简体中文](public-resource-discovery.zh-CN.md) · [繁體中文](public-resource-discovery.zh-Hant.md) · [日本語](public-resource-discovery.ja.md) · [Français](public-resource-discovery.fr.md) · [한국어](public-resource-discovery.ko.md) · [Español](public-resource-discovery.es.md) · [Русский](public-resource-discovery.ru.md)
 
 ## Administrator policy
 

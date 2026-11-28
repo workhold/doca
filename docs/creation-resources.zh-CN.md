@@ -1,6 +1,6 @@
 # 插件模板与素材资源
 
-[English](creation-resources.md)
+[English](creation-resources.md) · **简体中文** · [繁體中文](creation-resources.zh-Hant.md) · [日本語](creation-resources.ja.md) · [Français](creation-resources.fr.md) · [한국어](creation-resources.ko.md) · [Español](creation-resources.es.md) · [Русский](creation-resources.ru.md)
 
 契约基线：SDK `0.1.9`、契约包 `0.1.7`。在线文档创建、插件公共客户端、宿主选择器和 AI 使用同一套资源服务。接入前核对实际包导出与部署版本；外部服务和移动真机需要单独验收。
 

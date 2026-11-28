@@ -1,6 +1,6 @@
 # 功能与边界
 
-[English](features.md)
+[English](features.md) · **简体中文** · [繁體中文](features.zh-Hant.md) · [日本語](features.ja.md) · [Français](features.fr.md) · [한국어](features.ko.md) · [Español](features.es.md) · [Русский](features.ru.md)
 
 本页按宿主 **0.2.25**、插件 SDK **0.1.11** 的当前源码核对，核对日期为 2026-10-29。安装业务插件前，宿主提供下表中的核心能力。某个插件的功能、版本和验收结果以该插件自己的文档为准。
 

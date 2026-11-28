@@ -1,8 +1,8 @@
 # Authentication, registration approval, and account linking
 
-The remote-only desktop client adds a separate browser-approved host credential without time expiry. See the [desktop client contract](desktop-client.md). Existing browser/mobile sessions keep their expiry and storage rules.
+**English** · [简体中文](authentication.zh-CN.md) · [繁體中文](authentication.zh-Hant.md) · [日本語](authentication.ja.md) · [Français](authentication.fr.md) · [한국어](authentication.ko.md) · [Español](authentication.es.md) · [Русский](authentication.ru.md)
 
-[中文](authentication.zh-CN.md)
+The remote-only desktop client adds a separate browser-approved host credential without time expiry. See the [desktop client contract](desktop-client.md). Existing browser/mobile sessions keep their expiry and storage rules.
 
 This applies to the current Doca, which has no spaces and no organization tree. It covers local accounts, external identity providers, registration approval, and switching sign-in methods.
 

@@ -1,6 +1,6 @@
 # Doca 文档
 
-[English](README.md)
+[English](README.md) · **简体中文** · [繁體中文](README.zh-Hant.md) · [日本語](README.ja.md) · [Français](README.fr.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Русский](README.ru.md)
 
 Doca 是面向个人和小团队的文档与知识工作台。本套文档随当前源码维护；安装与升级请对照 [0.3.1 发行说明](releases/0.3.1.zh-CN.md)，组件契约另行注明实现限制。
 

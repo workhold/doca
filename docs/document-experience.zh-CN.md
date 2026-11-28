@@ -1,6 +1,6 @@
 # 文档、分享与历史
 
-[English](document-experience.md)
+[English](document-experience.md) · **简体中文** · [繁體中文](document-experience.zh-Hant.md) · [日本語](document-experience.ja.md) · [Français](document-experience.fr.md) · [한국어](document-experience.ko.md) · [Español](document-experience.es.md) · [Русский](document-experience.ru.md)
 
 本文描述宿主 0.2.23 源码；早期开发与临时包记录归入[研发资料](research.zh-CN.md)。
 

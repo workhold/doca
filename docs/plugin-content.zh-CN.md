@@ -1,6 +1,6 @@
 # 通用内容来源 content.v1
 
-[English](plugin-content.md)
+[English](plugin-content.md) · **简体中文** · [繁體中文](plugin-content.zh-Hant.md) · [日本語](plugin-content.ja.md) · [Français](plugin-content.fr.md) · [한국어](plugin-content.ko.md) · [Español](plugin-content.es.md) · [Русский](plugin-content.ru.md)
 
 公开入口：`@smartdoca/plugin-sdk/content`。宿主定义契约和调用入口，插件负责业务实现；内置文档和文件也注册相同来源。此接口不会自动把全部来源交给 AI。
 

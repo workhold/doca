@@ -1,6 +1,6 @@
 # 监控与遥测
 
-[English](plugin-monitoring.md)
+[English](plugin-monitoring.md) · **简体中文** · [繁體中文](plugin-monitoring.zh-Hant.md) · [日本語](plugin-monitoring.ja.md) · [Français](plugin-monitoring.fr.md) · [한국어](plugin-monitoring.ko.md) · [Español](plugin-monitoring.es.md) · [Русский](plugin-monitoring.ru.md)
 
 SDK 源码 **0.1.11** 已实现。通过 `@smartdoca/plugin-sdk/monitoring` 导入 `monitoringServiceToken`（`monitoring.v1`）、`telemetryServiceToken`（`telemetry.v1`）及类型。SDK 0.1.11 的 npm 验证记录见下方发布章节，生产部署另行验收。
 

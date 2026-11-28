@@ -1,6 +1,6 @@
 # File exchange integration contract
 
-[中文](editor-file-exchange-contract.zh-CN.md)
+**English** · [简体中文](editor-file-exchange-contract.zh-CN.md) · [繁體中文](editor-file-exchange-contract.zh-Hant.md) · [日本語](editor-file-exchange-contract.ja.md) · [Français](editor-file-exchange-contract.fr.md) · [한국어](editor-file-exchange-contract.ko.md) · [Español](editor-file-exchange-contract.es.md) · [Русский](editor-file-exchange-contract.ru.md)
 
 This contract applies to file import/export and conversion-package upgrades across Doca editors. Basic content and acceptable styling take priority over complete Office fidelity. Documented loss is acceptable; important content must not disappear silently. Responsibilities and acceptance requirements do not imply every package already implements every interface.
 

@@ -53,8 +53,14 @@ pnpm docs:dev
 
 予定されている入口は以下の通りです：
 
-- 英語： <https://workhold.github.io/doca/#/en/>
-- 中国語： <https://workhold.github.io/doca/#/zh-cn/>
+- [English](https://workhold.github.io/doca/#/en/)
+- [简体中文](https://workhold.github.io/doca/#/zh-cn/)
+- [繁體中文](https://workhold.github.io/doca/#/zh-hant/)
+- [日本語](https://workhold.github.io/doca/#/ja/)
+- [Français](https://workhold.github.io/doca/#/fr/)
+- [한국어](https://workhold.github.io/doca/#/ko/)
+- [Español](https://workhold.github.io/doca/#/es/)
+- [Русский](https://workhold.github.io/doca/#/ru/)
 
 これらのアドレスはワークフローが正常にデプロイされた後に利用可能になります。READMEのリンクは、それぞれの言語の入り口を指しています。このサイトはデフォルトのGitHub Pagesドメインを使用しており、カスタムドメインのDNSやリポジトリCNAMEファイルは不要です。
 

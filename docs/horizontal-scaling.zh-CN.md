@@ -1,6 +1,6 @@
 # 单实例与水平扩展部署
 
-[English](horizontal-scaling.md)
+[English](horizontal-scaling.md) · **简体中文** · [繁體中文](horizontal-scaling.zh-Hant.md) · [日本語](horizontal-scaling.ja.md) · [Français](horizontal-scaling.fr.md) · [한국어](horizontal-scaling.ko.md) · [Español](horizontal-scaling.es.md) · [Русский](horizontal-scaling.ru.md)
 
 Doca 保留零额外依赖的单实例模式。SQLite、本地上传目录和进程内实时总线适合个人、小团队及开源体验；只有需要多个应用副本时，才配置 PostgreSQL、共享对象存储和 Redis。两种模式使用同一套业务协议；没有内置的 SQLite 到 PostgreSQL 数据转移或双写路径。受支持的数据库升级遵守[数据库升级规范](database-schema-evolution.zh-CN.md)。
 

@@ -1,6 +1,6 @@
 # 文件存储与上传
 
-[English](storage.md)
+[English](storage.md) · **简体中文** · [繁體中文](storage.zh-Hant.md) · [日本語](storage.ja.md) · [Français](storage.fr.md) · [한국어](storage.ko.md) · [Español](storage.es.md) · [Русский](storage.ru.md)
 
 本模块用于头像、知识库封面、文档图片和附件。正文编辑器与管理页共用上传接口，正文仅保存稳定资产ID，由资源适配器解析鉴权URL，不保存短时CDN签名链接。
 

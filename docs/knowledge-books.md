@@ -1,6 +1,6 @@
 # Knowledge books
 
-[中文](knowledge-books.zh-CN.md)
+**English** · [简体中文](knowledge-books.zh-CN.md) · [繁體中文](knowledge-books.zh-Hant.md) · [日本語](knowledge-books.ja.md) · [Français](knowledge-books.fr.md) · [한국어](knowledge-books.ko.md) · [Español](knowledge-books.es.md) · [Русский](knowledge-books.ru.md)
 
 A knowledge book is a generated, read-only Markdown document tree. Editable documents, libraries, files, folders, web pages and authorized `content.v1` providers are its sources. People maintain its sources, workflow and acceptance rules together. The personal AI assistant uses the same commands and authorization as the interface; there is no separate shared assistant identity or personal memory.
 

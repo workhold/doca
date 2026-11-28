@@ -1,6 +1,6 @@
 # 插件启动 AI 助手
 
-[English](plugin-assistant.md)
+[English](plugin-assistant.md) · **简体中文** · [繁體中文](plugin-assistant.zh-Hant.md) · [日本語](plugin-assistant.ja.md) · [Français](plugin-assistant.fr.md) · [한국어](plugin-assistant.ko.md) · [Español](plugin-assistant.es.md) · [Русский](plugin-assistant.ru.md)
 
 当前 SDK 0.1.7 源码提供 `PluginWebHost.ai.open(input)`，Web 打开完整个人助手，App 插件 WebView 打开原生会话页。源码验证不代表 npm 已发布或 App 已更新。该接口不是服务端后台执行 API。
 

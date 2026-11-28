@@ -1,6 +1,6 @@
 # 快速开始
 
-[English](quickstart.md)
+[English](quickstart.md) · **简体中文** · [繁體中文](quickstart.zh-Hant.md) · [日本語](quickstart.ja.md) · [Français](quickstart.fr.md) · [한국어](quickstart.ko.md) · [Español](quickstart.es.md) · [Русский](quickstart.ru.md)
 
 本指南使用 main 分支 compose.yaml 指定的 Docker 镜像，在一台服务器上安装 Doca，数据库采用 SQLite，文件存储采用本地目录。需要 Git、Docker Engine、Docker Compose 插件，以及指向服务器的域名。同机反向代理可以提供 HTTPS，可信内网也支持 HTTP。运行镜像不需要安装 Node.js 或 pnpm。
 

@@ -1,6 +1,6 @@
 # 部署 Doca
 
-[English](deployment.md)
+[English](deployment.md) · **简体中文** · [繁體中文](deployment.zh-Hant.md) · [日本語](deployment.ja.md) · [Français](deployment.fr.md) · [한국어](deployment.ko.md) · [Español](deployment.es.md) · [Русский](deployment.ru.md)
 
 一台服务器可以运行 main 分支 `compose.yaml` 指定的镜像。单个容器使用 SQLite，不需要 PostgreSQL 或 Redis。只有运行多个应用副本时才需要它们。见 [单实例与水平扩展部署](horizontal-scaling.zh-CN.md)。
 

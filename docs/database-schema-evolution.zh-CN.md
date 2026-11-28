@@ -1,6 +1,6 @@
 # 数据库升级规范
 
-[English](database-schema-evolution.md)
+[English](database-schema-evolution.md) · **简体中文** · [繁體中文](database-schema-evolution.zh-Hant.md) · [日本語](database-schema-evolution.ja.md) · [Français](database-schema-evolution.fr.md) · [한국어](database-schema-evolution.ko.md) · [Español](database-schema-evolution.es.md) · [Русский](database-schema-evolution.ru.md)
 
 已批准的用户组增量沿用本规范及当前兼容代际：七张组/成员/邀请/授权空表，及独立组搜索策略表，首次安装明确初始化为仅所在组（`system/member/revision=1`），用户覆盖为空。历史个人/链接授权、邀请、公开设置及用户目录策略不变，不转换、不复制组成员为个人授权。已安装配置行丢失不静默重建。所有服务实例与 Web 同步更新，降级保全及恢复另行评审。见[组权限规则](user-groups.zh-CN.md)、[发行说明](releases/0.2.28.zh-CN.md)及 [SQLite/PostgreSQL 17/18 验证](verification/user-groups-2026-10-30.md)。
 

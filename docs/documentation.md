@@ -1,6 +1,6 @@
 # Documentation maintenance
 
-[中文](documentation.zh-CN.md)
+**English** · [简体中文](documentation.zh-CN.md) · [繁體中文](documentation.zh-Hant.md) · [日本語](documentation.ja.md) · [Français](documentation.fr.md) · [한국어](documentation.ko.md) · [Español](documentation.es.md) · [Русский](documentation.ru.md)
 
 The documentation uses Docsify 5.0.0. Markdown source stays in `docs/`; `docs/site/navigation.json` defines the public pages and their reading order. Technical contract source paths remain stable for repository and editor-skill references.
 
@@ -33,7 +33,7 @@ Open `http://127.0.0.1:39140/#/en/` or `http://127.0.0.1:39140/#/zh-cn/`. The pr
 
 `pnpm docs:build` prepares `.cache/docs-site/` with folders such as `en/getting-started/` and `zh-cn/operations/`. It copies and rewrites Markdown links; Docsify renders content in the browser. It does not compile application code or pre-render the Markdown as HTML. The generated directory is ignored by Git.
 
-Public-page links remain in the current language. Language links show the corresponding page when that edition is available. Source-code, example, and research links open the corresponding GitHub files. Pages receive an edit-source link and links to the available editions. A missing translation fails the check rather than substituting another language.
+Public-page links remain in the current language. The links under the title of a current English or Simplified Chinese article open the same article in the selected language. Source-code, example, and research links open the corresponding GitHub files. Each page also includes a source edit link and language navigation at the bottom.
 
 `docs:check` inventories Markdown through Git, including unignored new files and excluding `tests/fixtures/`. It checks Markdown/HTML links and heading targets throughout repository documentation, including main-branch links to this repository. Ignored artifacts and dated external/tagged URLs are not fetched. Published heading anchors are additionally checked against Docsify rules. The check also compares the current release entrances, the editor package matrices, all database table/field rows (including inherited Schema interfaces), and the five portable skill references against their source documents. It reads TypeScript types without opening an application database. External website availability and semantic correctness of every claim still require review.
 
@@ -43,10 +43,16 @@ Run `pnpm test:docs` for the checker regression cases. After editing a contract,
 
 The `.github/workflows/docs.yml` workflow checks documentation on pull requests and publishes changes from `main`. Configure the repository under **Settings → Pages → Build and deployment → Source → GitHub Actions**. The workflow uses the `github-pages` deployment environment and its approval rules. It can also be run manually from Actions.
 
-The intended entrances are:
+The documentation site has eight language home pages.
 
-- English: <https://workhold.github.io/doca/#/en/>
-- Chinese: <https://workhold.github.io/doca/#/zh-cn/>
+- [English](https://workhold.github.io/doca/#/en/)
+- [简体中文](https://workhold.github.io/doca/#/zh-cn/)
+- [繁體中文](https://workhold.github.io/doca/#/zh-hant/)
+- [日本語](https://workhold.github.io/doca/#/ja/)
+- [Français](https://workhold.github.io/doca/#/fr/)
+- [한국어](https://workhold.github.io/doca/#/ko/)
+- [Español](https://workhold.github.io/doca/#/es/)
+- [Русский](https://workhold.github.io/doca/#/ru/)
 
 These addresses become available after the workflow successfully deploys. README links point to their corresponding language entrances. The site uses the default GitHub Pages domain and requires no custom-domain DNS or repository CNAME file.
 

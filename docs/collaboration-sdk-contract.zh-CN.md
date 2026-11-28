@@ -1,6 +1,6 @@
 # Doca 编辑器协同接入契约
 
-[English](collaboration-sdk-contract.md)
+[English](collaboration-sdk-contract.md) · **简体中文** · [繁體中文](collaboration-sdk-contract.zh-Hant.md) · [日本語](collaboration-sdk-contract.ja.md) · [Français](collaboration-sdk-contract.fr.md) · [한국어](collaboration-sdk-contract.ko.md) · [Español](collaboration-sdk-contract.es.md) · [Русский](collaboration-sdk-contract.ru.md)
 
 适用：富文本、Markdown、在线表格、画布、幻灯片及未来文档类型。初始约定日期为 2026-09-11，下方实现增量保留各自日期与版本；已安装包见[当前编辑器矩阵](editor-integration.zh-CN.md)。
 

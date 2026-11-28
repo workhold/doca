@@ -1,13 +1,13 @@
 # Plugin SDK and core boundary
 
+**English** · [简体中文](plugin-sdk-contract.zh-CN.md) · [繁體中文](plugin-sdk-contract.zh-Hant.md) · [日本語](plugin-sdk-contract.ja.md) · [Français](plugin-sdk-contract.fr.md) · [한국어](plugin-sdk-contract.ko.md) · [Español](plugin-sdk-contract.es.md) · [Русский](plugin-sdk-contract.ru.md)
+
 Current source uses SDK **0.2.0**, with `ai.v2` / `ai.continuations.v2`. Tool contexts always carry `jobId`; `sessionId` is present only for real conversations. Rebuild plugins for `sdkRange: "^0.2.0"`; previous SDK ranges and AI service contracts are rejected without adapters. This source change is not an npm publication or deployment. See [MCP execution separation](mcp.md#execution-history-and-upgrade).
 
 An incompatible SDK range or unavailable required dependency isolates the affected business plugin. The host and unrelated plugins start, and Admin → Plugins explains the reason and asks for an upgrade. Installed selection, archives, business data and credentials are preserved. Old packages are not converted and old SDK code is not executed. New online installations still reject incompatible packages. Complete offline installation folders retain their original identity and receive the same isolation.
 
 
 0.1.26 uses a [shared plugin business database](plugin-database-isolation.md), separate from core, with automatic namespaces. It replaces the per-plugin databases released in 0.1.25. Upgrade requires normal uninstall on the previous host and reinstall; plugin data is not migrated.
-
-[中文](plugin-sdk-contract.zh-CN.md)
 
 Documentation baseline: host 0.2.23 / SDK 0.1.11, checked on 2026-10-28. SDK 0.1.11 publication is recorded below; production deployment and native-device acceptance remain separate. All plugin persistence is host-managed; plugins own business models and authorization. This document is the acceptance standard for the refactor. It does not mean every interface is implemented. The gap is in section 12. A development tutorial must not present a target interface as an export that exists today.
 

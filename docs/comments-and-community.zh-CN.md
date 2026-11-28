@@ -1,6 +1,6 @@
 # 评论、用户可见范围与通知
 
-[English](comments-and-community.md)
+[English](comments-and-community.md) · **简体中文** · [繁體中文](comments-and-community.zh-Hant.md) · [日本語](comments-and-community.ja.md) · [Français](comments-and-community.fr.md) · [한국어](comments-and-community.ko.md) · [Español](comments-and-community.es.md) · [Русский](comments-and-community.ru.md)
 
 ## 数据
 

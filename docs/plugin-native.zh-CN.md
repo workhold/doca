@@ -1,6 +1,6 @@
 # App 插件缓存与附件能力
 
-[English](plugin-native.md)
+[English](plugin-native.md) · **简体中文** · [繁體中文](plugin-native.zh-Hant.md) · [日本語](plugin-native.ja.md) · [Français](plugin-native.fr.md) · [한국어](plugin-native.ko.md) · [Español](plugin-native.es.md) · [Русский](plugin-native.ru.md)
 
 `host.ai.open` 在原生插件容器通过新增的 `assistant.open` 操作打开原生个人助手。参数和错误语义见[启动契约](plugin-assistant.md)。提示词/上下文不进入导航 URL，账号凭据不进入 WebView；预填请求在内存中按账号和一次性启动标识消费。
 

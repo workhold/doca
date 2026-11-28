@@ -1,6 +1,6 @@
 # Interface languages
 
-[中文](https://github.com/workhold/doca/blob/main/docs/i18n.zh-CN.md)
+**English** · [简体中文](https://github.com/workhold/doca/blob/main/docs/i18n.zh-CN.md) · [繁體中文](https://github.com/workhold/doca/blob/main/docs/i18n.zh-Hant.md) · [日本語](https://github.com/workhold/doca/blob/main/docs/i18n.ja.md) · [Français](https://github.com/workhold/doca/blob/main/docs/i18n.fr.md) · [한국어](https://github.com/workhold/doca/blob/main/docs/i18n.ko.md) · [Español](https://github.com/workhold/doca/blob/main/docs/i18n.es.md) · [Русский](https://github.com/workhold/doca/blob/main/docs/i18n.ru.md)
 
 This is the source document. Editor subpackages read the same rules through `skills/doca-i18n`, which may also be installed as `$doca-i18n`. When this file changes, update the skill's `references/contract.md` and every installed copy.
 

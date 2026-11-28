@@ -1,8 +1,8 @@
 # Deploy Doca
 
-The Tauri desktop package includes the Web frontend and connects to a separately deployed host with desktop authorization routes. It has no bundled Node host. Build and verify each OS/architecture package independently. See [desktop client](desktop-client.md).
+**English** · [简体中文](deployment.zh-CN.md) · [繁體中文](deployment.zh-Hant.md) · [日本語](deployment.ja.md) · [Français](deployment.fr.md) · [한국어](deployment.ko.md) · [Español](deployment.es.md) · [Русский](deployment.ru.md)
 
-[中文](deployment.zh-CN.md)
+The Tauri desktop package includes the Web frontend and connects to a separately deployed host with desktop authorization routes. It has no bundled Node host. Build and verify each OS/architecture package independently. See [desktop client](desktop-client.md).
 
 One server can run the image specified by `compose.yaml` on main. A single container uses SQLite and does not need PostgreSQL or Redis. Use those only when you run more than one application replica. See [single instance and horizontal scaling](horizontal-scaling.md).
 

@@ -53,8 +53,14 @@ pnpm docs:dev
 
 預定入口為：
 
-- 英文：<https://workhold.github.io/doca/#/en/>
-- 中文：<https://workhold.github.io/doca/#/zh-cn/>
+- [English](https://workhold.github.io/doca/#/en/)
+- [简体中文](https://workhold.github.io/doca/#/zh-cn/)
+- [繁體中文](https://workhold.github.io/doca/#/zh-hant/)
+- [日本語](https://workhold.github.io/doca/#/ja/)
+- [Français](https://workhold.github.io/doca/#/fr/)
+- [한국어](https://workhold.github.io/doca/#/ko/)
+- [Español](https://workhold.github.io/doca/#/es/)
+- [Русский](https://workhold.github.io/doca/#/ru/)
 
 工作流成功部署後，這些地址才可訪問。README 指向對應語言入口。文件站使用 GitHub Pages 預設域名，無需配置自定義域名 DNS 或倉庫 CNAME 檔案。
 

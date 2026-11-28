@@ -1,6 +1,6 @@
 # Database reference
 
-[中文](database.zh-CN.md)
+**English** · [简体中文](database.zh-CN.md) · [繁體中文](database.zh-Hant.md) · [日本語](database.ja.md) · [Français](database.fr.md) · [한국어](database.ko.md) · [Español](database.es.md) · [Русский](database.ru.md)
 
 The current compatibility generation is `doca-2026-10-12-book-payload-storage-v1`. [create-schema.ts](../packages/db/src/create-schema.ts) defines tables, indexes, foreign keys, and checks; [schema.ts](../packages/db/src/schema.ts) defines Kysely types; [connection.ts](../packages/db/src/connection.ts) opens connections; [transactions.ts](../packages/db/src/transactions.ts) manages transactions and conflict retries.
 

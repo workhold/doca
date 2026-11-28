@@ -1,6 +1,6 @@
 # Document and library permission inheritance
 
-[中文](permission-inheritance.zh-CN.md)
+**English** · [简体中文](permission-inheritance.zh-CN.md) · [繁體中文](permission-inheritance.zh-Hant.md) · [日本語](permission-inheritance.ja.md) · [Français](permission-inheritance.fr.md) · [한국어](permission-inheritance.ko.md) · [Español](permission-inheritance.es.md) · [Русский](permission-inheritance.ru.md)
 
 This page describes the current permission model. Personal grants live in `grants`; group grants live separately in `resource_group_grants` and are evaluated against active group membership without creating personal rows. Public link definitions live in `share_links`; link revocation events live in `share_link_revocations`. See [user groups](user-groups.md) for group invitations, directory scope, ownership and cleanup.
 

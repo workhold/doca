@@ -1,6 +1,6 @@
 # Doca documentation
 
-[简体中文](README.zh-CN.md)
+**English** · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-Hant.md) · [日本語](README.ja.md) · [Français](README.fr.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Русский](README.ru.md)
 
 Doca is a document and knowledge workspace for individuals and small teams. These guides track current source; follow the [0.3.1 release notes](releases/0.3.1.md) for installation and upgrades. Package contracts identify their own implementation limits.
 

@@ -1,6 +1,6 @@
 # Editor collaboration contract
 
-[中文](https://github.com/workhold/doca/blob/main/docs/collaboration-sdk-contract.zh-CN.md)
+**English** · [简体中文](https://github.com/workhold/doca/blob/main/docs/collaboration-sdk-contract.zh-CN.md) · [繁體中文](https://github.com/workhold/doca/blob/main/docs/collaboration-sdk-contract.zh-Hant.md) · [日本語](https://github.com/workhold/doca/blob/main/docs/collaboration-sdk-contract.ja.md) · [Français](https://github.com/workhold/doca/blob/main/docs/collaboration-sdk-contract.fr.md) · [한국어](https://github.com/workhold/doca/blob/main/docs/collaboration-sdk-contract.ko.md) · [Español](https://github.com/workhold/doca/blob/main/docs/collaboration-sdk-contract.es.md) · [Русский](https://github.com/workhold/doca/blob/main/docs/collaboration-sdk-contract.ru.md)
 
 Applies to rich text, Markdown, spreadsheets, canvas, slides and future document types. Established on 2026-09-11; implementation increments below retain their own dates and versions. Use the [current editor matrix](https://github.com/workhold/doca/blob/main/docs/editor-integration.md) for installed packages.
 

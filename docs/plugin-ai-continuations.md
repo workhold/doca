@@ -1,5 +1,7 @@
 # Background task continuation
 
+**English** · [简体中文](plugin-ai-continuations.zh-CN.md) · [繁體中文](plugin-ai-continuations.zh-Hant.md) · [日本語](plugin-ai-continuations.ja.md) · [Français](plugin-ai-continuations.fr.md) · [한국어](plugin-ai-continuations.ko.md) · [Español](plugin-ai-continuations.es.md) · [Русский](plugin-ai-continuations.ru.md)
+
 Current SDK source **0.2.0**, server capability `ai.continuations.v2`, exported from `@smartdoca/plugin-sdk/ai`. npm publication and deployment are not implied. This is shared by all installed server plugins; knowledge books use the same host mechanism.
 
 Declare `aiContinuationsServiceToken` as a required injection and `sdkRange: "^0.2.0"`. A host without this capability rejects initialization. There is no adapter through retired AI service versions or automatic registration of historical business tasks.

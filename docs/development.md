@@ -1,6 +1,6 @@
 # Development, deployment, and checks
 
-[中文](development.zh-CN.md)
+**English** · [简体中文](development.zh-CN.md) · [繁體中文](development.zh-Hant.md) · [日本語](development.ja.md) · [Français](development.fr.md) · [한국어](development.ko.md) · [Español](development.es.md) · [Русский](development.ru.md)
 
 ## Plan a change
 

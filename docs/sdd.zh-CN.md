@@ -1,6 +1,6 @@
 # 规格驱动开发
 
-[English](sdd.md)
+[English](sdd.md) · **简体中文** · [繁體中文](sdd.zh-Hant.md) · [日本語](sdd.ja.md) · [Français](sdd.fr.md) · [한국어](sdd.ko.md) · [Español](sdd.es.md) · [Русский](sdd.ru.md)
 
 本流程覆盖 Doca 全项目的新工作。仓库固定使用 GitHub Spec Kit 1.0.4 的 Codex skills、脚本和模板；安装与升级方式见 [.specify/README.md](../.specify/README.md)。使用时遵守 [AGENTS.md](../AGENTS.md)、[constitution](../.specify/memory/constitution.md) 和现有技术契约。先通过[模块索引](sdd-module-index.zh-CN.md)定位当前源码、契约与可复用检查。
 

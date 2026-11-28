@@ -1,6 +1,6 @@
 # 编辑器集成与文件交换
 
-[English](editor-integration.md)
+[English](editor-integration.md) · **简体中文** · [繁體中文](editor-integration.zh-Hant.md) · [日本語](editor-integration.ja.md) · [Français](editor-integration.fr.md) · [한국어](editor-integration.ko.md) · [Español](editor-integration.es.md) · [Русский](editor-integration.ru.md)
 
 本文是五种编辑器的集成源文档，子包通过可在仓库外使用的 [skill 引用](../skills/doca-editor-integration/references/integration.md)读取。按安装包真实导出使用接口，目标能力与未实现项不能作为已有 API；实时协同要求遵守[协同契约](collaboration-sdk-contract.zh-CN.md)。
 

@@ -1,6 +1,6 @@
 # Docker 文档渲染器
 
-[English](docker-rendering.md)
+[English](docker-rendering.md) · **简体中文** · [繁體中文](docker-rendering.zh-Hant.md) · [日本語](docker-rendering.ja.md) · [Français](docker-rendering.fr.md) · [한국어](docker-rendering.ko.md) · [Español](docker-rendering.es.md) · [Русский](docker-rendering.ru.md)
 
 本次改造后的镜像使用 WeasyPrint 70.0 导出富文本/Markdown PDF，使用 Node、原生 Canvas 和 resvg 生成 AI 画板图片；不安装 Chromium 或 Playwright 运行时，不需要宿主 seccomp JSON、额外共享内存或浏览器用户命名空间设置。必须重新构建镜像后使用新 Compose；已发布旧镜像不会自动获得新渲染器。
 

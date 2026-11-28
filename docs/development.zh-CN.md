@@ -1,6 +1,6 @@
 # 开发、部署与验收
 
-[English](development.md)
+[English](development.md) · **简体中文** · [繁體中文](development.zh-Hant.md) · [日本語](development.ja.md) · [Français](development.fr.md) · [한국어](development.ko.md) · [Español](development.es.md) · [Русский](development.ru.md)
 
 ## 准备变更
 

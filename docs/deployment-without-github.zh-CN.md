@@ -1,6 +1,6 @@
 # 无需访问 GitHub 的部署
 
-[English](deployment-without-github.md)
+[English](deployment-without-github.md) · **简体中文** · [繁體中文](deployment-without-github.zh-Hant.md) · [日本語](deployment-without-github.ja.md) · [Français](deployment-without-github.fr.md) · [한국어](deployment-without-github.ko.md) · [Español](deployment-without-github.es.md) · [Русский](deployment-without-github.ru.md)
 
 业务服务器无需拉取源码，也无需安装 Git、Node.js 或 pnpm。准备好 Docker Engine、Docker Compose 插件、Bash 和 OpenSSL 后，复制部署文件、准备镜像、启动并初始化管理员即可。本指南用于全新单机安装 Doca 0.3.1，采用 SQLite 和本地文件存储；已有部署先阅读[发行要求](releases/0.3.1.zh-CN.md)，保留原数据库、文件、配置和凭证主密钥。
 

@@ -1,6 +1,6 @@
 # Browser assistant
 
-[简体中文](browser-assistant.zh-CN.md)
+**English** · [简体中文](browser-assistant.zh-CN.md) · [繁體中文](browser-assistant.zh-Hant.md) · [日本語](browser-assistant.ja.md) · [Français](browser-assistant.fr.md) · [한국어](browser-assistant.ko.md) · [Español](browser-assistant.es.md) · [Русский](browser-assistant.ru.md)
 
 Open the account menu → **Browser assistant**, or `/#/browser-assistant`. Capture selected web content or the entire loaded page with images, and use your Doca AI assistant in the extension sidebar.
 

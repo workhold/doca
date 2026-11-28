@@ -1,8 +1,8 @@
 # Configuration
 
-The Tauri desktop client bundles the Web frontend and connects to a separately configured remote host. It does not supply a local business host or change the remote host's deployment configuration. See [desktop client](desktop-client.md).
+**English** · [简体中文](configuration.zh-CN.md) · [繁體中文](configuration.zh-Hant.md) · [日本語](configuration.ja.md) · [Français](configuration.fr.md) · [한국어](configuration.ko.md) · [Español](configuration.es.md) · [Русский](configuration.ru.md)
 
-[中文](configuration.zh-CN.md)
+The Tauri desktop client bundles the Web frontend and connects to a separately configured remote host. It does not supply a local business host or change the remote host's deployment configuration. See [desktop client](desktop-client.md).
 
 Choose `docker.env.example` for Compose and `.env.example` for source development, then copy it to the repository-root `.env`. They use different origins and database paths; both show `/data/storage` for the container's persistent file volume. For source development, change the storage root to an absolute writable directory on your machine. Do not interchange origins or commit secrets.
 

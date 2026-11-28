@@ -1,6 +1,6 @@
 # 知识册
 
-[English](knowledge-books.md)
+[English](knowledge-books.md) · **简体中文** · [繁體中文](knowledge-books.zh-Hant.md) · [日本語](knowledge-books.ja.md) · [Français](knowledge-books.fr.md) · [한국어](knowledge-books.ko.md) · [Español](knowledge-books.es.md) · [Русский](knowledge-books.ru.md)
 
 知识册是编排生成的只读 Markdown 文档树。可编辑的文档、知识库、文件、文件夹、网页和经过授权的 `content.v1` 插件内容是它的来源。多人共同维护来源、流程和验收规则；个人 AI 助手使用与页面相同的命令和权限，不再提供第二个共享机器人，也不共享个人会话或记忆。
 

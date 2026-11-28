@@ -1,6 +1,6 @@
 # Native plugin cache and attachments
 
-[中文](plugin-native.zh-CN.md)
+**English** · [简体中文](plugin-native.zh-CN.md) · [繁體中文](plugin-native.zh-Hant.md) · [日本語](plugin-native.ja.md) · [Français](plugin-native.fr.md) · [한국어](plugin-native.ko.md) · [Español](plugin-native.es.md) · [Русский](plugin-native.ru.md)
 
 In the native plugin container, `host.ai.open` uses `assistant.open` to open the native personal assistant. Parameters and errors follow the [launch contract](plugin-assistant.md). Prompts and context stay out of navigation URLs; account credentials stay out of the WebView. Prefill requests are consumed in memory under the current account and a one-time launch identifier.
 

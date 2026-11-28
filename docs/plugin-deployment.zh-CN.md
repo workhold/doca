@@ -1,8 +1,8 @@
 # 插件安装与部署
 
-0.1.26 使用与核心库分开的[插件共享业务数据库](plugin-database-isolation.zh-CN.md)，自动创建插件命名空间，取代 0.1.25 的每插件独立库。升级须先在旧宿主正常卸载，再重装，不迁移插件数据。
+[English](plugin-deployment.md) · **简体中文** · [繁體中文](plugin-deployment.zh-Hant.md) · [日本語](plugin-deployment.ja.md) · [Français](plugin-deployment.fr.md) · [한국어](plugin-deployment.ko.md) · [Español](plugin-deployment.es.md) · [Русский](plugin-deployment.ru.md)
 
-[English](plugin-deployment.md)
+0.1.26 使用与核心库分开的[插件共享业务数据库](plugin-database-isolation.zh-CN.md)，自动创建插件命名空间，取代 0.1.25 的每插件独立库。升级须先在旧宿主正常卸载，再重装，不迁移插件数据。
 
 已确认的[托管存储规范](plugin-horizontal-scaling.zh-CN.md)要求 `doca.storage: "host"`，持久化归宿主。静态拒绝、托管 SQL 与内部对象已实现；托管凭证已在 SDK 源码 0.1.8 实现；临时工作区与集群业务任务排空仍待实现。插件不选择本地/远端后端，也不接收业务数据目录。
 

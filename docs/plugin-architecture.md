@@ -1,6 +1,6 @@
 # Plugin architecture
 
-[中文](plugin-architecture.zh-CN.md)
+**English** · [简体中文](plugin-architecture.zh-CN.md) · [繁體中文](plugin-architecture.zh-Hant.md) · [日本語](plugin-architecture.ja.md) · [Français](plugin-architecture.fr.md) · [한국어](plugin-architecture.ko.md) · [Español](plugin-architecture.es.md) · [Русский](plugin-architecture.ru.md)
 
 The [SDK contract](plugin-sdk-contract.md) defines the boundary between the core and business plugins. The [development guide](plugin-development.md) lists the interfaces that exist now.
 

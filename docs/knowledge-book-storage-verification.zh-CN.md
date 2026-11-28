@@ -1,6 +1,6 @@
 # 知识册存储验证与运维
 
-[English](knowledge-book-storage-verification.md)
+[English](knowledge-book-storage-verification.md) · **简体中文** · [繁體中文](knowledge-book-storage-verification.zh-Hant.md) · [日本語](knowledge-book-storage-verification.ja.md) · [Français](knowledge-book-storage-verification.fr.md) · [한국어](knowledge-book-storage-verification.ko.md) · [Español](knowledge-book-storage-verification.es.md) · [Русский](knowledge-book-storage-verification.ru.md)
 
 2026-10-13，完整升级方案已于 2026-10-12 获用户明确同意。代码与隔离验收已完成，该次验收未部署生产或转换用户数据。目标协议见[实施方案](knowledge-book-payload-storage-plan.zh-CN.md)。
 

@@ -1,6 +1,6 @@
 # Editor integration and file exchange
 
-[中文](editor-integration.zh-CN.md)
+**English** · [简体中文](editor-integration.zh-CN.md) · [繁體中文](editor-integration.zh-Hant.md) · [日本語](editor-integration.ja.md) · [Français](editor-integration.fr.md) · [한국어](editor-integration.ko.md) · [Español](editor-integration.es.md) · [Русский](editor-integration.ru.md)
 
 This is the integration source document for all five editors; subpackages consume its portable [skill reference](../skills/doca-editor-integration/references/integration.md). Use actual installed exports; target interfaces and gaps are not existing APIs. Realtime requirements follow the [collaboration contract](collaboration-sdk-contract.md).
 

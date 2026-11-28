@@ -53,8 +53,14 @@ pnpm docs:dev
 
 예정된 입구는 다음과 같습니다:
 
-- 영어: <https://workhold.github.io/doca/#/en/>
-- 중국어: <https://workhold.github.io/doca/#/zh-cn/>
+- [English](https://workhold.github.io/doca/#/en/)
+- [简体中文](https://workhold.github.io/doca/#/zh-cn/)
+- [繁體中文](https://workhold.github.io/doca/#/zh-hant/)
+- [日本語](https://workhold.github.io/doca/#/ja/)
+- [Français](https://workhold.github.io/doca/#/fr/)
+- [한국어](https://workhold.github.io/doca/#/ko/)
+- [Español](https://workhold.github.io/doca/#/es/)
+- [Русский](https://workhold.github.io/doca/#/ru/)
 
 이 주소들은 워크플로우가 성공적으로 배포된 후에 사용할 수 있게 됩니다. README 링크는 해당 언어 관련 페이지로 연결됩니다. 이 사이트는 기본적인 GitHub Pages 도메인을 사용하며, 특별한 도메인 DNS나 저장소 CNAME 파일이 필요하지 않습니다.
 

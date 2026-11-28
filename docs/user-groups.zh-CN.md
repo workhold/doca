@@ -1,6 +1,6 @@
 # 用户组与组授权
 
-[English](user-groups.md)
+[English](user-groups.md) · **简体中文** · [繁體中文](user-groups.zh-Hant.md) · [日本語](user-groups.ja.md) · [Français](user-groups.fr.md) · [한국어](user-groups.ko.md) · [Español](user-groups.es.md) · [Русский](user-groups.ru.md)
 
 用户组入口位于侧栏「共享文件夹」下方。列表展示自己加入的有效组，包含头像、组名称和所有者；组内展示全部成员及角色。内部 ID 不作为页面信息展示。头像可上传并裁剪为 PNG。
 

@@ -1,6 +1,6 @@
 # Doca 插件商城交互协议 v1
 
-[English](plugin-store-protocol.md)
+[English](plugin-store-protocol.md) · **简体中文** · [繁體中文](plugin-store-protocol.zh-Hant.md) · [日本語](plugin-store-protocol.ja.md) · [Français](plugin-store-protocol.fr.md) · [한국어](plugin-store-protocol.ko.md) · [Español](plugin-store-protocol.es.md) · [Русский](plugin-store-protocol.ru.md)
 
 更新：2026-09-30。**远端商城开发以本文为准。** 本文替换此前“全量目录 + 商城托管 ZIP”的草案，不需要兼容旧接口。
 

@@ -1,6 +1,6 @@
 # Content providers: content.v1
 
-[中文](plugin-content.zh-CN.md)
+**English** · [简体中文](plugin-content.zh-CN.md) · [繁體中文](plugin-content.zh-Hant.md) · [日本語](plugin-content.ja.md) · [Français](plugin-content.fr.md) · [한국어](plugin-content.ko.md) · [Español](plugin-content.es.md) · [Русский](plugin-content.ru.md)
 
 The public entry is `@smartdoca/plugin-sdk/content`. The host defines the contract and invocation boundary; plugins implement business behavior. Built-in documents/files register through the same interface. Registering a source does not automatically expose every source to AI.
 
